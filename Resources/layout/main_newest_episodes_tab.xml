@@ -1,0 +1,25 @@
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_newest_episodes_rv"
+        android:clipToPadding="false"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_data_view"
+        android:id="@+id/main_newest_episodes_emptytext"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:textAlignment="center"
+        android:layout_centerVertical="true"/>
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/main_newest_episodes_loading"
+        android:layout_centerVertical="true"
+        android:indeterminate="true"/>
+</RelativeLayout>

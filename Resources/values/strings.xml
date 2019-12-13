@@ -1,0 +1,13 @@
+<resources>
+  <string name="app_name">Street Media</string>
+  <string name="action_settings">Settings</string>
+  <string name="empty_data_view">No data available</string>
+
+  <integer name="episodes_list_detail_max_lines">2</integer>
+  <dimen name="episodes_list_padding">5dp</dimen>
+  <dimen name="toolbar_elevation">7dp</dimen>
+  <dimen name="tabs_elevation">6dp</dimen>
+  <dimen name="recyclerView_under_padding">-5dp</dimen>
+  <dimen name="list_card_corner_radius">4dp</dimen>
+  <dimen name="episodes_list_card_elevation">4dp</dimen>
+</resources>

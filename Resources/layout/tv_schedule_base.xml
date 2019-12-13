@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+       layout="@layout/main_toolbar"/>
+
+    <include
+        layout="@layout/main_tabs"/>
+
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_schedule_loading"
+        android:indeterminate="true"
+        />
+</android.support.design.widget.CoordinatorLayout>
