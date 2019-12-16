@@ -6,13 +6,12 @@ using System.Text;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.App;
-using Android.Support.V7.Widget;
 using Android.Util;
 using Android.Views;
-using Android.Widget;
-//using AndroidX.Fragment.App;
-//using AndroidX.RecyclerView.Widget;
+using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
 
 namespace com.aa.tvshows.Fragments
@@ -21,9 +20,13 @@ namespace com.aa.tvshows.Fragments
     {
         readonly DataEnum.MainTabsType tabType = DataEnum.MainTabsType.None;
         readonly List<CalenderScheduleList> items;
+        readonly DataEnum.GenreDataType genresType;
+        readonly string genre;
+        readonly int year;
+        
         RecyclerView recyclerView;
-        TextView emptyView;
-        ProgressBar loadingView;
+        AppCompatTextView emptyView;
+        ContentLoadingProgressBar loadingView;
 
         public MainTabs(DataEnum.MainTabsType tabType)
         {
@@ -35,70 +38,36 @@ namespace com.aa.tvshows.Fragments
             this.items = items;
         }
 
-        public override void OnCreate(Bundle savedInstanceState)
+        public MainTabs(DataEnum.MainTabsType tabType, DataEnum.GenreDataType genresType, string genre, int year) : this(tabType)
         {
-            base.OnCreate(savedInstanceState);
-            // Create your fragment here
+            this.genresType = genresType;
+            this.genre = genre;
+            this.year = year;
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            if (inflater == null) throw new ArgumentNullException(nameof(inflater));
             // Use this to return your custom view for this Fragment
-            if (tabType == DataEnum.MainTabsType.NewPopularEpisodes)
+            var view = LayoutInflater.Inflate(Resource.Layout.main_tab_content, container, false);
+            recyclerView = view.FindViewById<RecyclerView>(Resource.Id.main_tab_rv);
+            var layoutManager = new LinearLayoutManager(view.Context);
+            recyclerView.SetLayoutManager(layoutManager);
+            emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
+            if (tabType != DataEnum.MainTabsType.TVSchedule)
             {
-                return inflater.Inflate(Resource.Layout.main_popular_episodes_tab, container, false);
+                loadingView = view.FindViewById<ContentLoadingProgressBar>(Resource.Id.main_tab_loading);
             }
-            else if (tabType == DataEnum.MainTabsType.PopularShows)
-            {
-                return inflater.Inflate(Resource.Layout.main_popular_shows_tab, container, false);
-            }
-            else if (tabType == DataEnum.MainTabsType.NewEpisodes)
-            {
-                return inflater.Inflate(Resource.Layout.main_newest_episodes_tab, container, false);
-            }
-            else if (tabType == DataEnum.MainTabsType.TVSchedule)
-            {
-                return inflater.Inflate(Resource.Layout.tv_schedule_list, container, false);
-            }
-            return null;
+            return view;
         }
 
         public override void OnViewCreated(View view, Bundle savedInstanceState)
         {
             base.OnViewCreated(view, savedInstanceState);
-            if (tabType == DataEnum.MainTabsType.PopularShows)
-            {
-                recyclerView = Activity.FindViewById<RecyclerView>(Resource.Id.main_popular_shows_rv);
-                emptyView = Activity.FindViewById<TextView>(Resource.Id.main_popular_shows_emptytext);
-                emptyView.Visibility = ViewStates.Gone;
-                loadingView = Activity.FindViewById<ProgressBar>(Resource.Id.main_popular_shows_loading);
-                loadingView.Visibility = ViewStates.Gone;
-            }
-            else if (tabType == DataEnum.MainTabsType.NewPopularEpisodes)
-            {
-                recyclerView = Activity.FindViewById<RecyclerView>(Resource.Id.main_popular_episodes_rv);
-                emptyView = Activity.FindViewById<TextView>(Resource.Id.main_popular_episodes_emptytext);
-                emptyView.Visibility = ViewStates.Gone;
-                loadingView = Activity.FindViewById<ProgressBar>(Resource.Id.main_popular_episodes_loading);
-                loadingView.Visibility = ViewStates.Gone;
-            }
-            else if (tabType == DataEnum.MainTabsType.NewEpisodes)
-            {
-                recyclerView = Activity.FindViewById<RecyclerView>(Resource.Id.main_newest_episodes_rv);
-                emptyView = Activity.FindViewById<TextView>(Resource.Id.main_newest_episodes_emptytext);
-                emptyView.Visibility = ViewStates.Gone;
-                loadingView = Activity.FindViewById<ProgressBar>(Resource.Id.main_newest_episodes_loading);
-                loadingView.Visibility = ViewStates.Gone;
-            }
-            else if (tabType == DataEnum.MainTabsType.TVSchedule)
-            {
-                recyclerView = Activity.FindViewById<RecyclerView>(Resource.Id.tv_schedule_rv);
-                emptyView = Activity.FindViewById<TextView>(Resource.Id.tv_schedule_emptytext);
-                emptyView.Visibility = ViewStates.Gone;
-            }
-            var layoutManager = new LinearLayoutManager(Activity);
-            recyclerView.SetLayoutManager(layoutManager);
+            LoadDataForType();
+        }
+
+        public void ReloadCurrentData()
+        {
             LoadDataForType();
         }
 
@@ -113,7 +82,7 @@ namespace com.aa.tvshows.Fragments
                     recyclerView.SetAdapter(mainAdapter);
                     mainAdapter.ItemClick += delegate
                     {
-                        Toast.MakeText(Activity, "Item clicked", ToastLength.Short).Show();
+                        Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
                     };
                     break;
 
@@ -122,14 +91,43 @@ namespace com.aa.tvshows.Fragments
                     recyclerView.SetAdapter(scheduleAdapter);
                     scheduleAdapter.ItemClick += delegate
                     {
-                        Toast.MakeText(Activity, "Item clicked", ToastLength.Short).Show();
+                        Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
                     };
+                    break;
+
+                case DataEnum.MainTabsType.Genres:
+                    if (genresType == DataEnum.GenreDataType.LatestEpisodes)
+                    {
+                        var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
+                        recyclerView.SetAdapter(genresAdapter);
+                        genresAdapter.ItemClick += delegate
+                        {
+                            Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
+                        };
+                    }
+                    else if (genresType == DataEnum.GenreDataType.PopularEpisodes)
+                    {
+                        var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
+                        recyclerView.SetAdapter(genresAdapter);
+                        genresAdapter.ItemClick += delegate
+                        {
+                            Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
+                        };
+                    }
+                    else if (genresType == DataEnum.GenreDataType.Shows)
+                    {
+                        var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, genre, year, emptyView, loadingView);
+                        recyclerView.SetAdapter(genresAdapter);
+                        genresAdapter.ItemClick += delegate
+                        {
+                            Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
+                        };
+                    }
                     break;
 
                 default:
                     break;
-            }
-            
+            }   
         }
     }
 }

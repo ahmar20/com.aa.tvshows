@@ -10,4 +10,5 @@
   <dimen name="recyclerView_under_padding">-5dp</dimen>
   <dimen name="list_card_corner_radius">4dp</dimen>
   <dimen name="episodes_list_card_elevation">4dp</dimen>
+  <dimen name="genres_list_year_margin">10dp</dimen>
 </resources>

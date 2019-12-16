@@ -3,17 +3,17 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/tv_schedule_rv"
         android:clipToPadding="false"/>
-    <TextView
+    <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/empty_data_view"
         android:id="@+id/tv_schedule_emptytext"
-        style="@style/TextAppearance.AppCompat.Title"
+        style="@style/TextAppearance.AppCompat.Medium"
         android:textAlignment="center"
         android:layout_centerVertical="true"/>
 </RelativeLayout>

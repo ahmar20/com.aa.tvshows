@@ -7,10 +7,10 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
-//using AndroidX.RecyclerView.Widget;
+using AndroidX.AppCompat.Widget;
+using AndroidX.RecyclerView.Widget;
 using Square.Picasso;
 
 namespace com.aa.tvshows.Helper
@@ -20,8 +20,12 @@ namespace com.aa.tvshows.Helper
         List<T> Items { get; set; }
         View EmptyView { get; set; }
         View LoadingView { get; set; }
+        int LoadMoreItemsCurrentPage { get; set; } = 1;
 
         private readonly DataEnum.MainTabsType dataType = DataEnum.MainTabsType.None;
+        private readonly DataEnum.GenreDataType genresType;
+        private readonly string genre;
+        private readonly int year;
         public event EventHandler<int> ItemClick = delegate { };
         public event EventHandler<int> ItemLongClick = delegate { };
 
@@ -44,6 +48,31 @@ namespace com.aa.tvshows.Helper
 
         #endregion
 
+        #region Genres CTOR
+
+        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType) : this(dataType)
+        {
+            this.genresType = genresType;
+        }
+
+        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType, View emptyView) : this(dataType, genresType)
+        {
+            this.EmptyView = emptyView;
+        }
+
+        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType, View emptyView, View loadingView) : this(dataType, genresType, emptyView)
+        {
+            this.LoadingView = loadingView;
+        }
+
+        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType, string genre, int year, View emptyView, View loadingView) : this(dataType, genresType, emptyView, loadingView)
+        {
+            this.genre = genre;
+            this.year = year;
+        }
+
+        #endregion
+
         #region List CTOR
         public EpisodesAdapter(List<T> items)
         {
@@ -61,6 +90,7 @@ namespace com.aa.tvshows.Helper
         {
             get
             {
+                /*
                 if (Items == null || Items.Count == 0)
                 {
                     if (EmptyView != null)
@@ -71,6 +101,7 @@ namespace com.aa.tvshows.Helper
                     if (EmptyView != null)
                         EmptyView.Visibility = ViewStates.Gone;
                 }
+                */
                 return Items == null ? 0 : Items.Count;
             }
         }
@@ -109,6 +140,12 @@ namespace com.aa.tvshows.Helper
                         epHolder.Info.Text = scheduleItem.EpisodeName;
                         break;
 
+                    case DataEnum.MainTabsType.Genres:
+                        var genreItem = Items[position] as GenresShow;
+                        epHolder.Title.Text = genreItem.Title;
+                        epHolder.Detail.Text = genreItem.ReleaseYear;
+                        break;
+
                     default:
                         break;
                 }
@@ -132,6 +169,12 @@ namespace com.aa.tvshows.Helper
                 var holder = new EpisodesViewHolder(itemView, (DataEnum.MainTabsType)viewType, OnClick, OnLongClick);
                 return holder;
             }
+            else if (viewType == (int)DataEnum.MainTabsType.Genres)
+            {
+                var itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.genres_list_show, parent, false);
+                var holder = new EpisodesViewHolder(itemView, (DataEnum.MainTabsType)viewType, OnClick, OnLongClick);
+                return holder;
+            }
             return null;
         }
 
@@ -144,44 +187,84 @@ namespace com.aa.tvshows.Helper
             {
                 if (LoadingView != null)
                     LoadingView.Visibility = ViewStates.Visible;
+                if (EmptyView != null)
+                {
+                    (EmptyView as AppCompatTextView).Text = "Loading...";
+                    EmptyView.Visibility = ViewStates.Visible;
+                }
                 if (dataType == DataEnum.MainTabsType.NewPopularEpisodes)
                 {
-                    var items = await Web.GetPopularEpisodesForMainView().ConfigureAwait(true);
-                    items?.ForEach(a => 
+                    var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
+                    items?.ForEach(a =>
                     {
-                        if (a is T _item)
+                        if (!(a is T _item))
                         {
-                            AddItem(_item);
+                            return;
                         }
+                        AddItem(_item);
                     });
                     items?.Clear();
                 }
                 else if (dataType == DataEnum.MainTabsType.PopularShows)
                 {
-                    var items = await Web.GetPopularShowsForMainView().ConfigureAwait(true);
+                    var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
                     items?.ForEach(a =>
                     {
-                        if (a is T _item)
+                        if (!(a is T _item))
                         {
-                            AddItem(_item);
+                            return;
                         }
+                        AddItem(_item);
                     });
                     items?.Clear();
                 }
                 else if (dataType == DataEnum.MainTabsType.NewEpisodes)
                 {
-                    var items = await Web.GetNewestEpisodesForMainView().ConfigureAwait(true);
+                    var items = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
                     items?.ForEach(a =>
                     {
-                        if (a is T _item)
+                        if (!(a is T _item))
                         {
-                            AddItem(_item);
+                            return;
                         }
+                        AddItem(_item);
                     });
                     items?.Clear();
                 }
+                else if (dataType == DataEnum.MainTabsType.Genres)
+                {
+                    // get the genre type and load data
+                    if (genresType == DataEnum.GenreDataType.Shows)
+                    {
+                        recyclerView.AddOnScrollListener(new EndlessScroll((LinearLayoutManager)recyclerView.GetLayoutManager(), 
+                            new Action(async() =>
+                            {
+                                if (LoadingView != null)
+                                    LoadingView.Visibility = ViewStates.Visible;
+                                var items = await WebData.GetGenresShows(genre, LoadMoreItemsCurrentPage++, year);
+                                items?.ForEach(a => { if (!(a is T item)) return; AddItem(item); });
+                                if (LoadingView != null)
+                                    LoadingView.Visibility = ViewStates.Invisible;
+                                (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
+                                if (ItemCount <= 0)
+                                    EmptyView.Visibility = ViewStates.Visible;
+                                else
+                                    EmptyView.Visibility = ViewStates.Gone;
+                            })));
+                        var items = await WebData.GetGenresShows(genre, LoadMoreItemsCurrentPage++, year);
+                        items?.ForEach(a => { if (!(a is T item)) return; AddItem(item); });
+                    }
+                }
                 if (LoadingView != null)
                     LoadingView.Visibility = ViewStates.Invisible;
+                if (EmptyView != null)
+                {
+                    (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
+                    if (ItemCount <= 0)
+                        EmptyView.Visibility = ViewStates.Visible;
+                    else
+                        EmptyView.Visibility = ViewStates.Gone;
+                }
             }
         }
 
@@ -202,6 +285,10 @@ namespace com.aa.tvshows.Helper
             {
                 var item = Items[position] as CalenderScheduleList;
                 return (int)item.ItemType;
+            }
+            if (type == typeof(GenresShow))
+            {
+                return (int)DataEnum.MainTabsType.Genres;
             }
             return (int)DataEnum.MainTabsType.None;
         }
@@ -242,9 +329,9 @@ namespace com.aa.tvshows.Helper
     public class EpisodesViewHolder : RecyclerView.ViewHolder
     {
         public ImageView Image { get; private set; }
-        public TextView Title { get; private set; }
-        public TextView Detail { get; private set; }
-        public TextView Info { get; private set; }
+        public AppCompatTextView Title { get; private set; }
+        public AppCompatTextView Detail { get; private set; }
+        public AppCompatTextView Info { get; private set; }
 
         public DataEnum.MainTabsType ItemType { get; private set; }
 
@@ -255,15 +342,20 @@ namespace com.aa.tvshows.Helper
             if (ItemType == DataEnum.MainTabsType.NewPopularEpisodes || ItemType == DataEnum.MainTabsType.NewEpisodes)
             {
                 Image = itemView.FindViewById<ImageView>(Resource.Id.episodes_list_imageView);
-                Title = itemView.FindViewById<TextView>(Resource.Id.episodes_list_title);
-                Detail = itemView.FindViewById<TextView>(Resource.Id.episodes_list_detail);
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_title);
+                Detail = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_detail);
             }
             else if (ItemType == DataEnum.MainTabsType.PopularShows || ItemType == DataEnum.MainTabsType.TVSchedule)
             {
                 Image = itemView.FindViewById<ImageView>(Resource.Id.shows_list_imageView);
-                Title = itemView.FindViewById<TextView>(Resource.Id.shows_list_title);
-                Detail = itemView.FindViewById<TextView>(Resource.Id.shows_list_episode_detail);
-                Info = itemView.FindViewById<TextView>(Resource.Id.shows_list_info_detail);
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_title);
+                Detail = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_episode_detail);
+                Info = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_info_detail);
+            }
+            else if (ItemType == DataEnum.MainTabsType.Genres)
+            {
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_title);
+                Detail = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_year);
             }
 
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);

@@ -1,24 +1,22 @@
 ﻿using Android.App;
 using Android.OS;
-//using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.App;
 using Android.Runtime;
-//using AndroidX.ViewPager.Widget;
-//using Google.Android.Material.Tabs;
+using AndroidX.ViewPager.Widget;
+using Google.Android.Material.Tabs;
 using com.aa.tvshows.Helper;
-//using AndroidX.AppCompat.Widget;
+using AndroidX.AppCompat.Widget;
 using Android.Views;
-using Android.Support.V4.View;
-using Android.Support.V7.App;
-using Android.Support.Design.Widget;
-using Android.Support.V7.Widget;
+using System;
 
 namespace com.aa.tvshows
 {
-    [Activity(Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Theme = "@style/AppTheme", MainLauncher = true, 
+        ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class MainActivity : AppCompatActivity
     {
-        private ViewPager viewPager;
-        private TabLayout tabLayout;
+        ViewPager viewPager;
+        TabLayout tabLayout;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -48,11 +46,18 @@ namespace com.aa.tvshows
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            if (item?.Intent != null)
+            if (item.ItemId == AppView.ReloadId)
             {
-                this.StartActivity(item.Intent);
+                var action = new Action(() =>
+                {
+                    if (viewPager.Adapter is PageTabsAdapter adapter)
+                    {
+                        adapter.GetTabFragment(tabLayout.SelectedTabPosition)?.ReloadCurrentData();
+                    }
+                });
+                return AppView.OnOptionsItemSelected(item, this, action);
             }
-            return base.OnOptionsItemSelected(item);
+            return AppView.OnOptionsItemSelected(item, this);
         }
 
         public void SetupTabs()

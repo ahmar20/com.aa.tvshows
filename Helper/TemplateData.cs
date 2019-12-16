@@ -6,10 +6,9 @@ using System.Text;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.App;
 using Android.Views;
 using Android.Widget;
-//using AndroidX.Fragment.App;
+using AndroidX.Fragment.App;
 
 namespace com.aa.tvshows.Helper
 {
@@ -41,5 +40,19 @@ namespace com.aa.tvshows.Helper
     public class CalenderScheduleList : EpisodeList
     {
         public string EpisodeName { get; set; }
+    }
+
+    public class GenresShow
+    {
+        public string Title { get; set; }
+        public string PageLink { get; set; }
+        public string GenreType { get; set; }
+        public string ReleaseYear { get; set; }
+    }
+
+
+    public class GenresEpisode : GenresShow
+    {
+        public string EpisodeDetail { get; set; }
     }
 }

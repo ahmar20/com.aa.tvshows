@@ -20,7 +20,15 @@ namespace com.aa.tvshows.Helper
             PopularShows,
             NewPopularEpisodes,
             NewEpisodes,
-            TVSchedule
+            TVSchedule,
+            Genres
+        }
+
+        public enum GenreDataType
+        {
+            LatestEpisodes,
+            PopularEpisodes,
+            Shows
         }
     }
 }

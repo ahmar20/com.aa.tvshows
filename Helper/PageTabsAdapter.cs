@@ -6,23 +6,19 @@ using System.Text;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.App;
 using Android.Views;
 using Android.Widget;
-//using AndroidX.Fragment.App;
-//using AndroidX.ViewPager.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.ViewPager.Widget;
 using Java.Lang;
 
 namespace com.aa.tvshows.Helper
 {
-    public class PageTabsAdapter : FragmentPagerAdapter
+    public class PageTabsAdapter : FragmentStatePagerAdapter
     {
         private List<TitleFragment> Fragments { get; set; }
 
-        public PageTabsAdapter(FragmentManager manager) : base(manager/*, BehaviorResumeOnlyCurrentFragment*/)
-        {
-            Fragments = new List<TitleFragment>();
-        }
+        public PageTabsAdapter(FragmentManager manager) : base(manager, BehaviorResumeOnlyCurrentFragment) => Fragments = new List<TitleFragment>();
 
         public override int Count => Fragments == null ? 0 : Fragments.Count;
 
@@ -43,6 +39,19 @@ namespace com.aa.tvshows.Helper
             Fragments.AddRange(fragments);
             NotifyDataSetChanged();
             return true;
+        }
+        public TitleFragment GetTab(int position)
+        {
+            if (Fragments == null) return null;
+
+            return Fragments[position];
+        }
+
+        public Fragments.MainTabs GetTabFragment(int position)
+        {
+            if (Fragments == null) return null;
+
+            return Fragments[position].Fragmnet as Fragments.MainTabs;
         }
 
         public bool RemoveTab(TitleFragment fragment)

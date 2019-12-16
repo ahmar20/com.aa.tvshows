@@ -3,4 +3,6 @@
   <color name="colorPrimary">#C52424</color>
   <color name="colorPrimaryDark">#600707</color>
   <color name="colorAccent">#A23A3A</color>
+  <color name="colorTabsHeader">#55C52424</color>
+  <color name="colorTransparent">#00000000</color>
 </resources>
