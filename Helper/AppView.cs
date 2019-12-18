@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.Views;
+﻿using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using System;
 
 namespace com.aa.tvshows.Helper
 {
@@ -24,36 +18,57 @@ namespace com.aa.tvshows.Helper
 
         public static void SetActionBarForActivity(Toolbar toolbar, AppCompatActivity activity)
         {
-            if (activity == null) throw new ArgumentNullException(nameof(activity));
-            if (toolbar == null) throw new ArgumentNullException(nameof(toolbar));
+            if (activity == null)
+            {
+                throw new ArgumentNullException(nameof(activity));
+            }
+
+            if (toolbar == null)
+            {
+                throw new ArgumentNullException(nameof(toolbar));
+            }
 
             activity.SetSupportActionBar(toolbar);
             if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.Ordinal))
             {
                 activity.SupportActionBar.Title = activity.Resources.GetString(Resource.String.app_name);
                 activity.SupportActionBar.Subtitle = "Watch TV Shows of your choice";
-                activity.SupportActionBar.SetDisplayShowHomeEnabled(true);
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.Ordinal))
+            else
+            {
+                activity.SupportActionBar.SetDisplayShowHomeEnabled(true);
+                activity.SupportActionBar.SetDisplayHomeAsUpEnabled(true);
+            }
+
+            if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.Ordinal))
             {
                 activity.SupportActionBar.Title = "TV Shows Schedule";
                 activity.SupportActionBar.Subtitle = "See what's missed and what's next!";
-                activity.SupportActionBar.SetDisplayShowHomeEnabled(true);
-                activity.SupportActionBar.SetDisplayHomeAsUpEnabled(true);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.Ordinal))
             {
                 activity.SupportActionBar.Title = "TV Shows Genres";
                 activity.SupportActionBar.Subtitle = "Browse all types of shows";
-                activity.SupportActionBar.SetDisplayShowHomeEnabled(true);
-                activity.SupportActionBar.SetDisplayHomeAsUpEnabled(true);
+            }
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("SEARCH", StringComparison.Ordinal))
+            {
+                activity.SupportActionBar.Title = "Search";
+                activity.SupportActionBar.Subtitle = string.Empty;
             }
         }
 
         public static bool ShowOptionsMenu(IMenu menu, AppCompatActivity activity)
         {
-            if (activity == null) throw new ArgumentNullException(nameof(activity));
-            if (menu == null) throw new ArgumentNullException(nameof(menu));
+            if (activity == null)
+            {
+                throw new ArgumentNullException(nameof(activity));
+            }
+
+            if (menu == null)
+            {
+                throw new ArgumentNullException(nameof(menu));
+            }
+
             int itemsOrder = 0;
             if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.Ordinal))
             {
@@ -84,7 +99,7 @@ namespace com.aa.tvshows.Helper
             }
             menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
             menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
-            
+
             return true;
         }
 
@@ -102,7 +117,7 @@ namespace com.aa.tvshows.Helper
                     break;
 
                 case SearchId:
-                    //activity.StartActivity(typeof(SearchActivity));
+                    activity.StartActivity(typeof(SearchActivity));
                     break;
 
                 case GenresId:
