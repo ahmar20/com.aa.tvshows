@@ -80,12 +80,12 @@ namespace com.aa.tvshows
             */
             tabsAdapter.AddTab(new TitleFragment()
             {
-                Fragmnet = new Fragments.MainTabs(DataEnum.MainTabsType.PopularShows),
+                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
                 Title = "Popular Shows"
             });
             tabsAdapter.AddTab(new TitleFragment()
             {
-                Fragmnet = new Fragments.MainTabs(DataEnum.MainTabsType.NewEpisodes),
+                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
                 Title = "New Episodes"
             });
             tabLayout.SetupWithViewPager(viewPager);

@@ -82,7 +82,7 @@ namespace com.aa.tvshows
                 tabLayout.Visibility = ViewStates.Visible;
                 foreach (var item in data)
                 {
-                    tabsAdapter.AddTab(new TitleFragment() { Title = item.Key, Fragmnet = new MainTabs(DataEnum.MainTabsType.TVSchedule, item.Value) });
+                    tabsAdapter.AddTab(new TitleFragment() { Title = item.Key, Fragmnet = new MainTabs(DataEnum.DataType.TVSchedule, item.Value) });
                 }
             }
             emptyView.Text = Resources.GetString(Resource.String.empty_data_view);

@@ -14,14 +14,15 @@ namespace com.aa.tvshows.Helper
 {
     public static class DataEnum
     {
-        public enum MainTabsType
+        public enum DataType
         {
             None,
             PopularShows,
             NewPopularEpisodes,
             NewEpisodes,
             TVSchedule,
-            Genres
+            Genres,
+            SearchSuggestions
         }
 
         public enum GenreDataType

@@ -18,7 +18,7 @@ namespace com.aa.tvshows.Fragments
 {
     public class MainTabs : Fragment
     {
-        readonly DataEnum.MainTabsType tabType = DataEnum.MainTabsType.None;
+        readonly DataEnum.DataType tabType = DataEnum.DataType.None;
         readonly List<CalenderScheduleList> items;
         readonly DataEnum.GenreDataType genresType;
         readonly string genre;
@@ -28,17 +28,17 @@ namespace com.aa.tvshows.Fragments
         AppCompatTextView emptyView;
         ContentLoadingProgressBar loadingView;
 
-        public MainTabs(DataEnum.MainTabsType tabType)
+        public MainTabs(DataEnum.DataType tabType)
         {
             this.tabType = tabType;
         }
 
-        public MainTabs(DataEnum.MainTabsType tabType, List<CalenderScheduleList> items) : this(tabType)
+        public MainTabs(DataEnum.DataType tabType, List<CalenderScheduleList> items) : this(tabType)
         {
             this.items = items;
         }
 
-        public MainTabs(DataEnum.MainTabsType tabType, DataEnum.GenreDataType genresType, string genre, int year) : this(tabType)
+        public MainTabs(DataEnum.DataType tabType, DataEnum.GenreDataType genresType, string genre, int year) : this(tabType)
         {
             this.genresType = genresType;
             this.genre = genre;
@@ -53,7 +53,7 @@ namespace com.aa.tvshows.Fragments
             var layoutManager = new LinearLayoutManager(view.Context);
             recyclerView.SetLayoutManager(layoutManager);
             emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
-            if (tabType != DataEnum.MainTabsType.TVSchedule)
+            if (tabType != DataEnum.DataType.TVSchedule)
             {
                 loadingView = view.FindViewById<ContentLoadingProgressBar>(Resource.Id.main_tab_loading);
             }
@@ -75,9 +75,9 @@ namespace com.aa.tvshows.Fragments
         {
             switch (tabType)
             {
-                case DataEnum.MainTabsType.NewEpisodes:
-                case DataEnum.MainTabsType.NewPopularEpisodes:
-                case DataEnum.MainTabsType.PopularShows:
+                case DataEnum.DataType.NewEpisodes:
+                case DataEnum.DataType.NewPopularEpisodes:
+                case DataEnum.DataType.PopularShows:
                     var mainAdapter = new EpisodesAdapter<EpisodeList>(tabType, emptyView, loadingView);
                     recyclerView.SetAdapter(mainAdapter);
                     mainAdapter.ItemClick += delegate
@@ -86,7 +86,7 @@ namespace com.aa.tvshows.Fragments
                     };
                     break;
 
-                case DataEnum.MainTabsType.TVSchedule:
+                case DataEnum.DataType.TVSchedule:
                     var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(items, tabType, emptyView);
                     recyclerView.SetAdapter(scheduleAdapter);
                     scheduleAdapter.ItemClick += delegate
@@ -95,7 +95,7 @@ namespace com.aa.tvshows.Fragments
                     };
                     break;
 
-                case DataEnum.MainTabsType.Genres:
+                case DataEnum.DataType.Genres:
                     if (genresType == DataEnum.GenreDataType.LatestEpisodes)
                     {
                         var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);

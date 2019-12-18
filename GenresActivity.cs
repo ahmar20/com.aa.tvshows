@@ -81,7 +81,7 @@ namespace com.aa.tvshows
 
             foreach(var item in Genres)
             {
-                adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.MainTabsType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
+                adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.DataType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
             }
         }
     }
