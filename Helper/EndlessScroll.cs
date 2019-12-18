@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -22,7 +21,7 @@ namespace com.aa.tvshows.Helper
         private int totalItemCount = 0;
         private int visibleItemCount = 0;
         private int previousTotal = 0;
-        private readonly int visibleThreshold = 10;
+        private readonly int visibleThreshold = 30;
 
         public EndlessScroll(LinearLayoutManager layoutManager, Action loadMoreAction)
         {
