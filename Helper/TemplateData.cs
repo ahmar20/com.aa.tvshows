@@ -50,9 +50,14 @@ namespace com.aa.tvshows.Helper
         public string ReleaseYear { get; set; }
     }
 
-
     public class GenresEpisode : GenresShow
     {
         public string EpisodeDetail { get; set; }
+    }
+
+    public class SearchSuggestionsData
+    {
+        public string Title { get; set; }
+        public string ItemLink { get; set; }
     }
 }
