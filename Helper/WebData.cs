@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -13,6 +14,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 
 namespace com.aa.tvshows.Helper
 {
@@ -21,12 +23,14 @@ namespace com.aa.tvshows.Helper
         const string BaseUrl = "https://www1.swatchseries.to";
         static readonly string TVScheduleUrl = BaseUrl + "/tvschedule";
         static readonly string TVGenresUrl = BaseUrl + "/genres/";
+        static readonly string TVShowUrl = BaseUrl + "/serie/";
+        static readonly string TVSearchSuggestionsUrl = BaseUrl + "/show/search-shows-json/";
         const int CurrentYear = 2019;
         const int MinimumYear = 1990;
 
         public const double CancellationTokenDelayInSeconds = 40;
 
-        public static async Task<HtmlDocument> GetHtmlFromUrl(Uri url)
+        public static async Task<HtmlDocument> GetHtmlDocumentFromUrl(Uri url)
         {
             if (url != null)
             {
@@ -52,9 +56,38 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
+        public static async Task<JArray> GetJsonFromUrl(Uri url)
+        {
+            if (url != null)
+            {
+                try
+                {
+                    using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = false };
+                    using HttpClient client = new HttpClient(handler);
+                    using CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(CancellationTokenDelayInSeconds));
+
+                    var response = await client.GetAsync(url, cts.Token).ConfigureAwait(true);
+                    response.EnsureSuccessStatusCode();
+
+                    return JArray.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(true));
+                }
+                catch (Exception e)
+                {
+                    //Error.ErrorInstance.ShowErrorSnack(e.Message);
+                }
+            }
+            return null;
+        }
+
+        private static string FixDuplicateYear(this string title)
+        {
+            var regexReplacement = Regex.Replace(title, @"( \(\d{4}\))\1+", "$1");
+            return regexReplacement;
+        }
+
         public static async Task<List<EpisodeList>> GetPopularEpisodesForMainView()
         {
-            if (await GetHtmlFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
+            if (await GetHtmlDocumentFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
             {
                 // generate main episodes data
                 if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("block-left-home")).FirstOrDefault() is HtmlNode popularEpisodes)
@@ -71,7 +104,7 @@ namespace com.aa.tvshows.Helper
                                 var link = aNode.GetAttributeValue("href", null);
                                 listItem.PageLink = link;
                                 var title = aNode.ChildNodes.Where(a => a.Name == "b").ElementAtOrDefault(0)?.InnerText?.Trim();
-                                listItem.Title = WebUtility.HtmlDecode(title);
+                                listItem.Title = WebUtility.HtmlDecode(title).FixDuplicateYear();
                             }
                             if (dataDiv.Descendants("a").ElementAtOrDefault(1) is HtmlNode eNode)
                             {
@@ -96,7 +129,7 @@ namespace com.aa.tvshows.Helper
 
         public static async Task<List<EpisodeList>> GetNewestEpisodesForMainView()
         {
-            if (await GetHtmlFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
+            if (await GetHtmlDocumentFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
             {
                 // generate main episodes data
                 if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("block-left-home")).ElementAtOrDefault(1) is HtmlNode popularEpisodes)
@@ -113,7 +146,7 @@ namespace com.aa.tvshows.Helper
                                 var link = aNode.GetAttributeValue("href", null);
                                 listItem.PageLink = link;
                                 var title = aNode.ChildNodes.Where(a => a.Name == "b").ElementAtOrDefault(0)?.InnerText?.Trim();
-                                listItem.Title = WebUtility.HtmlDecode(title);
+                                listItem.Title = WebUtility.HtmlDecode(title).FixDuplicateYear();
                             }
                             if (dataDiv.Descendants("a").ElementAtOrDefault(1) is HtmlNode eNode)
                             {
@@ -138,7 +171,7 @@ namespace com.aa.tvshows.Helper
 
         public static async Task<List<ShowList>> GetPopularShowsForMainView()
         {
-            if (await GetHtmlFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
+            if (await GetHtmlDocumentFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
             {
                 // generate main episodes data
                 if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("block-right-home")).FirstOrDefault() is HtmlNode popularEpisodes)
@@ -155,7 +188,7 @@ namespace com.aa.tvshows.Helper
                                 var link = aNode.GetAttributeValue("href", null);
                                 listItem.PageLink = link;
                                 var title = aNode.Descendants("b").ElementAtOrDefault(0)?.InnerText?.Trim();
-                                listItem.Title = WebUtility.HtmlDecode(title);
+                                listItem.Title = WebUtility.HtmlDecode(title).FixDuplicateYear();
                             }
                             var episodeDetail = dataDiv.Descendants("span").Where(a => a.HasClass("p11")).FirstOrDefault()?.InnerText?.Trim();
                             var image = itemDiv.Descendants("img").FirstOrDefault()?.GetAttributeValue("src", "tvshows.aa.com");
@@ -180,7 +213,7 @@ namespace com.aa.tvshows.Helper
 
         public static async Task<Dictionary<string, List<CalenderScheduleList>>> GetTVSchedule()
         {
-            if (await GetHtmlFromUrl(new Uri(TVScheduleUrl)).ConfigureAwait(false) is HtmlDocument doc)
+            if (await GetHtmlDocumentFromUrl(new Uri(TVScheduleUrl)).ConfigureAwait(false) is HtmlDocument doc)
             {
                 if (doc.DocumentNode.Descendants("div").Where(a => a.Id == "scheduleCalendar").ElementAtOrDefault(0) is HtmlNode scheduleDiv)
                 {
@@ -217,7 +250,7 @@ namespace com.aa.tvshows.Helper
                                 {
                                     if (string.IsNullOrEmpty(scheduleItem.Title))
                                     {
-                                        scheduleItem.Title = WebUtility.HtmlDecode(text.InnerText.Trim());
+                                        scheduleItem.Title = WebUtility.HtmlDecode(text.InnerText.Trim()).FixDuplicateYear();
                                     }
                                     else if (string.IsNullOrEmpty(scheduleItem.EpisodeNo))
                                     {
@@ -259,7 +292,7 @@ namespace com.aa.tvshows.Helper
             {
                 // not complete yet
                 string genresLink = $"{$"{TVGenresUrl}{genre.ToLower()}"}{(genreType == DataEnum.GenreDataType.LatestEpisodes ? string.Empty : "/1")}";
-                if (await GetHtmlFromUrl(new Uri(genresLink)) is HtmlDocument genreDoc)
+                if (await GetHtmlDocumentFromUrl(new Uri(genresLink)) is HtmlDocument genreDoc)
                 {
                     if (genreDoc.DocumentNode.Descendants("ul").Where(a => a.HasClass("listings")).FirstOrDefault() is HtmlNode listings)
                     {
@@ -268,7 +301,7 @@ namespace com.aa.tvshows.Helper
                             if (listing.Descendants("a").FirstOrDefault() is HtmlNode linkNode)
                             {
                                 var link = linkNode.GetAttributeValue("href", string.Empty);
-                                var dataText = linkNode.GetDirectInnerText();
+                                var dataText = linkNode.GetDirectInnerText().FixDuplicateYear();
                             }
                         }
                     }
@@ -278,7 +311,7 @@ namespace com.aa.tvshows.Helper
             {
                 genre = genre.Contains(" ") ? genre.Remove(genre.IndexOf(" ")) : genre;
                 string genresLink = $"{TVGenresUrl}{genre.ToLower()}/{page}/{year}/0";
-                if (await GetHtmlFromUrl(new Uri(genresLink)) is HtmlDocument genreDoc)
+                if (await GetHtmlDocumentFromUrl(new Uri(genresLink)) is HtmlDocument genreDoc)
                 {
                     if (genreDoc.DocumentNode.Descendants("ul").Where(a => a.HasClass("listings")).FirstOrDefault() is HtmlNode listings)
                     {
@@ -293,13 +326,35 @@ namespace com.aa.tvshows.Helper
                                 items.Add(new GenresShow() 
                                 { 
                                     GenreType = WebUtility.HtmlDecode(genre), PageLink = link, 
-                                    Title = WebUtility.HtmlDecode(title), ReleaseYear = WebUtility.HtmlDecode(showYear) 
+                                    Title = WebUtility.HtmlDecode(title).FixDuplicateYear(), ReleaseYear = WebUtility.HtmlDecode(showYear) 
                                 });
                             }
                         }
                         return items;
                     }
                 }
+            }
+            return null;
+        }
+
+        public static async Task<List<SearchSuggestionsData>> GetTVShowSearchSuggestions(string query)
+        {
+            if (await GetJsonFromUrl(new Uri(TVSearchSuggestionsUrl + WebUtility.HtmlEncode(query))) is JArray docStr)
+            {
+                if (docStr.LastOrDefault()?.Value<string>("value")?.ToUpperInvariant() == "MORE RESULTS...")
+                {
+                    docStr.Remove(docStr.Last);
+                }
+                var data = new List<SearchSuggestionsData>();
+                foreach(var item in docStr)
+                {
+                    data.Add(new SearchSuggestionsData() 
+                    { 
+                        Title = item.Value<string>("label").FixDuplicateYear(),
+                        ItemLink = TVShowUrl + item.Value<string>("seo_url") 
+                    });
+                }
+                return data;
             }
             return null;
         }
