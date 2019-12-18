@@ -8,6 +8,8 @@ using com.aa.tvshows.Helper;
 using AndroidX.AppCompat.Widget;
 using Android.Views;
 using System;
+using AndroidX.CursorAdapter.Widget;
+using Android.Database;
 
 namespace com.aa.tvshows
 {
@@ -31,7 +33,9 @@ namespace com.aa.tvshows
             viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             SetupTabs();
+            //SetupSearchView();
         }
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             //Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
