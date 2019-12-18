@@ -29,7 +29,7 @@ namespace com.aa.tvshows.Helper
         public string EpisodeNo { get; set; }
         public string ImageLink { get; set; }
         public string PageLink { get; set; }
-        public DataEnum.MainTabsType ItemType { get; set; }
+        public DataEnum.DataType ItemType { get; set; }
     }
 
     public class ShowList : EpisodeList
@@ -40,6 +40,11 @@ namespace com.aa.tvshows.Helper
     public class CalenderScheduleList : EpisodeList
     {
         public string EpisodeName { get; set; }
+    }
+
+    public class SearchList : ShowList
+    {
+        public int NextPage { get; set; }
     }
 
     public class GenresShow
