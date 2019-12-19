@@ -23,7 +23,8 @@ namespace com.aa.tvshows.Helper
         const string BaseUrl = "https://www1.swatchseries.to";
         static readonly string TVScheduleUrl = BaseUrl + "/tvschedule";
         static readonly string TVGenresUrl = BaseUrl + "/genres/";
-        static readonly string TVShowUrl = BaseUrl + "/serie/";
+        static readonly string TVShowDetailUrl = BaseUrl + "/serie/";
+        static readonly string TVSearchUrl = BaseUrl + "/search/";
         static readonly string TVSearchSuggestionsUrl = BaseUrl + "/show/search-shows-json/";
         const int CurrentYear = 2019;
         const int MinimumYear = 1990;
@@ -36,8 +37,12 @@ namespace com.aa.tvshows.Helper
             {
                 try
                 {
-                    using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = false };
+                    using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = true };
                     using HttpClient client = new HttpClient(handler);
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
+                    client.DefaultRequestHeaders.Add("Accept", "text/html");
+                    //client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+                    client.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
                     using CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(CancellationTokenDelayInSeconds));
 
                     var response = await client.GetAsync(url, cts.Token).ConfigureAwait(true);
@@ -97,7 +102,7 @@ namespace com.aa.tvshows.Helper
                     {
                         if (itemDiv.ChildNodes.Where(a => a.HasClass("block-left-home-inside-text")).FirstOrDefault() is HtmlNode dataDiv)
                         {
-                            var listItem = new EpisodeList() { ItemType = DataEnum.MainTabsType.NewPopularEpisodes };
+                            var listItem = new EpisodeList() { ItemType = DataEnum.DataType.NewPopularEpisodes };
                             // link
                             if (dataDiv.Descendants("a").ElementAtOrDefault(0) is HtmlNode aNode)
                             {
@@ -139,7 +144,7 @@ namespace com.aa.tvshows.Helper
                     {
                         if (itemDiv.ChildNodes.Where(a => a.HasClass("block-left-home-inside-text")).FirstOrDefault() is HtmlNode dataDiv)
                         {
-                            var listItem = new EpisodeList() { ItemType = DataEnum.MainTabsType.NewPopularEpisodes };
+                            var listItem = new EpisodeList() { ItemType = DataEnum.DataType.NewPopularEpisodes };
                             // link
                             if (dataDiv.Descendants("a").ElementAtOrDefault(0) is HtmlNode aNode)
                             {
@@ -181,7 +186,7 @@ namespace com.aa.tvshows.Helper
                     {
                         if (itemDiv.ChildNodes.Where(a => a.HasClass("block-right-home-inside-text")).FirstOrDefault() is HtmlNode dataDiv)
                         {
-                            var listItem = new ShowList() { ItemType = DataEnum.MainTabsType.PopularShows };
+                            var listItem = new ShowList() { ItemType = DataEnum.DataType.PopularShows };
                             // link
                             if (dataDiv.Descendants("a").ElementAtOrDefault(0) is HtmlNode aNode)
                             {
@@ -243,7 +248,7 @@ namespace com.aa.tvshows.Helper
                                 {
                                     ImageLink = listing.Descendants("img").FirstOrDefault()?.GetAttributeValue("src", "tvshows.aa.com"),
                                     PageLink = listingRoot.GetAttributeValue("href", "tvshows.aa.com"),
-                                    ItemType = DataEnum.MainTabsType.TVSchedule
+                                    ItemType = DataEnum.DataType.TVSchedule
                                 };
 
                                 foreach (HtmlNode text in listingRoot.Descendants("#text").Where(a => !string.IsNullOrEmpty(a.InnerText.Trim())))
@@ -351,10 +356,65 @@ namespace com.aa.tvshows.Helper
                     data.Add(new SearchSuggestionsData() 
                     { 
                         Title = item.Value<string>("label").FixDuplicateYear(),
-                        ItemLink = TVShowUrl + item.Value<string>("seo_url") 
+                        ItemLink = TVShowDetailUrl + item.Value<string>("seo_url") 
                     });
                 }
                 return data;
+            }
+            return null;
+        }
+
+        public static async Task<List<SearchList>> GetTVShowSearchResults(string query, int nextPage = 1)
+        {
+            if (await GetHtmlDocumentFromUrl(new Uri(TVSearchUrl + WebUtility.HtmlEncode(query) + $"/page/{nextPage}/sortby/MATCH")) is HtmlDocument doc)
+            {
+                if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("search-item-left")) is IEnumerable<HtmlNode> searchItems)
+                {
+                    // find next page
+                    if (doc.DocumentNode.Descendants("ul").Where(a => a.HasClass("pagination")).FirstOrDefault() is HtmlNode pages)
+                    {
+                        if (pages.Descendants("li").Where(a => a.InnerText.Trim() == "Next Page").FirstOrDefault() is HtmlNode nextPageNode)
+                        {
+                            if (nextPageNode.Descendants("a").FirstOrDefault() is HtmlNode pageLinkNode)
+                            {
+                                if (pageLinkNode.GetAttributeValue("href", string.Empty)
+                                    .Equals(TVSearchUrl + WebUtility.HtmlEncode(query) + $"/page/{nextPage + 1}/sortby/MATCH"))
+                                {
+                                    nextPage += 1;
+                                }
+                                else
+                                {
+                                    nextPage = 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            nextPage = 0;
+                        }
+                    }
+
+                    var data = new List<SearchList>();
+                    foreach (HtmlNode searchItem in searchItems)
+                    {
+                        var image = searchItem.Descendants("img").FirstOrDefault()?.GetAttributeValue("src", string.Empty);
+                        if (searchItem.Descendants("div").Where(a => a.GetAttributeValue("valign", string.Empty) == "top").FirstOrDefault() is HtmlNode detailDiv)
+                        {
+                            var link = detailDiv.Descendants("a").FirstOrDefault()?.GetAttributeValue("href", string.Empty);
+                            var title = detailDiv.Descendants("a").FirstOrDefault()?.InnerText.Trim();
+                            var search = new SearchList()
+                            {
+                                ImageLink = image,
+                                ItemType = DataEnum.DataType.Search,
+                                NextPage = nextPage,
+                                PageLink = link,
+                                Title = WebUtility.HtmlDecode(title.FixDuplicateYear())
+                            };
+                            data.Add(search);
+                        }
+                    }
+                    return data;
+                }
             }
             return null;
         }

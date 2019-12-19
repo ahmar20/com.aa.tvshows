@@ -22,26 +22,27 @@ namespace com.aa.tvshows.Helper
         View LoadingView { get; set; }
         int LoadMoreItemsCurrentPage { get; set; } = 1;
 
-        private readonly DataEnum.MainTabsType dataType = DataEnum.MainTabsType.None;
+        private readonly DataEnum.DataType dataType = DataEnum.DataType.None;
         private readonly DataEnum.GenreDataType genresType;
         private readonly string genre;
         private readonly int year;
+
         public event EventHandler<int> ItemClick = delegate { };
         public event EventHandler<int> ItemLongClick = delegate { };
 
         #region DataType CTOR
-        public EpisodesAdapter(DataEnum.MainTabsType dataType)
+        public EpisodesAdapter(DataEnum.DataType dataType)
         {
             this.dataType = dataType;
             Items = new List<T>();
         }
 
-        public EpisodesAdapter(DataEnum.MainTabsType dataType, View emptyView) : this(dataType)
+        public EpisodesAdapter(DataEnum.DataType dataType, View emptyView) : this(dataType)
         {
             this.EmptyView = emptyView;
         }
 
-        public EpisodesAdapter(DataEnum.MainTabsType dataType, View emptyView, View loadingView) : this(dataType, emptyView)
+        public EpisodesAdapter(DataEnum.DataType dataType, View emptyView, View loadingView) : this(dataType, emptyView)
         {
             this.LoadingView = loadingView;
         }
@@ -50,22 +51,22 @@ namespace com.aa.tvshows.Helper
 
         #region Genres CTOR
 
-        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType) : this(dataType)
+        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType) : this(dataType)
         {
             this.genresType = genresType;
         }
 
-        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType, View emptyView) : this(dataType, genresType)
+        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, View emptyView) : this(dataType, genresType)
         {
             this.EmptyView = emptyView;
         }
 
-        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType, View emptyView, View loadingView) : this(dataType, genresType, emptyView)
+        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, View emptyView, View loadingView) : this(dataType, genresType, emptyView)
         {
             this.LoadingView = loadingView;
         }
 
-        public EpisodesAdapter(DataEnum.MainTabsType dataType, DataEnum.GenreDataType genresType, string genre, int year, View emptyView, View loadingView) : this(dataType, genresType, emptyView, loadingView)
+        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, string genre, int year, View emptyView, View loadingView) : this(dataType, genresType, emptyView, loadingView)
         {
             this.genre = genre;
             this.year = year;
@@ -78,7 +79,7 @@ namespace com.aa.tvshows.Helper
         {
             this.Items = items;
         }
-        public EpisodesAdapter(List<T> items, DataEnum.MainTabsType dataType, View emptyView) : this(items)
+        public EpisodesAdapter(List<T> items, DataEnum.DataType dataType, View emptyView) : this(items)
         {
             this.dataType = dataType;
             this.EmptyView = emptyView;
@@ -90,18 +91,6 @@ namespace com.aa.tvshows.Helper
         {
             get
             {
-                /*
-                if (Items == null || Items.Count == 0)
-                {
-                    if (EmptyView != null)
-                        EmptyView.Visibility = ViewStates.Visible;
-                }
-                else
-                {
-                    if (EmptyView != null)
-                        EmptyView.Visibility = ViewStates.Gone;
-                }
-                */
                 return Items == null ? 0 : Items.Count;
             }
         }
@@ -115,35 +104,48 @@ namespace com.aa.tvshows.Helper
             {
                 switch (epHolder.ItemType)
                 {
-                    case DataEnum.MainTabsType.NewPopularEpisodes:
-                    case DataEnum.MainTabsType.NewEpisodes:
+                    case DataEnum.DataType.NewPopularEpisodes:
+                    case DataEnum.DataType.NewEpisodes:
                         var epItem = Items[position] as EpisodeList;
                         Picasso.With(epHolder.ItemView.Context).Load(epItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = epItem.Title;
-                        epHolder.Detail.Text = epItem.EpisodeNo;
+                        epHolder.EpisodeDetail.Text = epItem.EpisodeNo;
                         //epHolder.Info.Text = newEpItem.ShowDetail;    // not implemented
                         break;
 
-                    case DataEnum.MainTabsType.PopularShows:
+                    case DataEnum.DataType.PopularShows:
                         var showItem = Items[position] as ShowList;
                         Picasso.With(epHolder.ItemView.Context).Load(showItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = showItem.Title;
-                        epHolder.Detail.Text = showItem.EpisodeNo;
-                        epHolder.Info.Text = showItem.EpisodeDetail;
+                        epHolder.EpisodeDetail.Text = showItem.EpisodeNo;
+                        epHolder.Description.Text = showItem.EpisodeDetail;
                         break;
 
-                    case DataEnum.MainTabsType.TVSchedule:
+                    case DataEnum.DataType.TVSchedule:
                         var scheduleItem = Items[position] as CalenderScheduleList;
                         Picasso.With(epHolder.ItemView.Context).Load(scheduleItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = scheduleItem.Title;
-                        epHolder.Detail.Text = scheduleItem.EpisodeNo;
-                        epHolder.Info.Text = scheduleItem.EpisodeName;
+                        epHolder.EpisodeDetail.Text = scheduleItem.EpisodeNo;
+                        epHolder.Description.Text = scheduleItem.EpisodeName;
                         break;
 
-                    case DataEnum.MainTabsType.Genres:
+                    case DataEnum.DataType.Genres:
                         var genreItem = Items[position] as GenresShow;
                         epHolder.Title.Text = genreItem.Title;
-                        epHolder.Detail.Text = genreItem.ReleaseYear;
+                        epHolder.EpisodeDetail.Text = genreItem.ReleaseYear;
+                        break;
+
+                    case DataEnum.DataType.SearchSuggestions:
+                        var suggestion = Items[position] as SearchSuggestionsData;
+                        epHolder.Title.Text = suggestion.Title;
+                        break;
+
+                    case DataEnum.DataType.Search:
+                        var searchItem = Items[position] as SearchList;
+                        epHolder.EpisodeDetail.Text = searchItem.EpisodeNo;
+                        Picasso.With(epHolder.ItemView.Context).Load(searchItem.ImageLink).Into(epHolder.Image);
+                        epHolder.Description.Text = searchItem.EpisodeDetail;
+                        epHolder.Title.Text = searchItem.Title;
                         break;
 
                     default:
@@ -156,26 +158,49 @@ namespace com.aa.tvshows.Helper
         {
             // create layout
             if (parent == null) throw new ArgumentNullException(nameof(parent));
+            
+            View itemView = null;
+            if (viewType != (int)DataEnum.DataType.None)
+            {
+                switch (viewType)
+                {
+                    case (int)DataEnum.DataType.NewPopularEpisodes:
+                    case (int)DataEnum.DataType.NewEpisodes:
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episodes_list_layout, parent, false);
+                        break;
 
-            if (viewType == (int)DataEnum.MainTabsType.NewPopularEpisodes || viewType == (int)DataEnum.MainTabsType.NewEpisodes)
-            {
-                var itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episodes_list_layout, parent, false);
-                var holder = new EpisodesViewHolder(itemView, (DataEnum.MainTabsType)viewType, OnClick, OnLongClick);
-                return holder;
+                    case (int)DataEnum.DataType.PopularShows:
+                    case (int)DataEnum.DataType.TVSchedule:
+                    case (int)DataEnum.DataType.Search:
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.shows_list_layout, parent, false);
+                        break;
+
+                    case (int)DataEnum.DataType.Genres:
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.genres_list_show, parent, false);
+                        break;
+
+                    case (int)DataEnum.DataType.SearchSuggestions:
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.search_suggestions_list, parent, false);
+                        break;
+
+                    default:break;
+                }
             }
-            else if (viewType == (int)DataEnum.MainTabsType.PopularShows || viewType == (int)DataEnum.MainTabsType.TVSchedule)
+            /*
+            else
             {
-                var itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.shows_list_layout, parent, false);
-                var holder = new EpisodesViewHolder(itemView, (DataEnum.MainTabsType)viewType, OnClick, OnLongClick);
-                return holder;
+                if (typeof(T) == typeof(ShowList))
+                {
+                    itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.shows_list_layout, parent, false);
+                }
+                else if (typeof(T) == typeof(EpisodeList))
+                {
+                    itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episodes_list_layout, parent, false);
+                }
             }
-            else if (viewType == (int)DataEnum.MainTabsType.Genres)
-            {
-                var itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.genres_list_show, parent, false);
-                var holder = new EpisodesViewHolder(itemView, (DataEnum.MainTabsType)viewType, OnClick, OnLongClick);
-                return holder;
-            }
-            return null;
+            */
+            var holder = new EpisodesViewHolder(itemView, (DataEnum.DataType)viewType, OnClick, OnLongClick);
+            return holder;
         }
 
         public override async void OnAttachedToRecyclerView(RecyclerView recyclerView)
@@ -183,7 +208,7 @@ namespace com.aa.tvshows.Helper
             base.OnAttachedToRecyclerView(recyclerView);
             if (recyclerView == null) throw new ArgumentNullException(nameof(recyclerView));
             
-            if (dataType != DataEnum.MainTabsType.None)
+            if (dataType != DataEnum.DataType.None)
             {
                 if (LoadingView != null)
                     LoadingView.Visibility = ViewStates.Visible;
@@ -192,7 +217,7 @@ namespace com.aa.tvshows.Helper
                     (EmptyView as AppCompatTextView).Text = "Loading...";
                     EmptyView.Visibility = ViewStates.Visible;
                 }
-                if (dataType == DataEnum.MainTabsType.NewPopularEpisodes)
+                if (dataType == DataEnum.DataType.NewPopularEpisodes)
                 {
                     var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
                     items?.ForEach(a =>
@@ -205,7 +230,7 @@ namespace com.aa.tvshows.Helper
                     });
                     items?.Clear();
                 }
-                else if (dataType == DataEnum.MainTabsType.PopularShows)
+                else if (dataType == DataEnum.DataType.PopularShows)
                 {
                     var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
                     items?.ForEach(a =>
@@ -218,7 +243,7 @@ namespace com.aa.tvshows.Helper
                     });
                     items?.Clear();
                 }
-                else if (dataType == DataEnum.MainTabsType.NewEpisodes)
+                else if (dataType == DataEnum.DataType.NewEpisodes)
                 {
                     var items = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
                     items?.ForEach(a =>
@@ -231,7 +256,7 @@ namespace com.aa.tvshows.Helper
                     });
                     items?.Clear();
                 }
-                else if (dataType == DataEnum.MainTabsType.Genres)
+                else if (dataType == DataEnum.DataType.Genres)
                 {
                     // get the genre type and load data
                     if (genresType == DataEnum.GenreDataType.Shows)
@@ -288,9 +313,17 @@ namespace com.aa.tvshows.Helper
             }
             if (type == typeof(GenresShow))
             {
-                return (int)DataEnum.MainTabsType.Genres;
+                return (int)DataEnum.DataType.Genres;
             }
-            return (int)DataEnum.MainTabsType.None;
+            if (type == typeof(SearchSuggestionsData))
+            {
+                return (int)DataEnum.DataType.SearchSuggestions;
+            }
+            if (type == typeof(SearchList))
+            {
+                return (int)DataEnum.DataType.Search;
+            }
+            return (int)DataEnum.DataType.None;
         }
 
         private void OnClick(int position)
@@ -303,7 +336,7 @@ namespace com.aa.tvshows.Helper
             ItemLongClick?.Invoke(this, position);
         }
 
-        private void AddItem(params T[] items)
+        public void AddItem(params T[] items)
         {
             if (items != null)
             {
@@ -330,32 +363,36 @@ namespace com.aa.tvshows.Helper
     {
         public ImageView Image { get; private set; }
         public AppCompatTextView Title { get; private set; }
-        public AppCompatTextView Detail { get; private set; }
-        public AppCompatTextView Info { get; private set; }
+        public AppCompatTextView EpisodeDetail { get; private set; }
+        public AppCompatTextView Description { get; private set; }
 
-        public DataEnum.MainTabsType ItemType { get; private set; }
+        public DataEnum.DataType ItemType { get; private set; }
 
-        public EpisodesViewHolder(View itemView, DataEnum.MainTabsType type, Action<int> itemClick, Action<int> itemLongClick) : base(itemView)
+        public EpisodesViewHolder(View itemView, DataEnum.DataType type, Action<int> itemClick, Action<int> itemLongClick) : base(itemView)
         {
             if (itemView == null) throw new ArgumentNullException(nameof(itemView));
             ItemType = type;
-            if (ItemType == DataEnum.MainTabsType.NewPopularEpisodes || ItemType == DataEnum.MainTabsType.NewEpisodes)
+            if (ItemType == DataEnum.DataType.NewPopularEpisodes || ItemType == DataEnum.DataType.NewEpisodes)
             {
                 Image = itemView.FindViewById<ImageView>(Resource.Id.episodes_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_title);
-                Detail = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_detail);
+                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_detail);
             }
-            else if (ItemType == DataEnum.MainTabsType.PopularShows || ItemType == DataEnum.MainTabsType.TVSchedule)
+            else if (ItemType == DataEnum.DataType.PopularShows || ItemType == DataEnum.DataType.TVSchedule || ItemType == DataEnum.DataType.Search)
             {
                 Image = itemView.FindViewById<ImageView>(Resource.Id.shows_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_title);
-                Detail = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_episode_detail);
-                Info = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_info_detail);
+                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_episode_detail);
+                Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_info_detail);
             }
-            else if (ItemType == DataEnum.MainTabsType.Genres)
+            else if (ItemType == DataEnum.DataType.Genres)
             {
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_title);
-                Detail = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_year);
+                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_year);
+            }
+            else if (ItemType == DataEnum.DataType.SearchSuggestions)
+            {
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.search_suggestion_text);
             }
 
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);

@@ -7,10 +7,9 @@
     <include
         layout="@layout/main_toolbar"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <androidx.appcompat.widget.SearchView
             android:layout_width="match_parent"
@@ -23,7 +22,21 @@
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/search_list"/>
-    </LinearLayout>
+            android:id="@+id/search_list"
+            android:layout_below="@id/search_text_query"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/search_empty_text"
+            android:textAlignment="center"
+            android:layout_centerVertical="true"/>
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/search_loading_view"
+            android:visibility="gone"
+            android:indeterminate="true"
+            android:layout_above="@id/search_empty_text"/>
+    </RelativeLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

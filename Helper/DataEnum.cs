@@ -22,7 +22,8 @@ namespace com.aa.tvshows.Helper
             NewEpisodes,
             TVSchedule,
             Genres,
-            SearchSuggestions
+            SearchSuggestions,
+            Search
         }
 
         public enum GenreDataType

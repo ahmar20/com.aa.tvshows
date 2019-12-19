@@ -10,6 +10,8 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Widget;
+using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
 
 namespace com.aa.tvshows
@@ -32,32 +34,78 @@ namespace com.aa.tvshows
         private void SetupSearch()
         {
             var editText = FindViewById<SearchView>(Resource.Id.search_text_query);
-            var list = FindViewById<Android.Widget.ListView>(Resource.Id.search_list);
-            list.ItemClick += (s, e) =>
-            {
-                // handle item click here
-            };
-            editText.QueryTextChange += async(s, e) =>
+            var emptyView = FindViewById<AppCompatTextView>(Resource.Id.search_empty_text);
+            var loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.search_loading_view);
+            
+            var list = FindViewById<RecyclerView>(Resource.Id.search_list);
+            list.ClearOnScrollListeners();
+            var layoutManager = new LinearLayoutManager(this);
+            list.SetLayoutManager(layoutManager);
+            editText.QueryTextChange += async (s, e) =>
             {
                 // get data from suggestions
                 // show in listview as simple items
                 e.Handled = true;
-                if (e.NewText.Trim() is string query && query.Length >= 2)
+                if (e.NewText.Trim() is string query && query.Length > 2)
                 {
+                    emptyView.Visibility = ViewStates.Gone;
+                    loadingView.Visibility = ViewStates.Visible;
                     var suggestions = await WebData.GetTVShowSearchSuggestions(query);
-                    list.Adapter = new SimpleListAdapter<SearchSuggestionsData>(this, suggestions);
+                    loadingView.Visibility = ViewStates.Gone;
+                    var adapter = new EpisodesAdapter<SearchSuggestionsData>(suggestions, DataEnum.DataType.SearchSuggestions, null);
+                    adapter.ItemClick += (s, e) =>
+                    {
+                        // handle click here
+                    };
+                    list.SetAdapter(adapter);
                 }
-                if (e.NewText.Trim() == string.Empty)
+                else
                 {
-                    list.Adapter = null;
+                    emptyView.Visibility = ViewStates.Visible;
+                    emptyView.Text = "Search query should be at least 3 characters long";
+                    list.SetAdapter(null);
                 }
             };
 
-            editText.QueryTextSubmit += (s, e) =>
+            editText.QueryTextSubmit += async (s, e) =>
             {
                 // get data from page
                 // load full image based search results
+                e.Handled = true;
+                if (e.NewText.Trim() is string query && query.Length > 2)
+                {
+                    list.ClearOnScrollListeners();
+                    loadingView.Visibility = ViewStates.Visible;
+                    emptyView.Visibility = ViewStates.Gone;
+                    var searchResults = await WebData.GetTVShowSearchResults(query);
+                    loadingView.Visibility = ViewStates.Gone;
 
+                    var adapter = new EpisodesAdapter<SearchList>(searchResults, DataEnum.DataType.Search, emptyView);
+                    adapter.ItemClick += (s, e) =>
+                    {
+                        // handle item click
+                    };
+                    list.SetAdapter(adapter);
+                    list.AddOnScrollListener(new EndlessScroll(layoutManager, new Action(async() => 
+                    {
+                        if (searchResults != null && searchResults.Count > 0 && searchResults.LastOrDefault() is SearchList item)
+                        {
+                            if (item.NextPage > 0)
+                            {
+                                loadingView.Visibility = ViewStates.Visible;
+                                var newItems = await WebData.GetTVShowSearchResults(query, item.NextPage);
+                                newItems?.ForEach(a => adapter.AddItem(a));
+                                loadingView.Visibility = ViewStates.Gone;
+                            }
+                        }
+                    })));
+                }
+                else
+                {
+                    emptyView.Visibility = ViewStates.Visible;
+                    emptyView.Text = "Search query should be at least 3 characters long";
+                    list.SetAdapter(null);
+                }
             };
         }
     }
