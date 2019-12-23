@@ -19,7 +19,7 @@ namespace com.aa.tvshows.Fragments
     public class MainTabs : Fragment
     {
         readonly DataEnum.DataType tabType = DataEnum.DataType.None;
-        readonly List<CalenderScheduleList> items;
+        readonly List<object> items;
         readonly DataEnum.GenreDataType genresType;
         readonly string genre;
         readonly int year;
@@ -33,9 +33,9 @@ namespace com.aa.tvshows.Fragments
             this.tabType = tabType;
         }
 
-        public MainTabs(DataEnum.DataType tabType, List<CalenderScheduleList> items) : this(tabType)
+        public MainTabs(DataEnum.DataType tabType, IEnumerable<object> items) : this(tabType)
         {
-            this.items = items;
+            this.items = new List<object>(items);
         }
 
         public MainTabs(DataEnum.DataType tabType, DataEnum.GenreDataType genresType, string genre, int year) : this(tabType)
@@ -80,49 +80,49 @@ namespace com.aa.tvshows.Fragments
                 case DataEnum.DataType.PopularShows:
                     var mainAdapter = new EpisodesAdapter<EpisodeList>(tabType, emptyView, loadingView);
                     recyclerView.SetAdapter(mainAdapter);
-                    mainAdapter.ItemClick += delegate
+                    mainAdapter.ItemClick += (s, e) =>
                     {
-                        Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
+                        AppView.HandleItemShowEpisodeClick(mainAdapter.GetItem(e), Activity);
                     };
                     break;
 
                 case DataEnum.DataType.TVSchedule:
-                    var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(items, tabType, emptyView);
+                    var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(new List<CalenderScheduleList>(items.Cast<CalenderScheduleList>()), tabType, emptyView);
                     recyclerView.SetAdapter(scheduleAdapter);
-                    scheduleAdapter.ItemClick += delegate
+                    scheduleAdapter.ItemClick += (s, e) =>
                     {
-                        Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
+                        AppView.HandleItemShowEpisodeClick(scheduleAdapter.GetItem(e), Activity);
                     };
                     break;
 
                 case DataEnum.DataType.Genres:
+                    EpisodesAdapter<GenresShow> genresAdapter = null;
                     if (genresType == DataEnum.GenreDataType.LatestEpisodes)
                     {
-                        var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
-                        recyclerView.SetAdapter(genresAdapter);
-                        genresAdapter.ItemClick += delegate
-                        {
-                            Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
-                        };
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
                     }
                     else if (genresType == DataEnum.GenreDataType.PopularEpisodes)
                     {
-                        var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
-                        recyclerView.SetAdapter(genresAdapter);
-                        genresAdapter.ItemClick += delegate
-                        {
-                            Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
-                        };
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
                     }
                     else if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        var genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, genre, year, emptyView, loadingView);
-                        recyclerView.SetAdapter(genresAdapter);
-                        genresAdapter.ItemClick += delegate
-                        {
-                            Android.Widget.Toast.MakeText(Activity, "Item clicked", Android.Widget.ToastLength.Short).Show();
-                        };
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, genre, year, emptyView, loadingView);
                     }
+                    recyclerView.SetAdapter(genresAdapter);
+                    genresAdapter.ItemClick += (s, e) =>
+                    {
+                        AppView.HandleItemShowEpisodeClick(genresAdapter.GetItem(e), Activity);
+                    };
+                    break;
+
+                case DataEnum.DataType.SeasonsEpisodes:
+                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisode>(new List<ShowEpisode>(items.Cast<ShowEpisode>()), tabType, emptyView);
+                    recyclerView.SetAdapter(seasonsEpisodesAdapter);
+                    seasonsEpisodesAdapter.ItemClick += (s, e) =>
+                    {
+                        AppView.HandleItemShowEpisodeClick(seasonsEpisodesAdapter.GetItem(e), Activity);
+                    };
                     break;
 
                 default:
