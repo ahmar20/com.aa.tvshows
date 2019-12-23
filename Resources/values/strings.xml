@@ -2,6 +2,8 @@
   <string name="app_name">Street Media</string>
   <string name="action_settings">Settings</string>
   <string name="empty_data_view">No data available</string>
+  <string name="tv_show_load_error">TV Show could not be loaded. Please try again!</string>
+  <string name="tv_show_episodes_error">No Episodes were found for this Series.</string>
 
   <integer name="episodes_list_detail_max_lines">2</integer>
   <dimen name="episodes_list_padding">5dp</dimen>
@@ -11,4 +13,6 @@
   <dimen name="list_card_corner_radius">4dp</dimen>
   <dimen name="episodes_list_card_elevation">4dp</dimen>
   <dimen name="genres_list_year_margin">10dp</dimen>
+  <dimen name="margin_8dp">8dp</dimen>
+  <dimen name="margin_10dp">10dp</dimen>
 </resources>
