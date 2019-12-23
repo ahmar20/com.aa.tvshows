@@ -1,6 +1,11 @@
-﻿using Android.Views;
+﻿using Android.Content;
+using Android.Graphics;
+using Android.Graphics.Drawables;
+using Android.Renderscripts;
+using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Graphics.Drawable;
 using System;
 
 namespace com.aa.tvshows.Helper
@@ -29,7 +34,7 @@ namespace com.aa.tvshows.Helper
             }
 
             activity.SetSupportActionBar(toolbar);
-            if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.Ordinal))
+            if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = activity.Resources.GetString(Resource.String.app_name);
                 activity.SupportActionBar.Subtitle = "Watch TV Shows of your choice";
@@ -40,20 +45,23 @@ namespace com.aa.tvshows.Helper
                 activity.SupportActionBar.SetDisplayHomeAsUpEnabled(true);
             }
 
-            if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.Ordinal))
+            if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = "TV Shows Schedule";
                 activity.SupportActionBar.Subtitle = "See what's missed and what's next!";
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.Ordinal))
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = "TV Shows Genres";
                 activity.SupportActionBar.Subtitle = "Browse all types of shows";
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("SEARCH", StringComparison.Ordinal))
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("SEARCH", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = "Search";
                 activity.SupportActionBar.Subtitle = string.Empty;
+            }
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("SHOWDETAIL", StringComparison.InvariantCulture))
+            {
             }
         }
 
@@ -128,6 +136,105 @@ namespace com.aa.tvshows.Helper
                     return false;
             }
             return true;
+        }
+
+        public static void HandleItemShowEpisodeClick(object item, Context context)
+        {
+            var pageLink = string.Empty;
+            if (item is CalenderScheduleList calenderItem)
+            {
+                pageLink = calenderItem.PageLink;
+            }
+            else if (item is ShowList showItem)
+            {
+                pageLink = showItem.PageLink;
+            }
+            else if (item is SearchList searchItem)
+            {
+                pageLink = searchItem.PageLink;
+            }
+            else if (item is EpisodeList episodeItem)
+            {
+                pageLink = episodeItem.PageLink;
+            }
+            else if (item is SearchSuggestionsData searchSuggestion)
+            {
+                pageLink = searchSuggestion.ItemLink;
+            }
+            else if (item is GenresShow genreShow)
+            {
+                pageLink = genreShow.PageLink;
+            }
+
+            if (pageLink.Contains("/serie/"))
+            {
+                // tv show detail
+                var intent = new Android.Content.Intent(context, typeof(ShowDetailActivity));
+                intent.PutExtra("itemLink", pageLink);
+                context.StartActivity(intent);
+            }
+            else
+            {
+                // tv episode detail
+                //var intent = new Android.Content.Intent(activity, typeof(EpisodeDetailActivity));
+                //intent.PutExtra("itemLink", pageLink);
+                //activity.StartActivity(intent);
+            }
+        }
+
+        public static void CreateBluredView(this View v, View toCapture, AppCompatActivity activity)
+        {
+            Bitmap bitmap = CaptureView(toCapture);
+            if (bitmap != null)
+            {
+                BlurBitmapWithRenderscript(RenderScript.Create(activity), bitmap);
+            }
+            SetBackgroundOnView(v, bitmap, activity);
+        }
+        private static Bitmap CaptureView(View view)
+        {
+            //Create a Bitmap with the same dimensions as the View
+            Bitmap image = Bitmap.CreateBitmap(view.MeasuredWidth, view.MeasuredHeight, Bitmap.Config.Argb4444); 
+            Canvas canvas = new Canvas(image);
+            view.Draw(canvas);
+
+            //Make it frosty
+            Paint paint = new Paint();
+            paint.SetXfermode(new PorterDuffXfermode(PorterDuff.Mode.SrcIn));
+            
+            //ColorFilter filter = new LightingColorFilter(0xFFFFFFFF, 0x00222222); // lighten
+            //ColorFilter filter = new LightingColorFilter(0xFF7F7F7F, 0x00000000); // darken
+
+            //paint.SetColorFilter(filter);
+            canvas.DrawBitmap(image, 0, 0, paint);
+            return image;
+        }
+
+        public static void BlurBitmapWithRenderscript(RenderScript rs, Bitmap bitmap2)
+        {
+            // this will blur the bitmapOriginal with a radius of 25
+            // and save it in bitmapOriginal
+            // use this constructor for best performance, because it uses
+            // USAGE_SHARED mode which reuses memory
+            Allocation input = Allocation.CreateFromBitmap(rs, bitmap2);
+            Allocation output = Allocation.CreateTyped(rs, input.Type);
+            ScriptIntrinsicBlur script = ScriptIntrinsicBlur.Create(rs, Element.U8_4(rs));
+            // must be >0 and <= 25
+            script.SetRadius(25f);
+            script.SetInput(input);
+            script.ForEach(output);
+            output.CopyTo(bitmap2);
+        }
+
+        private static void SetBackgroundOnView(View view, Bitmap bitmap, AppCompatActivity activity)
+        {
+            Drawable d = null;
+            if (bitmap != null)
+            {
+                d = RoundedBitmapDrawableFactory.Create(activity.Resources, bitmap);
+                ((RoundedBitmapDrawable)d).CornerRadius = 10;
+            }
+            view.Background = d;
         }
     }
 }
