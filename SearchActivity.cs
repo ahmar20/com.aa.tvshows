@@ -31,6 +31,12 @@ namespace com.aa.tvshows
             SetupSearch();
         }
 
+        public override bool OnNavigateUp()
+        {
+            OnBackPressed();
+            return base.OnNavigateUp();
+        }
+
         private void SetupSearch()
         {
             var editText = FindViewById<SearchView>(Resource.Id.search_text_query);
@@ -56,6 +62,7 @@ namespace com.aa.tvshows
                     adapter.ItemClick += (s, e) =>
                     {
                         // handle click here
+                        AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), this);
                     };
                     list.SetAdapter(adapter);
                 }
@@ -84,6 +91,7 @@ namespace com.aa.tvshows
                     adapter.ItemClick += (s, e) =>
                     {
                         // handle item click
+                        AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), this);
                     };
                     list.SetAdapter(adapter);
                     list.AddOnScrollListener(new EndlessScroll(layoutManager, new Action(async() => 
