@@ -328,10 +328,12 @@ namespace com.aa.tvshows.Helper
                                 var link = linkNode.GetAttributeValue("href", string.Empty);
                                 var title = linkNode.GetDirectInnerText();
                                 var showYear = linkNode.Descendants("span").Where(a => a.HasClass("epnum")).FirstOrDefault()?.InnerText.Trim();
-                                items.Add(new GenresShow() 
-                                { 
-                                    GenreType = WebUtility.HtmlDecode(genre), PageLink = link, 
-                                    Title = WebUtility.HtmlDecode(title).FixDuplicateYear(), ReleaseYear = WebUtility.HtmlDecode(showYear) 
+                                items.Add(new GenresShow()
+                                {
+                                    GenreType = WebUtility.HtmlDecode(genre),
+                                    PageLink = link,
+                                    Title = WebUtility.HtmlDecode(title).FixDuplicateYear(),
+                                    ReleaseYear = WebUtility.HtmlDecode(showYear)
                                 });
                             }
                         }
@@ -353,10 +355,10 @@ namespace com.aa.tvshows.Helper
                 var data = new List<SearchSuggestionsData>();
                 foreach(var item in docStr)
                 {
-                    data.Add(new SearchSuggestionsData() 
-                    { 
+                    data.Add(new SearchSuggestionsData()
+                    {
                         Title = item.Value<string>("label").FixDuplicateYear(),
-                        ItemLink = TVShowDetailUrl + item.Value<string>("seo_url") 
+                        ItemLink = TVShowDetailUrl + item.Value<string>("seo_url")
                     });
                 }
                 return data;
@@ -414,6 +416,106 @@ namespace com.aa.tvshows.Helper
                         }
                     }
                     return data;
+                }
+            }
+            return null;
+        }
+
+        public static async Task<SeriesDetails> GetDetailsForTVShowSeries(string link)
+        {
+            if (await GetHtmlDocumentFromUrl(new Uri(link)) is HtmlDocument doc)
+            {
+                if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("show-summary")).FirstOrDefault() is HtmlNode summaryDiv)
+                {
+                    var itemData = new SeriesDetails();
+                    if (doc.DocumentNode.Descendants("h1").Where(a => a.HasClass("channel-title")).FirstOrDefault() is HtmlNode _titleNode)
+                    {
+                        if (_titleNode.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "name").FirstOrDefault() is HtmlNode titleNode)
+                        {
+                            itemData.Title = WebUtility.HtmlDecode(titleNode.GetDirectInnerText().Trim());
+                        }
+                    }
+                    itemData.ImageLink = summaryDiv.Descendants("img").FirstOrDefault()?.GetAttributeValue("src", string.Empty);
+                    if (summaryDiv.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "startDate").FirstOrDefault() is HtmlNode releaseDateNode)
+                    {
+                        itemData.ReleaseDate = releaseDateNode.InnerText.Trim();
+                    }
+
+                    if (summaryDiv.Descendants("strong").Where(a => a.InnerText.Trim().StartsWith("Genre:", StringComparison.InvariantCulture)).FirstOrDefault() is HtmlNode genresNode)
+                    {
+                        itemData.Genres = WebUtility.HtmlDecode(genresNode.InnerText.Trim());
+                    }
+
+                    if (summaryDiv.Descendants("strong").Where(a => a.GetDirectInnerText().Trim() == "Description:").FirstOrDefault() is HtmlNode descriptionNode)
+                    {
+                        itemData.Description = WebUtility.HtmlDecode(descriptionNode.NextSibling?.GetDirectInnerText().Trim());
+                    }
+
+                    // last episode in main doc
+                    // next episode in main doc
+                    if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("latest-episode")).FirstOrDefault() is HtmlNode lastEpisode)
+                    {
+                        foreach (HtmlNode episodeNode in lastEpisode.Descendants("a").Where(a => !string.IsNullOrEmpty(a.GetAttributeValue("href", string.Empty))))
+                        {
+                            // first one is last episode
+                            if (itemData.LastEpisode == null)
+                            {
+                                itemData.LastEpisode = new ShowEpisode()
+                                {
+                                    EpisodeTitle = episodeNode.GetDirectInnerText().Trim(),
+                                    EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty)
+                                };
+                            }
+                            else
+                            {
+                                itemData.NextEpisode = new ShowEpisode()
+                                {
+                                    EpisodeTitle = episodeNode.GetDirectInnerText().Trim(),
+                                    EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty)
+                                };
+                            }
+                        }
+                    }
+
+                    // get seasons and episodes
+                    if (doc.DocumentNode.Descendants("div").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "season") is IEnumerable<HtmlNode> seasons)
+                    {
+                        foreach (HtmlNode seasonNode in seasons)
+                        {
+                            if (itemData.Seasons == null) itemData.Seasons = new List<SeasonData>();
+                            var episodesList = new List<ShowEpisode>();
+                            if (seasonNode.Descendants("ul").Where(a => a.Id.StartsWith("listing", StringComparison.InvariantCulture)).FirstOrDefault() is HtmlNode episodesNode)
+                            {
+                                if (episodesNode.Descendants("li").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "episode") is IEnumerable<HtmlNode> episodes)
+                                {
+                                    foreach (HtmlNode ep in episodes)
+                                    {
+                                        var epTtitle = ep.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "name").FirstOrDefault()?.GetDirectInnerText().Trim();
+                                        var epDate = ep.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "datepublished").FirstOrDefault()?.GetDirectInnerText().Trim();
+                                        var epLink = ep.Descendants("meta").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "url").FirstOrDefault()?.GetAttributeValue("content", string.Empty);
+                                        var epNumber = ep.Descendants("meta").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "episodenumber").FirstOrDefault()?.GetAttributeValue("content", string.Empty);
+                                        var epLinks = ep.Descendants("span").Where(a => a.HasClass("epnum")).FirstOrDefault()?.InnerText.Trim();
+
+                                        episodesList.Add(new ShowEpisode()
+                                        {
+                                            EpisodeTitle = WebUtility.HtmlDecode(epTtitle),
+                                            EpisodeAirDate = epDate,
+                                            EpisodeLink = epLink,
+                                            EpisodeNumber = epNumber,
+                                            IsEpisodeWatchable = epLinks == "(0 links)" ? false : true
+                                        });
+                                    }
+                                }
+                            }
+
+                            itemData.Seasons.Add(new SeasonData()
+                            {
+                                SeasonName = seasonNode.Descendants("a").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "url").FirstOrDefault()?.InnerText.Trim(),
+                                Episodes = new List<ShowEpisode>(episodesList)
+                            });
+                        }
+                    }
+                    return itemData;
                 }
             }
             return null;
