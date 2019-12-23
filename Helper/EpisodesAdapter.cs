@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
+﻿using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using Square.Picasso;
+using System;
+using System.Collections.Generic;
 
 namespace com.aa.tvshows.Helper
 {
@@ -39,12 +32,12 @@ namespace com.aa.tvshows.Helper
 
         public EpisodesAdapter(DataEnum.DataType dataType, View emptyView) : this(dataType)
         {
-            this.EmptyView = emptyView;
+            EmptyView = emptyView;
         }
 
         public EpisodesAdapter(DataEnum.DataType dataType, View emptyView, View loadingView) : this(dataType, emptyView)
         {
-            this.LoadingView = loadingView;
+            LoadingView = loadingView;
         }
 
         #endregion
@@ -58,12 +51,12 @@ namespace com.aa.tvshows.Helper
 
         public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, View emptyView) : this(dataType, genresType)
         {
-            this.EmptyView = emptyView;
+            EmptyView = emptyView;
         }
 
         public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, View emptyView, View loadingView) : this(dataType, genresType, emptyView)
         {
-            this.LoadingView = loadingView;
+            LoadingView = loadingView;
         }
 
         public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, string genre, int year, View emptyView, View loadingView) : this(dataType, genresType, emptyView, loadingView)
@@ -77,12 +70,12 @@ namespace com.aa.tvshows.Helper
         #region List CTOR
         public EpisodesAdapter(List<T> items)
         {
-            this.Items = items;
+            Items = items;
         }
         public EpisodesAdapter(List<T> items, DataEnum.DataType dataType, View emptyView) : this(items)
         {
             this.dataType = dataType;
-            this.EmptyView = emptyView;
+            EmptyView = emptyView;
         }
 
         #endregion
@@ -98,7 +91,10 @@ namespace com.aa.tvshows.Helper
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
             // bind to data
-            if (holder == null) throw new ArgumentNullException(nameof(holder));
+            if (holder == null)
+            {
+                throw new ArgumentNullException(nameof(holder));
+            }
 
             if (holder is EpisodesViewHolder epHolder)
             {
@@ -148,8 +144,13 @@ namespace com.aa.tvshows.Helper
                         epHolder.Title.Text = searchItem.Title;
                         break;
 
-                    default:
+                    case DataEnum.DataType.SeasonsEpisodes:
+                        var episodeItem = Items[position] as ShowEpisode;
+                        epHolder.Title.Text = episodeItem.EpisodeTitle;
+                        epHolder.EpisodeDetail.Text = episodeItem.EpisodeAirDate;
                         break;
+
+                    default:break;
                 }
             }
         }
@@ -157,8 +158,11 @@ namespace com.aa.tvshows.Helper
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             // create layout
-            if (parent == null) throw new ArgumentNullException(nameof(parent));
-            
+            if (parent == null)
+            {
+                throw new ArgumentNullException(nameof(parent));
+            }
+
             View itemView = null;
             if (viewType != (int)DataEnum.DataType.None)
             {
@@ -176,6 +180,7 @@ namespace com.aa.tvshows.Helper
                         break;
 
                     case (int)DataEnum.DataType.Genres:
+                    case (int)DataEnum.DataType.SeasonsEpisodes:
                         itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.genres_list_show, parent, false);
                         break;
 
@@ -183,7 +188,7 @@ namespace com.aa.tvshows.Helper
                         itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.search_suggestions_list, parent, false);
                         break;
 
-                    default:break;
+                    default: break;
                 }
             }
             /*
@@ -206,12 +211,18 @@ namespace com.aa.tvshows.Helper
         public override async void OnAttachedToRecyclerView(RecyclerView recyclerView)
         {
             base.OnAttachedToRecyclerView(recyclerView);
-            if (recyclerView == null) throw new ArgumentNullException(nameof(recyclerView));
-            
+            if (recyclerView == null)
+            {
+                throw new ArgumentNullException(nameof(recyclerView));
+            }
+
             if (dataType != DataEnum.DataType.None)
             {
                 if (LoadingView != null)
+                {
                     LoadingView.Visibility = ViewStates.Visible;
+                }
+
                 if (EmptyView != null)
                 {
                     (EmptyView as AppCompatTextView).Text = "Loading...";
@@ -261,34 +272,50 @@ namespace com.aa.tvshows.Helper
                     // get the genre type and load data
                     if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        recyclerView.AddOnScrollListener(new EndlessScroll((LinearLayoutManager)recyclerView.GetLayoutManager(), 
-                            new Action(async() =>
+                        recyclerView.AddOnScrollListener(new EndlessScroll((LinearLayoutManager)recyclerView.GetLayoutManager(),
+                            new Action(async () =>
                             {
                                 if (LoadingView != null)
+                                {
                                     LoadingView.Visibility = ViewStates.Visible;
+                                }
+
                                 var items = await WebData.GetGenresShows(genre, LoadMoreItemsCurrentPage++, year);
-                                items?.ForEach(a => { if (!(a is T item)) return; AddItem(item); });
+                                items?.ForEach(a => { if (!(a is T item)) { return; } AddItem(item); });
                                 if (LoadingView != null)
+                                {
                                     LoadingView.Visibility = ViewStates.Invisible;
-                                (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
+                                } (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
                                 if (ItemCount <= 0)
+                                {
                                     EmptyView.Visibility = ViewStates.Visible;
+                                }
                                 else
+                                {
                                     EmptyView.Visibility = ViewStates.Gone;
+                                }
                             })));
                         var items = await WebData.GetGenresShows(genre, LoadMoreItemsCurrentPage++, year);
-                        items?.ForEach(a => { if (!(a is T item)) return; AddItem(item); });
+                        items?.ForEach(a => { if (!(a is T item)) { return; } AddItem(item); });
                     }
                 }
+
                 if (LoadingView != null)
+                {
                     LoadingView.Visibility = ViewStates.Invisible;
+                }
+
                 if (EmptyView != null)
                 {
                     (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
                     if (ItemCount <= 0)
+                    {
                         EmptyView.Visibility = ViewStates.Visible;
+                    }
                     else
+                    {
                         EmptyView.Visibility = ViewStates.Gone;
+                    }
                 }
             }
         }
@@ -323,6 +350,11 @@ namespace com.aa.tvshows.Helper
             {
                 return (int)DataEnum.DataType.Search;
             }
+            if (type == typeof(ShowEpisode))
+            {
+                return (int)DataEnum.DataType.SeasonsEpisodes;
+            }
+
             return (int)DataEnum.DataType.None;
         }
 
@@ -340,9 +372,18 @@ namespace com.aa.tvshows.Helper
         {
             if (items != null)
             {
-                this.Items.AddRange(items);
+                Items.AddRange(items);
                 NotifyDataSetChanged();
             }
+        }
+
+        public T GetItem(int position)
+        {
+            if (Items != null && Items.Count > position)
+            {
+                return Items[position];
+            }
+            return default;
         }
 
         protected override void Dispose(bool disposing)
@@ -370,7 +411,11 @@ namespace com.aa.tvshows.Helper
 
         public EpisodesViewHolder(View itemView, DataEnum.DataType type, Action<int> itemClick, Action<int> itemLongClick) : base(itemView)
         {
-            if (itemView == null) throw new ArgumentNullException(nameof(itemView));
+            if (itemView == null)
+            {
+                throw new ArgumentNullException(nameof(itemView));
+            }
+
             ItemType = type;
             if (ItemType == DataEnum.DataType.NewPopularEpisodes || ItemType == DataEnum.DataType.NewEpisodes)
             {
@@ -385,7 +430,7 @@ namespace com.aa.tvshows.Helper
                 EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_episode_detail);
                 Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_info_detail);
             }
-            else if (ItemType == DataEnum.DataType.Genres)
+            else if (ItemType == DataEnum.DataType.Genres || ItemType == DataEnum.DataType.SeasonsEpisodes)
             {
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_title);
                 EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.genres_show_year);
