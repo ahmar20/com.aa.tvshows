@@ -25,7 +25,7 @@
             android:layout_alignParentStart="true"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:layout_toStartOf="@id/genres_show_year"
-            style="@style/TextAppearance.AppCompat.Title"/>
+            style="@style/TextAppearance.AppCompat.Medium"/>
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/genres_list_year_margin"
-            style="@style/TextAppearance.AppCompat.Medium"/>
+            style="@style/TextAppearance.AppCompat.Caption"/>
     </RelativeLayout>
     
 </com.google.android.material.card.MaterialCardView>
