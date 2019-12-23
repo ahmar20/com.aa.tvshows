@@ -23,7 +23,8 @@ namespace com.aa.tvshows.Helper
             TVSchedule,
             Genres,
             SearchSuggestions,
-            Search
+            Search,
+            SeasonsEpisodes
         }
 
         public enum GenreDataType
