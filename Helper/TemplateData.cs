@@ -97,8 +97,8 @@ namespace com.aa.tvshows.Helper
         public string Description { get; set; }
         public string ReleaseDate { get; set; }
         public string Genres { get; set; }
-        public ShowEpisode LastEpisode { get; set; }
-        public ShowEpisode NextEpisode { get; set; }
+        public ShowEpisodeDetails LastEpisode { get; set; }
+        public ShowEpisodeDetails NextEpisode { get; set; }
         public List<SeasonData> Seasons { get; set; }
     }
 
@@ -108,18 +108,32 @@ namespace com.aa.tvshows.Helper
     public class SeasonData
     {
         public string SeasonName { get; set; }
-        public List<ShowEpisode> Episodes { get; set; }
+        public List<ShowEpisodeDetails> Episodes { get; set; }
     }
 
     /// <summary>
     /// Includes info for TV Series Episode
     /// </summary>
-    public class ShowEpisode
+    public class ShowEpisodeDetails
     {
-        public string EpisodeTitle { get; set; }
+        public string EpisodeShowTitle { get; set; }
+        public string EpisodeSummary { get; set; }
+        public string EpisodeImage { get; set; }
         public string EpisodeLink { get; set; }
-        public string EpisodeNumber { get; set; }
+        public string EpisodeFullNameNumber { get; set; }
         public string EpisodeAirDate { get; set; }
         public bool IsEpisodeWatchable { get; set; }
+        public List<EpisodeStreamLink> EpisodeStreamLinks { get; set; }
+        public string EpisodeNumber { get; set; }
+    }
+
+    /// <summary>
+    /// Includes info for Episode Streaming Host
+    /// </summary>
+    public class EpisodeStreamLink
+    {
+        public string HostName { get; set; }
+        public string HostUrl { get; set; }
+        public string HostImage { get; set; }
     }
 }

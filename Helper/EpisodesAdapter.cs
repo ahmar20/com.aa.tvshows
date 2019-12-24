@@ -145,9 +145,15 @@ namespace com.aa.tvshows.Helper
                         break;
 
                     case DataEnum.DataType.SeasonsEpisodes:
-                        var episodeItem = Items[position] as ShowEpisode;
-                        epHolder.Title.Text = episodeItem.EpisodeTitle;
+                        var episodeItem = Items[position] as ShowEpisodeDetails;
+                        epHolder.Title.Text = episodeItem.EpisodeShowTitle;
                         epHolder.EpisodeDetail.Text = episodeItem.EpisodeAirDate;
+                        break;
+
+                    case DataEnum.DataType.EpisodeStreamLinks:
+                        var streamLink = Items[position] as EpisodeStreamLink;
+                        epHolder.Title.Text = streamLink.HostName;
+                        Picasso.With(epHolder.ItemView.Context).Load(streamLink.HostImage).Into(epHolder.Image);
                         break;
 
                     default:break;
@@ -188,22 +194,13 @@ namespace com.aa.tvshows.Helper
                         itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.search_suggestions_list, parent, false);
                         break;
 
+                    case (int)DataEnum.DataType.EpisodeStreamLinks:
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episode_stream_list, parent, false);
+                        break;
+
                     default: break;
                 }
             }
-            /*
-            else
-            {
-                if (typeof(T) == typeof(ShowList))
-                {
-                    itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.shows_list_layout, parent, false);
-                }
-                else if (typeof(T) == typeof(EpisodeList))
-                {
-                    itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episodes_list_layout, parent, false);
-                }
-            }
-            */
             var holder = new EpisodesViewHolder(itemView, (DataEnum.DataType)viewType, OnClick, OnLongClick);
             return holder;
         }
@@ -350,9 +347,13 @@ namespace com.aa.tvshows.Helper
             {
                 return (int)DataEnum.DataType.Search;
             }
-            if (type == typeof(ShowEpisode))
+            if (type == typeof(ShowEpisodeDetails))
             {
                 return (int)DataEnum.DataType.SeasonsEpisodes;
+            }
+            if (type == typeof(EpisodeStreamLink))
+            {
+                return (int)DataEnum.DataType.EpisodeStreamLinks;
             }
 
             return (int)DataEnum.DataType.None;
@@ -402,7 +403,7 @@ namespace com.aa.tvshows.Helper
 
     public class EpisodesViewHolder : RecyclerView.ViewHolder
     {
-        public ImageView Image { get; private set; }
+        public AppCompatImageView Image { get; private set; }
         public AppCompatTextView Title { get; private set; }
         public AppCompatTextView EpisodeDetail { get; private set; }
         public AppCompatTextView Description { get; private set; }
@@ -419,13 +420,13 @@ namespace com.aa.tvshows.Helper
             ItemType = type;
             if (ItemType == DataEnum.DataType.NewPopularEpisodes || ItemType == DataEnum.DataType.NewEpisodes)
             {
-                Image = itemView.FindViewById<ImageView>(Resource.Id.episodes_list_imageView);
+                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.episodes_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_title);
                 EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_detail);
             }
             else if (ItemType == DataEnum.DataType.PopularShows || ItemType == DataEnum.DataType.TVSchedule || ItemType == DataEnum.DataType.Search)
             {
-                Image = itemView.FindViewById<ImageView>(Resource.Id.shows_list_imageView);
+                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.shows_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_title);
                 EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_episode_detail);
                 Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_info_detail);
@@ -438,6 +439,11 @@ namespace com.aa.tvshows.Helper
             else if (ItemType == DataEnum.DataType.SearchSuggestions)
             {
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.search_suggestion_text);
+            }
+            else if (ItemType == DataEnum.DataType.EpisodeStreamLinks)
+            {
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.stream_host_titletext);
+                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.stream_host_imageview);
             }
 
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);
