@@ -76,6 +76,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EpisodeDetailActivity.cs" />
     <Compile Include="Fragments\MainTabs.cs" />
     <Compile Include="GenresActivity.cs" />
     <Compile Include="Helper\DataEnum.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchActivity.cs" />
+    <Compile Include="ShowDetailActivity.cs" />
     <Compile Include="TVScheduleActivity.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -391,6 +393,26 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\search_suggestions_list.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\tv_show_detail.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\image_toolbar.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\tv_episode_detail.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\episode_stream_list.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
