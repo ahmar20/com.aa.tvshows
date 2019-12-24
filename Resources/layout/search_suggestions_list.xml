@@ -4,5 +4,5 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/search_suggestion_text"
-    style="@style/TextAppearance.AppCompat.Medium"
+    style="@style/TextAppearance.AppCompat.Body2"
     android:padding="@dimen/genres_list_year_margin"/>
