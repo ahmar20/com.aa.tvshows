@@ -24,7 +24,8 @@ namespace com.aa.tvshows.Helper
             Genres,
             SearchSuggestions,
             Search,
-            SeasonsEpisodes
+            SeasonsEpisodes,
+            EpisodeStreamLinks
         }
 
         public enum GenreDataType
