@@ -165,7 +165,16 @@ namespace com.aa.tvshows.Helper
             {
                 pageLink = genreShow.PageLink;
             }
+            else if (item is ShowEpisodeDetails episodeDetailLink)
+            {
+                pageLink = episodeDetailLink.EpisodeLink;
+            }
 
+            if (string.IsNullOrEmpty(pageLink))
+            {
+                Error.Instance.ShowErrorTip("Link is empty.", context);
+                return;
+            }
             if (pageLink.Contains("/serie/"))
             {
                 // tv show detail
@@ -176,9 +185,9 @@ namespace com.aa.tvshows.Helper
             else
             {
                 // tv episode detail
-                //var intent = new Android.Content.Intent(activity, typeof(EpisodeDetailActivity));
-                //intent.PutExtra("itemLink", pageLink);
-                //activity.StartActivity(intent);
+                var intent = new Android.Content.Intent(context, typeof(EpisodeDetailActivity));
+                intent.PutExtra("itemLink", pageLink);
+                context.StartActivity(intent);
             }
         }
 
