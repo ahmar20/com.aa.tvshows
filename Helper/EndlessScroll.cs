@@ -20,7 +20,7 @@ namespace com.aa.tvshows.Helper
         private int totalItemCount = 0;
         private int visibleItemCount = 0;
         private int previousTotal = 0;
-        private readonly int visibleThreshold = 30;
+        private readonly int visibleThreshold = 10;
 
         public EndlessScroll(LinearLayoutManager layoutManager, Action loadMoreAction)
         {
