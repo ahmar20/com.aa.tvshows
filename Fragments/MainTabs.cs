@@ -28,7 +28,11 @@ namespace com.aa.tvshows.Fragments
         AppCompatTextView emptyView;
         ContentLoadingProgressBar loadingView;
 
-        public MainTabs(DataEnum.DataType tabType)
+        public MainTabs() : base()
+        {
+        }
+
+        public MainTabs(DataEnum.DataType tabType) : this()
         {
             this.tabType = tabType;
         }
@@ -117,7 +121,7 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.SeasonsEpisodes:
-                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisode>(new List<ShowEpisode>(items.Cast<ShowEpisode>()), tabType, emptyView);
+                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisodeDetails>(new List<ShowEpisodeDetails>(items.Cast<ShowEpisodeDetails>()), tabType, emptyView);
                     recyclerView.SetAdapter(seasonsEpisodesAdapter);
                     seasonsEpisodesAdapter.ItemClick += (s, e) =>
                     {
