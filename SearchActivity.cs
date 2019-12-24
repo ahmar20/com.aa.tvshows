@@ -102,7 +102,7 @@ namespace com.aa.tvshows
                             {
                                 loadingView.Visibility = ViewStates.Visible;
                                 var newItems = await WebData.GetTVShowSearchResults(query, item.NextPage);
-                                newItems?.ForEach(a => adapter.AddItem(a));
+                                if (newItems != null) adapter.AddItem(newItems.ToArray());
                                 loadingView.Visibility = ViewStates.Gone;
                             }
                         }
