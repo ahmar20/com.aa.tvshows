@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace com.aa.tvshows
 {
-    [Activity(Label = "TV Show Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.ScreenLayout | Android.Content.PM.ConfigChanges.ScreenSize)]
+    [Activity(Label = "TV Show Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class ShowDetailActivity : AppCompatActivity
     {
         AppBarLayout appBarLayout;

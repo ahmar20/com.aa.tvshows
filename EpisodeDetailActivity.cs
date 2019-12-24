@@ -20,7 +20,7 @@ using Square.Picasso;
 
 namespace com.aa.tvshows
 {
-    [Activity(Label = "TV Episode Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.ScreenLayout | Android.Content.PM.ConfigChanges.ScreenSize)]
+    [Activity(Label = "TV Episode Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class EpisodeDetailActivity : AppCompatActivity
     {
         AppBarLayout appBarLayout;
