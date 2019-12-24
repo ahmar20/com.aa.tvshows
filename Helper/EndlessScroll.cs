@@ -14,8 +14,7 @@ namespace com.aa.tvshows.Helper
 {
     public class EndlessScroll : RecyclerView.OnScrollListener
     {
-        public bool IsLoading { get; private set; } = false;
-        private LinearLayoutManager layoutManager;
+        private readonly LinearLayoutManager layoutManager;
         private readonly Action loadMoreAction;
         private int firstVisibleItemPosition = 0;
         private int totalItemCount = 0;
@@ -39,21 +38,12 @@ namespace com.aa.tvshows.Helper
                 totalItemCount = layoutManager.ItemCount;
                 firstVisibleItemPosition = layoutManager.FindFirstVisibleItemPosition();
 
-                if (!IsLoading)
-                {
-                    if (totalItemCount > previousTotal)
-                    {
-                        IsLoading = true;
-                        previousTotal = totalItemCount;
-                    }
-                }
-                if (IsLoading && (totalItemCount - visibleItemCount)
-                    <= (firstVisibleItemPosition + visibleThreshold))
+                if (totalItemCount >= previousTotal && (totalItemCount - visibleItemCount) <= (firstVisibleItemPosition + visibleThreshold))
                 {
                     // End has been reached
                     // Do something
+                    previousTotal = totalItemCount;
                     loadMoreAction?.Invoke();
-                    IsLoading = false;
                 }
             }
         }
