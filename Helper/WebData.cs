@@ -550,12 +550,12 @@ namespace com.aa.tvshows.Helper
                         }
                         if (summaryDiv.Descendants("meta").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "seasonNumber").FirstOrDefault() is HtmlNode seasonNumber)
                         {
-                            itemData.EpisodeNumber += string.Format(" S{0:00}", int.Parse(seasonNumber.GetAttributeValue("content", string.Empty)));
+                            itemData.EpisodeNumber += string.Format(" (S{0:00}", int.Parse(seasonNumber.GetAttributeValue("content", string.Empty)));
                         }
                         if (episodeNode.Descendants("meta").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "episodeNumber").FirstOrDefault() is HtmlNode episodeCount)
                         {
                             itemData.EpisodeFullNameNumber += " - Episode " + episodeCount.GetAttributeValue("content", string.Empty) + ")";
-                            itemData.EpisodeNumber += string.Format(" - E{0:00}", int.Parse(episodeCount.GetAttributeValue("content", string.Empty)));
+                            itemData.EpisodeNumber += string.Format(" - E{0:00})", int.Parse(episodeCount.GetAttributeValue("content", string.Empty)));
                         }
                     }
 
