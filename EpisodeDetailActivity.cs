@@ -54,7 +54,7 @@ namespace com.aa.tvshows
             titleContainer = FindViewById<Android.Widget.LinearLayout>(Resource.Id.image_toolbar_collapsing_root);
             
             dataRV = FindViewById<RecyclerView>(Resource.Id.tv_episode_detail_rv);
-            dataRV.SetLayoutManager(new LinearLayoutManager(this));
+            dataRV.SetLayoutManager(new CachingLayoutManager(this));
             loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.tv_episode_detail_loading);
 
             AppView.SetActionBarForActivity(toolbar, this);
