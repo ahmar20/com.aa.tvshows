@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
@@ -23,10 +23,12 @@ namespace com.aa.tvshows.Fragments
         readonly DataEnum.GenreDataType genresType;
         readonly string genre;
         readonly int year;
-        
+        int genrePage = 1;
+
         RecyclerView recyclerView;
         AppCompatTextView emptyView;
         ContentLoadingProgressBar loadingView;
+        LinearLayoutManager layoutManager;
 
         public MainTabs() : base()
         {
@@ -54,8 +56,9 @@ namespace com.aa.tvshows.Fragments
             // Use this to return your custom view for this Fragment
             var view = LayoutInflater.Inflate(Resource.Layout.main_tab_content, container, false);
             recyclerView = view.FindViewById<RecyclerView>(Resource.Id.main_tab_rv);
-            var layoutManager = new LinearLayoutManager(view.Context);
+            layoutManager = new CachingLayoutManager(view.Context);
             recyclerView.SetLayoutManager(layoutManager);
+            recyclerView.ClearOnScrollListeners();
             emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
             if (tabType != DataEnum.DataType.TVSchedule)
             {
@@ -72,10 +75,11 @@ namespace com.aa.tvshows.Fragments
 
         public void ReloadCurrentData()
         {
+            genrePage = 1;
             LoadDataForType();
         }
 
-        private void LoadDataForType()
+        private async void LoadDataForType()
         {
             switch (tabType)
             {
@@ -103,15 +107,30 @@ namespace com.aa.tvshows.Fragments
                     EpisodesAdapter<GenresShow> genresAdapter = null;
                     if (genresType == DataEnum.GenreDataType.LatestEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, loadingView);
                     }
                     else if (genresType == DataEnum.GenreDataType.PopularEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, emptyView, loadingView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, loadingView);
                     }
                     else if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresType, genre, year, emptyView, loadingView);
+                        loadingView.Visibility = ViewStates.Visible;
+                        var genreList = await WebData.GetGenresShows(genre, genrePage++, year);
+                        loadingView.Visibility = ViewStates.Invisible;
+                        genresAdapter = new EpisodesAdapter<GenresShow>(genreList, tabType, emptyView);
+                        var scrollListener = new EndlessScroll(layoutManager);
+                        scrollListener.LoadMoreTask += async delegate
+                        {
+                            loadingView.Visibility = ViewStates.Visible;
+                            var items = await WebData.GetGenresShows(genre, genrePage++, year);
+                            if (items != null)
+                            {
+                                genresAdapter.AddItem(items.ToArray());
+                            }
+                            loadingView.Visibility = ViewStates.Invisible;
+                        };
+                        recyclerView.AddOnScrollListener(scrollListener);
                     }
                     recyclerView.SetAdapter(genresAdapter);
                     genresAdapter.ItemClick += (s, e) =>
@@ -131,7 +150,7 @@ namespace com.aa.tvshows.Fragments
 
                 default:
                     break;
-            }   
+            }
         }
     }
 }
