@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -31,10 +32,20 @@ namespace com.aa.tvshows
             SetupSearch();
         }
 
-        public override bool OnNavigateUp()
+        public override bool OnSupportNavigateUp()
         {
             OnBackPressed();
-            return base.OnNavigateUp();
+            return base.OnSupportNavigateUp();
+        }
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            return AppView.OnOptionsItemSelected(item, this);
+        }
+
+        public override bool OnCreateOptionsMenu(IMenu menu)
+        {
+            return AppView.ShowOptionsMenu(menu, this);
         }
 
         private void SetupSearch()
@@ -45,7 +56,7 @@ namespace com.aa.tvshows
             
             var list = FindViewById<RecyclerView>(Resource.Id.search_list);
             list.ClearOnScrollListeners();
-            var layoutManager = new LinearLayoutManager(this);
+            var layoutManager = new CachingLayoutManager(this);
             list.SetLayoutManager(layoutManager);
             editText.QueryTextChange += async (s, e) =>
             {
@@ -74,7 +85,7 @@ namespace com.aa.tvshows
                 }
             };
 
-            editText.QueryTextSubmit += async (s, e) =>
+            editText.QueryTextSubmit += async(s, e) =>
             {
                 // get data from page
                 // load full image based search results
@@ -82,6 +93,8 @@ namespace com.aa.tvshows
                 if (e.NewText.Trim() is string query && query.Length > 2)
                 {
                     list.ClearOnScrollListeners();
+                    var scroll = new EndlessScroll(layoutManager);
+
                     loadingView.Visibility = ViewStates.Visible;
                     emptyView.Visibility = ViewStates.Gone;
                     var searchResults = await WebData.GetTVShowSearchResults(query);
@@ -94,19 +107,22 @@ namespace com.aa.tvshows
                         AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), this);
                     };
                     list.SetAdapter(adapter);
-                    list.AddOnScrollListener(new EndlessScroll(layoutManager, new Action(async() => 
+
+                    scroll.LoadMoreTask += async delegate
                     {
-                        if (searchResults != null && searchResults.Count > 0 && searchResults.LastOrDefault() is SearchList item)
+                        if (searchResults != null && searchResults.LastOrDefault() is SearchList item)
                         {
                             if (item.NextPage > 0)
                             {
                                 loadingView.Visibility = ViewStates.Visible;
-                                var newItems = await WebData.GetTVShowSearchResults(query, item.NextPage);
+                                var newItems = await WebData.GetTVShowSearchResults(query, item.NextPage).ConfigureAwait(true);
                                 if (newItems != null) adapter.AddItem(newItems.ToArray());
                                 loadingView.Visibility = ViewStates.Gone;
                             }
                         }
-                    })));
+                    };
+
+                    list.AddOnScrollListener(scroll);
                 }
                 else
                 {
@@ -115,6 +131,7 @@ namespace com.aa.tvshows
                     list.SetAdapter(null);
                 }
             };
+
         }
     }
 }
