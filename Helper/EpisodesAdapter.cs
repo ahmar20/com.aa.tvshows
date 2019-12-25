@@ -1,10 +1,12 @@
-﻿using Android.Views;
+﻿using Android.Content;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using Square.Picasso;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace com.aa.tvshows.Helper
 {
@@ -13,18 +15,20 @@ namespace com.aa.tvshows.Helper
         List<T> Items { get; set; }
         View EmptyView { get; set; }
         View LoadingView { get; set; }
-        int LoadMoreItemsCurrentPage { get; set; } = 1;
 
         private readonly DataEnum.DataType dataType = DataEnum.DataType.None;
         private readonly DataEnum.GenreDataType genresType;
-        private readonly string genre;
-        private readonly int year;
 
         public event EventHandler<int> ItemClick = delegate { };
         public event EventHandler<int> ItemLongClick = delegate { };
 
+        public EpisodesAdapter() : base()
+        {
+            HasStableIds = true;
+        }
+
         #region DataType CTOR
-        public EpisodesAdapter(DataEnum.DataType dataType)
+        public EpisodesAdapter(DataEnum.DataType dataType) : this()
         {
             this.dataType = dataType;
             Items = new List<T>();
@@ -42,33 +46,8 @@ namespace com.aa.tvshows.Helper
 
         #endregion
 
-        #region Genres CTOR
-
-        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType) : this(dataType)
-        {
-            this.genresType = genresType;
-        }
-
-        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, View emptyView) : this(dataType, genresType)
-        {
-            EmptyView = emptyView;
-        }
-
-        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, View emptyView, View loadingView) : this(dataType, genresType, emptyView)
-        {
-            LoadingView = loadingView;
-        }
-
-        public EpisodesAdapter(DataEnum.DataType dataType, DataEnum.GenreDataType genresType, string genre, int year, View emptyView, View loadingView) : this(dataType, genresType, emptyView, loadingView)
-        {
-            this.genre = genre;
-            this.year = year;
-        }
-
-        #endregion
-
         #region List CTOR
-        public EpisodesAdapter(List<T> items)
+        public EpisodesAdapter(List<T> items) : this()
         {
             Items = items;
         }
@@ -212,7 +191,8 @@ namespace com.aa.tvshows.Helper
             {
                 throw new ArgumentNullException(nameof(recyclerView));
             }
-
+            recyclerView.HasFixedSize = true;
+            recyclerView.SetItemViewCacheSize(20);
             if (dataType != DataEnum.DataType.None)
             {
                 if (LoadingView != null)
@@ -225,75 +205,29 @@ namespace com.aa.tvshows.Helper
                     (EmptyView as AppCompatTextView).Text = "Loading...";
                     EmptyView.Visibility = ViewStates.Visible;
                 }
+
                 if (dataType == DataEnum.DataType.NewPopularEpisodes)
                 {
                     var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
-                    items?.ForEach(a =>
+                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
                     {
-                        if (!(a is T _item))
-                        {
-                            return;
-                        }
-                        AddItem(_item);
-                    });
-                    items?.Clear();
+                        adapter.AddItem(items.ToArray());
+                    }
                 }
                 else if (dataType == DataEnum.DataType.PopularShows)
                 {
                     var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
-                    items?.ForEach(a =>
+                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
                     {
-                        if (!(a is T _item))
-                        {
-                            return;
-                        }
-                        AddItem(_item);
-                    });
-                    items?.Clear();
+                        adapter.AddItem(items.ToArray());
+                    }
                 }
                 else if (dataType == DataEnum.DataType.NewEpisodes)
                 {
                     var items = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
-                    items?.ForEach(a =>
+                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
                     {
-                        if (!(a is T _item))
-                        {
-                            return;
-                        }
-                        AddItem(_item);
-                    });
-                    items?.Clear();
-                }
-                else if (dataType == DataEnum.DataType.Genres)
-                {
-                    // get the genre type and load data
-                    if (genresType == DataEnum.GenreDataType.Shows)
-                    {
-                        recyclerView.AddOnScrollListener(new EndlessScroll((LinearLayoutManager)recyclerView.GetLayoutManager(),
-                            new Action(async () =>
-                            {
-                                if (LoadingView != null)
-                                {
-                                    LoadingView.Visibility = ViewStates.Visible;
-                                }
-
-                                var items = await WebData.GetGenresShows(genre, LoadMoreItemsCurrentPage++, year);
-                                items?.ForEach(a => { if (!(a is T item)) { return; } AddItem(item); });
-                                if (LoadingView != null)
-                                {
-                                    LoadingView.Visibility = ViewStates.Invisible;
-                                } (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
-                                if (ItemCount <= 0)
-                                {
-                                    EmptyView.Visibility = ViewStates.Visible;
-                                }
-                                else
-                                {
-                                    EmptyView.Visibility = ViewStates.Gone;
-                                }
-                            })));
-                        var items = await WebData.GetGenresShows(genre, LoadMoreItemsCurrentPage++, year);
-                        items?.ForEach(a => { if (!(a is T item)) { return; } AddItem(item); });
+                        adapter.AddItem(items.ToArray());
                     }
                 }
 
@@ -359,6 +293,11 @@ namespace com.aa.tvshows.Helper
             return (int)DataEnum.DataType.None;
         }
 
+        public override long GetItemId(int position)
+        {
+            return position;
+        }
+
         private void OnClick(int position)
         {
             ItemClick?.Invoke(this, position);
@@ -385,6 +324,12 @@ namespace com.aa.tvshows.Helper
                 return Items[position];
             }
             return default;
+        }
+
+        public void ResetAdapter()
+        {
+            Items.Clear();
+            NotifyDataSetChanged();
         }
 
         protected override void Dispose(bool disposing)
@@ -451,4 +396,26 @@ namespace com.aa.tvshows.Helper
         }
     }
 
+    public class CachingLayoutManager : LinearLayoutManager
+    {
+        bool firstTimeAccess = true;
+        readonly int extraSpace = 600;
+
+        public CachingLayoutManager(Context context) : base(context)
+        {
+            base.AutoMeasureEnabled = true;
+            base.ItemPrefetchEnabled = true;
+            base.MeasurementCacheEnabled = true;
+        }
+
+        protected override int GetExtraLayoutSpace(RecyclerView.State state)
+        {
+            if (firstTimeAccess || this.ItemCount < 1)
+            {
+                firstTimeAccess = false;
+                return extraSpace;
+            }
+            return base.GetExtraLayoutSpace(state);
+        }
+    }
 }
