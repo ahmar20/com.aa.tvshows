@@ -26,22 +26,21 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public Error()
-        {
-            instance = new Error();
-        }
-
         public void ShowErrorTip(string message, Context c)
         {
             Toast.MakeText(c, message, ToastLength.Short).Show();
         }
 
-        public void ShowErrorSnack(string message, View v, Action actionCallback = default)
+        public void ShowErrorSnack(string message, View v, Action actionCallback = default, string actionName = default)
         {
-            Snackbar.Make(v, message, Snackbar.LengthIndefinite)
-                    .SetAction("OK", (s) => { actionCallback?.Invoke(); })
-                    .SetActionTextColor(ContextCompat.GetColor(v.Context, Resource.Color.colorPrimary))
-                    .Show();
+            var snack = Snackbar.Make(v, message, Snackbar.LengthLong)
+                        .SetAction("Dismiss", (s) => { })
+                        .SetActionTextColor(ContextCompat.GetColor(v.Context, Resource.Color.colorPrimary));
+            if (actionCallback != null && !string.IsNullOrEmpty(actionName))
+            {
+                snack.SetAction(actionName, (s) => actionCallback.Invoke());
+            }
+            snack.Show();
         }
     }
 }
