@@ -83,6 +83,7 @@
     <Compile Include="Helper\EndlessScroll.cs" />
     <Compile Include="Helper\EpisodesAdapter.cs" />
     <Compile Include="Helper\Error.cs" />
+    <Compile Include="Helper\LoadingViewDialog.cs" />
     <Compile Include="Helper\SimpleListAdapter.cs" />
     <Compile Include="Helper\TemplateData.cs" />
     <Compile Include="Helper\PageTabsAdapter.cs" />
@@ -116,8 +117,11 @@
     <PackageReference Include="HtmlAgilityPack">
       <Version>1.11.17</Version>
     </PackageReference>
+    <PackageReference Include="Jint">
+      <Version>3.0.0-beta-1632</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp">
-      <Version>3.4.0</Version>
+      <Version>3.5.0-beta1-final</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
@@ -413,6 +417,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\episode_stream_list.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\loading_dialog.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
