@@ -9,6 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
+using Android.Webkit;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -16,6 +17,7 @@ using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
 using Google.Android.Material.AppBar;
+using Java.Interop;
 using Square.Picasso;
 
 namespace com.aa.tvshows
@@ -28,6 +30,9 @@ namespace com.aa.tvshows
         CollapsingToolbarLayout collapseToolbar;
         RecyclerView dataRV;
         ContentLoadingProgressBar loadingView;
+
+        JavaValueCallback callBack;
+        WebView webView;
 
         Android.Widget.LinearLayout titleContainer;
 
@@ -50,18 +55,51 @@ namespace com.aa.tvshows
             appBarLayout = FindViewById<AppBarLayout>(Resource.Id.image_toolbar_appbar_layout);
             collapseToolbar = FindViewById<CollapsingToolbarLayout>(Resource.Id.image_toolbar_collapsing_layout);
             collapseToolbar.TitleEnabled = true;
-
             titleContainer = FindViewById<Android.Widget.LinearLayout>(Resource.Id.image_toolbar_collapsing_root);
             
             dataRV = FindViewById<RecyclerView>(Resource.Id.tv_episode_detail_rv);
             dataRV.SetLayoutManager(new CachingLayoutManager(this));
-            loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.tv_episode_detail_loading);
+            loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.image_toolbar_loading);
 
             AppView.SetActionBarForActivity(toolbar, this);
             appBarLayout.OffsetChanged += AppLayout_OffsetChanged;
+            callBack = new JavaValueCallback();
+            callBack.ValueReceived += JavaCallBack_ValueReceived;
 
             var link = Intent.GetStringExtra("itemLink");
             LoadEpisodeData(link);
+        }
+
+        private async void JavaCallBack_ValueReceived(object sender, string e)
+        {
+            // checking wheter we did receive a proper link from WebView
+            if (Uri.IsWellFormedUriString(e, UriKind.Absolute))
+            {
+                bool streamableLinkFound = false;
+                if (await WebData.GetStreamingUrlFromDecodedLink(e) is List<StreamingUri> links)
+                {
+                    foreach (var uri in links)
+                    {
+                        if (uri.StreamingUrl != null)
+                        {
+                            streamableLinkFound = true;
+                        }
+                        if (streamableLinkFound)
+                        {
+                            break;
+                        }
+                    }
+                }
+                LoadingViewDialog.Instance.Hide();
+                if (!streamableLinkFound)
+                {
+                    Error.Instance.ShowErrorSnack("Error: Video not found on the given link. Please select another one.", appBarLayout);
+                }
+            }
+            else
+            {
+                Error.Instance.ShowErrorSnack("Error: Deciphering the video link failed.", appBarLayout);
+            }
         }
 
         private async void LoadEpisodeData(string link)
@@ -93,23 +131,25 @@ namespace com.aa.tvshows
                     adapter.ItemClick += (s, e) =>
                     {
                         // handle watch episode here
+                        // first get the decoded link from WebView and JavaValueCallback
+                        LoadEncodedLinkFromWebView(adapter.GetItem(e).HostUrl);
                     };
                 }
                 else
                 {
-                    Error.Instance.ShowErrorSnack("No links found. Episode cannot be streamed.", dataRV);
+                    Helper.Error.Instance.ShowErrorSnack("No links found. Episode cannot be streamed.", dataRV);
                 }
             }
             else
             {
-                Error.Instance.ShowErrorSnack("Episode data could not be loaded.", dataRV);
+                Helper.Error.Instance.ShowErrorSnack("Episode data could not be loaded.", dataRV);
             }
         }
 
         private void AppLayout_OffsetChanged(object sender, AppBarLayout.OffsetChangedEventArgs e)
         {
             int maxScroll = e.AppBarLayout.TotalScrollRange;
-            double percentage = (double)Math.Abs(e.VerticalOffset) / (double)maxScroll;
+            double percentage = (double)System.Math.Abs(e.VerticalOffset) / (double)maxScroll;
             HandleAlphaOnTitle(percentage);
             HandleToolbarTitleVisibility(percentage);
         }
@@ -182,6 +222,22 @@ namespace com.aa.tvshows
             alphaAnimation.Duration = duration;
             alphaAnimation.FillAfter = true;
             v.StartAnimation(alphaAnimation);
+        }
+
+        private void LoadEncodedLinkFromWebView(string encodedLink)
+        {
+            Error.Instance.ShowErrorTip("Url clicked", this);
+            LoadingViewDialog.Instance.Show(this);
+            if (webView == null)
+            {
+                webView = new WebView(this);
+                webView.Settings.DomStorageEnabled = true;
+                webView.Settings.JavaScriptEnabled = true;
+                webView.Settings.SetPluginState(WebSettings.PluginState.On);
+                CustomWebClient client = new CustomWebClient(callBack);
+                webView.SetWebViewClient(client);
+            }
+            webView.LoadUrl(encodedLink);
         }
     }
 }
