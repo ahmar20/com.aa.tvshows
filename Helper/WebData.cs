@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,9 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using Android.Webkit;
 using Android.Widget;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
@@ -26,12 +29,15 @@ namespace com.aa.tvshows.Helper
         static readonly string TVShowDetailUrl = BaseUrl + "/serie/";
         static readonly string TVSearchUrl = BaseUrl + "/search/";
         static readonly string TVSearchSuggestionsUrl = BaseUrl + "/show/search-shows-json/";
+
+        const string ClipWatchingStreamPattern = @"(http?s:.*?mp4).*?res:\s([0-9]{3,4})";
+        const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
+
         const int CurrentYear = 2019;
         const int MinimumYear = 1990;
-
         public const double CancellationTokenDelayInSeconds = 30;
 
-        public static async Task<HtmlDocument> GetHtmlDocumentFromUrl(Uri url, CancellationTokenSource cts = default)
+        public static async Task<string> GetHtmlStringFromUrl(Uri url, CancellationTokenSource cts = default)
         {
             if (url != null)
             {
@@ -49,8 +55,24 @@ namespace com.aa.tvshows.Helper
                     response.EnsureSuccessStatusCode();
 
                     var htmlString = await response.Content.ReadAsStringAsync().ConfigureAwait(true);
+                    return htmlString;
+                }
+                catch (Exception e)
+                {
+                    //Error.Instance.ShowErrorTip(e.Message);
+                }
+            }
+            return null;
+        }
+
+        public static async Task<HtmlDocument> GetHtmlDocumentFromUrl(Uri url, CancellationTokenSource cts = default)
+        {
+            if (url != null)
+            {
+                try
+                {
                     var doc = new HtmlDocument();
-                    doc.LoadHtml(htmlString);
+                    doc.LoadHtml(await GetHtmlStringFromUrl(url, cts));
                     return doc;
                 }
                 catch (Exception e)
@@ -82,6 +104,30 @@ namespace com.aa.tvshows.Helper
                 }
             }
             return null;
+        }
+
+        public static async Task<HtmlDocument> PostHtmlContentToUrl(Uri url, Dictionary<string, string> content)
+        {
+            try
+            {
+                using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = true };
+                using HttpClient client = new HttpClient(handler);
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
+                client.DefaultRequestHeaders.Add("Accept", "text/html");
+                client.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
+                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(CancellationTokenDelayInSeconds));
+
+                var response = await client.PostAsync(url, new FormUrlEncodedContent(content), cts.Token).ConfigureAwait(true);
+                response.EnsureSuccessStatusCode();
+
+                var doc = new HtmlDocument();
+                doc.LoadHtml(await response.Content.ReadAsStringAsync());
+                return doc;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         private static string FixDuplicateYear(this string title)
@@ -590,12 +636,137 @@ namespace com.aa.tvshows.Helper
                     }
                     if (itemData.EpisodeStreamLinks?.Count > 0)
                     {
+                        itemData.EpisodeStreamLinks = new List<EpisodeStreamLink>(itemData.EpisodeStreamLinks.OrderBy(a => a.HostName));
                         itemData.IsEpisodeWatchable = true;
                     }
                     return itemData;
                 }
             }
             return null;
+        }
+
+        public static async Task<List<StreamingUri>> GetStreamingUrlFromDecodedLink(string link)
+        {
+            var decodedLink = new Uri(link);
+            return decodedLink.Host switch
+            {
+                "clipwatching.com" => await GetClipWatchingStreamUrl(decodedLink),
+                "cloudvideo.tv" => await GetCloudVideoStreamUrl(decodedLink),
+
+                _ => null,
+            };
+        }
+
+        private static async Task<List<StreamingUri>> GetClipWatchingStreamUrl(Uri decodedLink)
+        {
+            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            {
+                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.StartsWith("var holaplayer;", StringComparison.InvariantCulture))
+                    .FirstOrDefault() is HtmlNode script)
+                {
+                    var linkList = new List<StreamingUri>();
+                    foreach (Match match in Regex.Matches(script.InnerText.Trim(), ClipWatchingStreamPattern))
+                    {
+                        var uri = new StreamingUri()
+                        {
+                            StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
+                            StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
+                        };
+                        if (Regex.Match(script.InnerText.Trim(), ClipWatchingPosterPattern) is Match posterMatch)
+                        {
+                            uri.PosterUrl = posterMatch.Groups[1].Value;
+                        }
+                        linkList.Add(uri);
+                    }
+                    return linkList;
+                }
+            }
+
+            return null;
+        }
+
+        private static async Task<List<StreamingUri>> GetCloudVideoStreamUrl(Uri decodedLink)
+        {
+            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            {
+                Dictionary<string, string> webCollection = null;
+                string linkToPost = string.Empty;
+                if (doc.DocumentNode.Descendants("Form").FirstOrDefault() is HtmlNode form)
+                {
+                    linkToPost = form.GetAttributeValue("action", string.Empty);
+                    foreach (HtmlNode input in form.Descendants("input").Where(a => a.GetAttributeValue("type", string.Empty) == "hidden"))
+                    {
+                        if (webCollection == null) webCollection = new Dictionary<string, string>();
+                        var key = input.GetAttributeValue("name", string.Empty);
+                        if (key.ToLowerInvariant() != "referer" && !webCollection.ContainsKey(key))
+                            webCollection.Add(input.GetAttributeValue("name", string.Empty), input.GetAttributeValue("value", string.Empty));
+                    }
+                }
+                if (webCollection != null)
+                {
+                    if (await PostHtmlContentToUrl(new Uri(linkToPost), webCollection) is HtmlDocument responseDoc)
+                    {
+                        if (responseDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
+                        {
+                            var items = new List<StreamingUri>
+                            {
+                                new StreamingUri()
+                                {
+                                    PosterUrl = video.GetAttributeValue("poster", string.Empty),
+                                    StreamingQuality = video.GetAttributeValue("height", string.Empty),
+                                    StreamingUrl = new Uri(video.Descendants("source").FirstOrDefault()?.GetAttributeValue("src", string.Empty))
+                                }
+                            };
+                            return items;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public class CustomWebClient : WebViewClient
+    {
+        readonly JavaValueCallback javaCallback;
+        WebView webView;
+
+        public CustomWebClient(JavaValueCallback javaCallback)
+        {
+            this.javaCallback = javaCallback;
+        }
+
+        private void Dialog_DismissEvent(object sender, EventArgs e)
+        {
+            if (webView.Progress < 100) webView.StopLoading();
+        }
+
+        public override void OnPageStarted(WebView view, string url, Bitmap favicon)
+        {
+            // show loading indicator
+            base.OnPageStarted(view, url, favicon);
+            webView = view;
+        }
+
+        public override void OnPageFinished(WebView view, string url)
+        {
+            base.OnPageFinished(view, url);
+            view.EvaluateJavascript("javascript:(function() { var x = document.getElementsByTagName('A'); return x[13].getAttribute('href'); }) ()", javaCallback);
+        }
+    }
+
+    public class JavaValueCallback : Java.Lang.Object, IValueCallback
+    {
+        public event EventHandler<string> ValueReceived = delegate { };
+
+        /// <summary>
+        /// Gets called when a value returns from the JavaScript function
+        /// </summary>
+        /// <param name="value"></param>
+        public void OnReceiveValue(Java.Lang.Object value)
+        {
+            ValueReceived?.Invoke(this, value.ToString()?.Replace("\"", string.Empty));
         }
     }
 }
