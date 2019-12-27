@@ -136,4 +136,11 @@ namespace com.aa.tvshows.Helper
         public string HostUrl { get; set; }
         public string HostImage { get; set; }
     }
+
+    public class StreamingUri
+    {
+        public Uri StreamingUrl { get; set; }
+        public string StreamingQuality { get; set; }
+        public string PosterUrl { get; set; }
+    }
 }
