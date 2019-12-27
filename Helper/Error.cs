@@ -16,15 +16,7 @@ namespace com.aa.tvshows.Helper
 {
     public class Error
     {
-        private static Error instance;
-        public static Error Instance
-        {
-            get
-            {
-                if (instance == null) instance = new Error();
-                return instance;
-            }
-        }
+        public static Error Instance { get; } = new Error();
 
         public void ShowErrorTip(string message, Context c)
         {
