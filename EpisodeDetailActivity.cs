@@ -90,7 +90,6 @@ namespace com.aa.tvshows
                         }
                     }
                 }
-                LoadingViewDialog.Instance.Hide();
                 if (!streamableLinkFound)
                 {
                     Error.Instance.ShowErrorSnack("Error: Video not found on the given link. Please select another one.", appBarLayout);
@@ -100,6 +99,7 @@ namespace com.aa.tvshows
             {
                 Error.Instance.ShowErrorSnack("Error: Deciphering the video link failed.", appBarLayout);
             }
+            LoadingViewDialog.Instance.Hide();
         }
 
         private async void LoadEpisodeData(string link)
@@ -132,7 +132,7 @@ namespace com.aa.tvshows
                     {
                         // handle watch episode here
                         // first get the decoded link from WebView and JavaValueCallback
-                        LoadEncodedLinkFromWebView(adapter.GetItem(e).HostUrl);
+                        LoadEncodedLinkFromWebView(adapter.GetItem(e));
                     };
                 }
                 else
@@ -224,7 +224,7 @@ namespace com.aa.tvshows
             v.StartAnimation(alphaAnimation);
         }
 
-        private void LoadEncodedLinkFromWebView(string encodedLink)
+        private void LoadEncodedLinkFromWebView(EpisodeStreamLink encodedLink)
         {
             Error.Instance.ShowErrorTip("Url clicked", this);
             LoadingViewDialog.Instance.Show(this);
@@ -234,10 +234,9 @@ namespace com.aa.tvshows
                 webView.Settings.DomStorageEnabled = true;
                 webView.Settings.JavaScriptEnabled = true;
                 webView.Settings.SetPluginState(WebSettings.PluginState.On);
-                CustomWebClient client = new CustomWebClient(callBack);
-                webView.SetWebViewClient(client);
             }
-            webView.LoadUrl(encodedLink);
+            webView.SetWebViewClient(new CustomWebClient(callBack, encodedLink.HostName));
+            webView.LoadUrl(encodedLink.HostUrl);
         }
     }
 }
