@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#55000000"
+    android:paddingTop="30.0dip"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingStart="50.0dip"
+    android:paddingEnd="50.0dip">
+<!--
+    <androidx.appcompat.widget.AppCompatSpinner
+        android:id="@+id/linksSpinner"
+        android:layout_width="150.0dip"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:spinnerMode="dialog"
+        android:layout_alignParentEnd="true" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+        <androidx.appcompat.widget.AppCompatImageButton 
+            android:id="@id/exo_rew"
+            android:layout_width="50.0dip"
+            android:layout_height="fill_parent"
+            android:layout_marginEnd="20.0dip"
+            style="@style/ExoMediaButton.Rewind" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@id/exo_play"
+            android:layout_width="100.0dip"
+            android:layout_height="100.0dip"
+            style="@style/ExoMediaButton.Play" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@id/exo_pause"
+            android:layout_width="100.0dip"
+            android:layout_height="100.0dip"
+            style="@style/ExoMediaButton.Pause" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@id/exo_ffwd"
+            android:layout_width="50.0dip"
+            android:layout_height="fill_parent"
+            android:layout_marginStart="20.0dip"
+            style="@style/ExoMediaButton.FastForward" />
+    </LinearLayout>
+    <com.google.android.exoplayer2.ui.DefaultTimeBar
+        android:id="@id/exo_progress"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10.0dip"
+        android:layout_alignParentBottom="true"
+        app:touch_target_height="50.0dip"
+        app:scrubber_enabled_size="15.0dip"
+        app:scrubber_dragged_size="50.0dip"
+        app:played_color="@color/colorAccent"
+        app:scrubber_color="@color/colorAccent"
+        app:buffered_color="@color/colorPrimary" />
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@id/exo_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5.0dip"
+        android:layout_above="@id/exo_progress"
+        android:layout_marginStart="10.0dip"
+        android:layout_alignParentStart="true" />
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@id/exo_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5.0dip"
+        android:layout_above="@id/exo_progress"
+        android:layout_marginEnd="10.0dip"
+        android:layout_alignParentEnd="true" />
+-->
+</RelativeLayout>
