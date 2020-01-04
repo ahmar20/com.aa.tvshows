@@ -18,6 +18,7 @@ using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
 using Google.Android.Material.AppBar;
 using Java.Interop;
+using Newtonsoft.Json;
 using Square.Picasso;
 
 namespace com.aa.tvshows
@@ -88,6 +89,12 @@ namespace com.aa.tvshows
                         {
                             break;
                         }
+                    }
+                    if (streamableLinkFound)
+                    {
+                        var intent = new Intent(this, typeof(PlayerActivity));
+                        intent.PutExtra("mediaStreams", JsonConvert.SerializeObject(links));
+                        StartActivity(intent);
                     }
                 }
                 if (!streamableLinkFound)
