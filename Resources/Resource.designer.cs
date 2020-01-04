@@ -4236,16 +4236,22 @@ namespace com.aa.tvshows
 			public const int useLogo = 2131230992;
 			
 			// aapt resource value: 0x7F080111
-			public const int view_offset_helper = 2131230993;
+			public const int videoLoading = 2131230993;
 			
 			// aapt resource value: 0x7F080112
-			public const int visible = 2131230994;
+			public const int videoPlayer = 2131230994;
 			
 			// aapt resource value: 0x7F080113
-			public const int withText = 2131230995;
+			public const int view_offset_helper = 2131230995;
 			
 			// aapt resource value: 0x7F080114
-			public const int wrap_content = 2131230996;
+			public const int visible = 2131230996;
+			
+			// aapt resource value: 0x7F080115
+			public const int withText = 2131230997;
+			
+			// aapt resource value: 0x7F080116
+			public const int wrap_content = 2131230998;
 			
 			static Id()
 			{
@@ -4506,136 +4512,142 @@ namespace com.aa.tvshows
 			public const int episode_stream_list = 2131427372;
 			
 			// aapt resource value: 0x7F0B002E
-			public const int expand_button = 2131427374;
+			public const int exo_player_controls = 2131427374;
 			
 			// aapt resource value: 0x7F0B002F
-			public const int genres_base = 2131427375;
+			public const int expand_button = 2131427375;
 			
 			// aapt resource value: 0x7F0B0030
-			public const int genres_list_show = 2131427376;
+			public const int genres_base = 2131427376;
 			
 			// aapt resource value: 0x7F0B0031
-			public const int image_frame = 2131427377;
+			public const int genres_list_show = 2131427377;
 			
 			// aapt resource value: 0x7F0B0032
-			public const int image_toolbar = 2131427378;
+			public const int image_frame = 2131427378;
 			
 			// aapt resource value: 0x7F0B0033
-			public const int loading_dialog = 2131427379;
-			
-			// aapt resource value: 0x7F0B0035
-			public const int main_tabs = 2131427381;
+			public const int image_toolbar = 2131427379;
 			
 			// aapt resource value: 0x7F0B0034
-			public const int main_tab_content = 2131427380;
+			public const int loading_dialog = 2131427380;
 			
 			// aapt resource value: 0x7F0B0036
-			public const int main_toolbar = 2131427382;
+			public const int main_tabs = 2131427382;
+			
+			// aapt resource value: 0x7F0B0035
+			public const int main_tab_content = 2131427381;
 			
 			// aapt resource value: 0x7F0B0037
-			public const int mtrl_layout_snackbar = 2131427383;
+			public const int main_toolbar = 2131427383;
 			
 			// aapt resource value: 0x7F0B0038
-			public const int mtrl_layout_snackbar_include = 2131427384;
+			public const int mtrl_layout_snackbar = 2131427384;
 			
 			// aapt resource value: 0x7F0B0039
-			public const int notification_action = 2131427385;
+			public const int mtrl_layout_snackbar_include = 2131427385;
 			
 			// aapt resource value: 0x7F0B003A
-			public const int notification_action_tombstone = 2131427386;
+			public const int notification_action = 2131427386;
 			
 			// aapt resource value: 0x7F0B003B
-			public const int notification_template_custom_big = 2131427387;
+			public const int notification_action_tombstone = 2131427387;
 			
 			// aapt resource value: 0x7F0B003C
-			public const int notification_template_icon_group = 2131427388;
+			public const int notification_template_custom_big = 2131427388;
 			
 			// aapt resource value: 0x7F0B003D
-			public const int notification_template_part_chronometer = 2131427389;
+			public const int notification_template_icon_group = 2131427389;
 			
 			// aapt resource value: 0x7F0B003E
-			public const int notification_template_part_time = 2131427390;
+			public const int notification_template_part_chronometer = 2131427390;
 			
 			// aapt resource value: 0x7F0B003F
-			public const int preference = 2131427391;
+			public const int notification_template_part_time = 2131427391;
 			
 			// aapt resource value: 0x7F0B0040
-			public const int preference_category = 2131427392;
+			public const int player_view = 2131427392;
 			
 			// aapt resource value: 0x7F0B0041
-			public const int preference_category_material = 2131427393;
+			public const int preference = 2131427393;
 			
 			// aapt resource value: 0x7F0B0042
-			public const int preference_dialog_edittext = 2131427394;
+			public const int preference_category = 2131427394;
 			
 			// aapt resource value: 0x7F0B0043
-			public const int preference_dropdown = 2131427395;
+			public const int preference_category_material = 2131427395;
 			
 			// aapt resource value: 0x7F0B0044
-			public const int preference_dropdown_material = 2131427396;
+			public const int preference_dialog_edittext = 2131427396;
 			
 			// aapt resource value: 0x7F0B0045
-			public const int preference_information = 2131427397;
+			public const int preference_dropdown = 2131427397;
 			
 			// aapt resource value: 0x7F0B0046
-			public const int preference_information_material = 2131427398;
+			public const int preference_dropdown_material = 2131427398;
 			
 			// aapt resource value: 0x7F0B0047
-			public const int preference_list_fragment = 2131427399;
+			public const int preference_information = 2131427399;
 			
 			// aapt resource value: 0x7F0B0048
-			public const int preference_material = 2131427400;
+			public const int preference_information_material = 2131427400;
 			
 			// aapt resource value: 0x7F0B0049
-			public const int preference_recyclerview = 2131427401;
+			public const int preference_list_fragment = 2131427401;
 			
 			// aapt resource value: 0x7F0B004A
-			public const int preference_widget_checkbox = 2131427402;
+			public const int preference_material = 2131427402;
 			
 			// aapt resource value: 0x7F0B004B
-			public const int preference_widget_seekbar = 2131427403;
+			public const int preference_recyclerview = 2131427403;
 			
 			// aapt resource value: 0x7F0B004C
-			public const int preference_widget_seekbar_material = 2131427404;
+			public const int preference_widget_checkbox = 2131427404;
 			
 			// aapt resource value: 0x7F0B004D
-			public const int preference_widget_switch = 2131427405;
+			public const int preference_widget_seekbar = 2131427405;
 			
 			// aapt resource value: 0x7F0B004E
-			public const int preference_widget_switch_compat = 2131427406;
+			public const int preference_widget_seekbar_material = 2131427406;
 			
 			// aapt resource value: 0x7F0B004F
-			public const int search_activity = 2131427407;
+			public const int preference_widget_switch = 2131427407;
 			
 			// aapt resource value: 0x7F0B0050
-			public const int search_suggestions_list = 2131427408;
+			public const int preference_widget_switch_compat = 2131427408;
 			
 			// aapt resource value: 0x7F0B0051
-			public const int select_dialog_item_material = 2131427409;
+			public const int search_activity = 2131427409;
 			
 			// aapt resource value: 0x7F0B0052
-			public const int select_dialog_multichoice_material = 2131427410;
+			public const int search_suggestions_list = 2131427410;
 			
 			// aapt resource value: 0x7F0B0053
-			public const int select_dialog_singlechoice_material = 2131427411;
+			public const int select_dialog_item_material = 2131427411;
 			
 			// aapt resource value: 0x7F0B0054
-			public const int shows_list_layout = 2131427412;
+			public const int select_dialog_multichoice_material = 2131427412;
 			
 			// aapt resource value: 0x7F0B0055
-			public const int support_simple_spinner_dropdown_item = 2131427413;
+			public const int select_dialog_singlechoice_material = 2131427413;
 			
 			// aapt resource value: 0x7F0B0056
-			public const int tv_episode_detail = 2131427414;
+			public const int shows_list_layout = 2131427414;
 			
 			// aapt resource value: 0x7F0B0057
-			public const int tv_schedule_base = 2131427415;
+			public const int support_simple_spinner_dropdown_item = 2131427415;
 			
 			// aapt resource value: 0x7F0B0058
-			public const int tv_schedule_list = 2131427416;
+			public const int tv_episode_detail = 2131427416;
 			
 			// aapt resource value: 0x7F0B0059
-			public const int tv_show_detail = 2131427417;
+			public const int tv_schedule_base = 2131427417;
+			
+			// aapt resource value: 0x7F0B005A
+			public const int tv_schedule_list = 2131427418;
+			
+			// aapt resource value: 0x7F0B005B
+			public const int tv_show_detail = 2131427419;
 			
 			static Layout()
 			{
