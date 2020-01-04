@@ -35,7 +35,7 @@ namespace com.aa.tvshows.Helper
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"sources:\s?.*?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
         const string StreamplayPostUrl = "https://streamp1ay.me/";
-        const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?|(http.*?m3u8).*?|(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
+        const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
         const string UpstreamSourcePattern = @"sources:\s?.*?\s?(http.*?m3u8).*?\s{0,10}?image.*?(http.*?jpg)";
         const string VideobinSourcePattern = @"sources.*?(http.*?m3u8).*?(http.*?mp4).*?(http.*?mp4).*?\s{0,}poster.*?(http.*?jpg)";
