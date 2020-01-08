@@ -132,6 +132,10 @@ namespace com.aa.tvshows.Helper
                     activity.StartActivity(typeof(GenresActivity));
                     break;
 
+                case AboutId:
+                    activity.StartActivity(typeof(AboutActivity));
+                    break;
+
                 default:
                     return false;
             }

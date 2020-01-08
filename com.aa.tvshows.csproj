@@ -61,7 +61,7 @@
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
-    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidKeyStore>false</AndroidKeyStore>
     <AndroidSigningKeyStore>C:\Users\pakah\AppData\Local\Xamarin\Mono for Android\Keystore\ahmar16\ahmar16.keystore</AndroidSigningKeyStore>
     <AndroidSigningStorePass>.&lt;IamAhmar&gt;.</AndroidSigningStorePass>
     <AndroidSigningKeyAlias>ahmar</AndroidSigningKeyAlias>
@@ -76,6 +76,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutActivity.cs" />
     <Compile Include="EpisodeDetailActivity.cs" />
     <Compile Include="Fragments\MainTabs.cs" />
     <Compile Include="GenresActivity.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="TVScheduleActivity.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
@@ -433,6 +435,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\exo_player_controls.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\about_app.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
