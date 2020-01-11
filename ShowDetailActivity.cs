@@ -34,8 +34,11 @@ namespace com.aa.tvshows
         AppCompatTextView genreText;
         Android.Widget.LinearLayout titleContainer;
 
+
+        SeriesDetails ShowData;
         bool IsTitleContainerVisible = true;
         bool IsTitleVisible = false;
+        bool isFavorite = false;
         readonly int AlphaAnimationDuration = 200;
         readonly double PercentageToShowTitle = 0.600;
         readonly double PercentageToHideTitle = 0.599;
@@ -79,23 +82,27 @@ namespace com.aa.tvshows
         private async void LoadData(string link)
         {
             loadingView.Visibility = ViewStates.Visible;
-            var showData = await WebData.GetDetailsForTVShowSeries(link);
+            ShowData = await WebData.GetDetailsForTVShowSeries(link);
             loadingView.Visibility = ViewStates.Gone;
-            if (showData != null)
+            if (ShowData != null)
             {
+                if (await StorageData.IsMarkedFavorite(ShowData))
+                {
+                    isFavorite = true;
+                    InvalidateOptionsMenu();
+                }
                 collapseToolbar.TitleEnabled = false;
                 SupportActionBar.SetDisplayShowTitleEnabled(false);
-
-                Picasso.With(this).Load(showData.ImageLink).Into(detailImage);
-                collapseToolbar.Title = titleText.Text = showData.Title;
-                descriptionText.Text = "Description: " + showData.Description;
-                releaseText.Text = "Released: " + showData.ReleaseDate;
-                genreText.Text = showData.Genres;
+                Picasso.With(this).Load(ShowData.ImageLink).Into(detailImage);
+                collapseToolbar.Title = titleText.Text = ShowData.Title;
+                descriptionText.Text = "Description: " + ShowData.Description;
+                releaseText.Text = "Released: " + ShowData.ReleaseDate;
+                genreText.Text = ShowData.Genres;
                 
-                if (showData.Seasons != null && showData.Seasons.Count > 0)
+                if (ShowData.Seasons != null && ShowData.Seasons.Count > 0)
                 {
                     var adapter = new PageTabsAdapter(SupportFragmentManager);
-                    foreach(var season in showData.Seasons)
+                    foreach(var season in ShowData.Seasons)
                     {
                         adapter.AddTab(new TitleFragment() { Fragmnet = new MainTabs(DataEnum.DataType.SeasonsEpisodes, season.Episodes.Cast<object>()), Title = season.SeasonName });
                     }
@@ -106,12 +113,12 @@ namespace com.aa.tvshows
                 {
                     seasonEpisodesPager.Visibility = ViewStates.Gone;
                     seasonsHeader.Visibility = ViewStates.Gone;
-                    Error.Instance.ShowErrorSnack($"No episodes were found for {showData.Title}.", titleContainer);
+                    Error.Instance.ShowErrorSnack($"No episodes were found for {ShowData.Title}.", titleContainer);
                 }
             }
             else
             {
-                Error.Instance.ShowErrorSnack($"TV Show '{showData.Title}' could not be loaded.", titleContainer);
+                Error.Instance.ShowErrorSnack($"TV Show '{ShowData.Title}' could not be loaded.", titleContainer);
             }
         }
 
@@ -126,12 +133,28 @@ namespace com.aa.tvshows
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
             optionsMenu = menu;
-            return AppView.ShowOptionsMenu(optionsMenu, this);
+            return AppView.ShowOptionsMenu(optionsMenu, this, isFavorite);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            return AppView.OnOptionsItemSelected(item, this);
+            Action favAction = null;
+            if (item.ItemId == AppView.AddFavoritesId)
+            {
+                favAction = new Action(() => 
+                {
+                    StorageData.SaveSeriesToFavoritesFile(ShowData);
+                });
+            }
+            else if (item.ItemId == AppView.RemoveFavoritesId)
+            {
+                favAction = new Action(() =>
+                {
+                    StorageData.RemoveSeriesFromFavoritesFile(ShowData);
+                });
+            }
+
+            return AppView.OnOptionsItemSelected(item, this, favAction);
         }
 
         public override bool OnSupportNavigateUp()

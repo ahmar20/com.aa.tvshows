@@ -7,6 +7,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using System;
+using System.Threading.Tasks;
 
 namespace com.aa.tvshows.Helper
 {
@@ -16,10 +17,12 @@ namespace com.aa.tvshows.Helper
         const int SearchId = 101;
         public const int ReloadId = 102;
         const int GenresId = 103;
+        public const int AddFavoritesId = 104;
+        public const int RemoveFavoritesId = 105;
         const int SettingsId = 110;
         const int AboutId = 111;
-        const int mainItemsGroupId = 200;
-        const int appItemsGroupId = 201;
+        public const int mainItemsGroupId = 200;
+        public const int appItemsGroupId = 201;
 
         public static void SetActionBarForActivity(Toolbar toolbar, AppCompatActivity activity)
         {
@@ -65,7 +68,7 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public static bool ShowOptionsMenu(IMenu menu, AppCompatActivity activity)
+        public static bool ShowOptionsMenu(IMenu menu, AppCompatActivity activity, bool isFavorite = false)
         {
             if (activity == null)
             {
@@ -104,6 +107,21 @@ namespace com.aa.tvshows.Helper
                 menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.IfRoom);
+            }
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("SHOWDETAIL"))
+            {
+                if (isFavorite)
+                {
+                    menu.Add(mainItemsGroupId, RemoveFavoritesId, itemsOrder++, "Remove Favorite")
+                        .SetIcon(Resource.Drawable.baseline_favorite_24)
+                        .SetShowAsAction(ShowAsAction.Always);
+                }
+                else
+                {
+                    menu.Add(mainItemsGroupId, AddFavoritesId, itemsOrder++, "Mark Favorite")
+                        .SetIcon(Resource.Drawable.baseline_favorite_border_24)
+                        .SetShowAsAction(ShowAsAction.Always);
+                }
             }
             //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
             menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
