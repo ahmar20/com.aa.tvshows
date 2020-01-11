@@ -45,8 +45,6 @@ namespace com.aa.tvshows
         readonly double PercentageToShowTitle = 0.600;
         readonly double PercentageToHideTitle = 0.599;
 
-        IMenu optionsMenu;
-
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -170,7 +168,7 @@ namespace com.aa.tvshows
                 menu.Add(AppView.mainItemsGroupId, AppView.GoToSeriesHomeId, 1, "Series Home")
                     .SetIcon(Resource.Drawable.baseline_store_24)
                     .SetShowAsAction(ShowAsAction.Always);
-            return AppView.ShowOptionsMenu(optionsMenu, this);
+            return AppView.ShowOptionsMenu(menu, this);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
