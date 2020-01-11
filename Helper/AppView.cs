@@ -19,6 +19,7 @@ namespace com.aa.tvshows.Helper
         const int GenresId = 103;
         public const int AddFavoritesId = 104;
         public const int RemoveFavoritesId = 105;
+        public const int GoToSeriesHomeId = 106;
         const int SettingsId = 110;
         const int AboutId = 111;
         public const int mainItemsGroupId = 200;
@@ -80,7 +81,7 @@ namespace com.aa.tvshows.Helper
                 throw new ArgumentNullException(nameof(menu));
             }
 
-            int itemsOrder = 0;
+            int itemsOrder = 1;
             if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN"))
             {
                 menu.Add(mainItemsGroupId, SearchId, itemsOrder++, "Search")
@@ -163,6 +164,7 @@ namespace com.aa.tvshows.Helper
         public static void HandleItemShowEpisodeClick(object item, Context context)
         {
             var pageLink = string.Empty;
+            var canGoBackToSeriesHome = false;
             if (item is CalenderScheduleList calenderItem)
             {
                 pageLink = calenderItem.PageLink;
@@ -190,6 +192,7 @@ namespace com.aa.tvshows.Helper
             else if (item is ShowEpisodeDetails episodeDetailLink)
             {
                 pageLink = episodeDetailLink.EpisodeLink;
+                canGoBackToSeriesHome = true;
             }
 
             if (string.IsNullOrEmpty(pageLink))
@@ -209,6 +212,7 @@ namespace com.aa.tvshows.Helper
                 // tv episode detail
                 var intent = new Android.Content.Intent(context, typeof(EpisodeDetailActivity));
                 intent.PutExtra("itemLink", pageLink);
+                intent.PutExtra("canGoBackToSeriesHome", canGoBackToSeriesHome);
                 context.StartActivity(intent);
             }
         }

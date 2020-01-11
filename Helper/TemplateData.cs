@@ -120,6 +120,7 @@ namespace com.aa.tvshows.Helper
         public string EpisodeSummary { get; set; }
         public string EpisodeImage { get; set; }
         public string EpisodeLink { get; set; }
+        public string EpisodeShowLink { get; set; }
         public string EpisodeFullNameNumber { get; set; }
         public string EpisodeAirDate { get; set; }
         public bool IsEpisodeWatchable { get; set; }

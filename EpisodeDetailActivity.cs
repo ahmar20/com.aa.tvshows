@@ -37,8 +37,10 @@ namespace com.aa.tvshows
 
         Android.Widget.LinearLayout titleContainer;
 
+        ShowEpisodeDetails epData;
         bool IsTitleContainerVisible = true;
         bool IsTitleVisible = false;
+        bool canGoBackToSeriesHome = false;
         readonly int AlphaAnimationDuration = 200;
         readonly double PercentageToShowTitle = 0.600;
         readonly double PercentageToHideTitle = 0.599;
@@ -67,6 +69,7 @@ namespace com.aa.tvshows
             callBack = new JavaValueCallback();
             callBack.ValueReceived += JavaCallBack_ValueReceived;
 
+            canGoBackToSeriesHome = Intent.GetBooleanExtra("canGoBackToSeriesHome", false);
             var link = Intent.GetStringExtra("itemLink");
             LoadEpisodeData(link);
         }
@@ -112,7 +115,7 @@ namespace com.aa.tvshows
         private async void LoadEpisodeData(string link)
         {
             loadingView.Visibility = Android.Views.ViewStates.Visible;
-            ShowEpisodeDetails epData = await WebData.GetDetailsForTVShowEpisode(link);
+            epData = await WebData.GetDetailsForTVShowEpisode(link);
             loadingView.Visibility = Android.Views.ViewStates.Gone;
             if (epData != null)
             {
@@ -163,13 +166,26 @@ namespace com.aa.tvshows
 
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            optionsMenu = menu;
+            if (!canGoBackToSeriesHome)
+                menu.Add(AppView.mainItemsGroupId, AppView.GoToSeriesHomeId, 1, "Series Home")
+                    .SetIcon(Resource.Drawable.baseline_store_24)
+                    .SetShowAsAction(ShowAsAction.Always);
             return AppView.ShowOptionsMenu(optionsMenu, this);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            return AppView.OnOptionsItemSelected(item, this);
+            Action seriesHome = null;
+            if (item.ItemId == AppView.GoToSeriesHomeId)
+            {
+                seriesHome = new Action(() => 
+                {
+                    var intent = new Intent(this, typeof(ShowDetailActivity));
+                    intent.PutExtra("itemLink", epData?.EpisodeShowLink);
+                    StartActivity(intent);
+                });
+            }
+            return AppView.OnOptionsItemSelected(item, this, seriesHome);
         }
 
         public override bool OnSupportNavigateUp()

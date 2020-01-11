@@ -583,6 +583,10 @@ namespace com.aa.tvshows.Helper
                     var itemData = new ShowEpisodeDetails();
                     if (doc.DocumentNode.Descendants("h1").Where(a => a.HasClass("channel-title")).FirstOrDefault() is HtmlNode _titleNode)
                     {
+                        if (_titleNode.Descendants("a").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "url").FirstOrDefault() is HtmlNode showUrlNode)
+                        {
+                            itemData.EpisodeShowLink = showUrlNode.GetAttributeValue("href", string.Empty);
+                        }
                         if (_titleNode.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "name").FirstOrDefault() is HtmlNode titleNode)
                         {
                             itemData.EpisodeShowTitle = WebUtility.HtmlDecode(titleNode.GetDirectInnerText().Trim());
