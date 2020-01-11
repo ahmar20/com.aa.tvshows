@@ -78,7 +78,7 @@ namespace com.aa.tvshows.Helper
             }
 
             int itemsOrder = 0;
-            if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.Ordinal))
+            if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN"))
             {
                 menu.Add(mainItemsGroupId, SearchId, itemsOrder++, "Search")
                     .SetIcon(Resource.Drawable.baseline_search_24)
@@ -93,13 +93,13 @@ namespace com.aa.tvshows.Helper
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.Never);
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.Ordinal))
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
                 menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.IfRoom);
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.Ordinal))
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES"))
             {
                 menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
