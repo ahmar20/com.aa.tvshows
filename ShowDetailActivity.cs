@@ -141,6 +141,8 @@ namespace com.aa.tvshows
                 favAction = new Action(() => 
                 {
                     StorageData.SaveSeriesToFavoritesFile(ShowData);
+                    isFavorite = true;
+                    InvalidateOptionsMenu();
                 });
             }
             else if (item.ItemId == AppView.RemoveFavoritesId)
@@ -148,6 +150,8 @@ namespace com.aa.tvshows
                 favAction = new Action(() =>
                 {
                     StorageData.RemoveSeriesFromFavoritesFile(ShowData);
+                    isFavorite = false;
+                    InvalidateOptionsMenu();
                 });
             }
 
