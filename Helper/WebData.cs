@@ -511,21 +511,25 @@ namespace com.aa.tvshows.Helper
                         foreach (HtmlNode episodeNode in lastEpisode.Descendants("a").Where(a => !string.IsNullOrEmpty(a.GetAttributeValue("href", string.Empty))))
                         {
                             // first one is last episode
+                            string epAirDate = "Unknown";
+                            if (episodeNode.NextSibling != null && episodeNode.NextSibling.NodeType == HtmlNodeType.Text)
+                            {
+                                epAirDate = episodeNode.NextSibling.InnerText.Split("\n").FirstOrDefault()?.Trim();
+                            }
+                            var episode = new ShowEpisodeDetails()
+                            {
+                                EpisodeFullNameNumber = episodeNode.GetDirectInnerText().Trim(),
+                                EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty),
+                                EpisodeAirDate = epAirDate
+                            };
+
                             if (itemData.LastEpisode == null)
                             {
-                                itemData.LastEpisode = new ShowEpisodeDetails()
-                                {
-                                    EpisodeShowTitle = episodeNode.GetDirectInnerText().Trim(),
-                                    EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty)
-                                };
+                                itemData.LastEpisode = episode;
                             }
                             else
                             {
-                                itemData.NextEpisode = new ShowEpisodeDetails()
-                                {
-                                    EpisodeShowTitle = episodeNode.GetDirectInnerText().Trim(),
-                                    EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty)
-                                };
+                                itemData.NextEpisode = episode;
                             }
                         }
                     }
