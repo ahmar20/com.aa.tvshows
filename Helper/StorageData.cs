@@ -41,7 +41,7 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
-        private static async Task<List<SeriesDetails>> GetSeriesListFromFavoritesFile()
+        public static async Task<List<SeriesDetails>> GetSeriesListFromFavoritesFile()
         {
             if (await GetFavoritesFileData() is string fileData)
             {
