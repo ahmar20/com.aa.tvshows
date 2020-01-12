@@ -88,6 +88,11 @@ namespace com.aa.tvshows
                 Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
                 Title = "New Episodes"
             });
+            tabsAdapter.AddTab(new TitleFragment()
+            {
+                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
+                Title = "Your Favorites"
+            });
             tabLayout.SetupWithViewPager(viewPager);
         }
     }

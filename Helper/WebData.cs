@@ -480,7 +480,7 @@ namespace com.aa.tvshows.Helper
             {
                 if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("show-summary")).FirstOrDefault() is HtmlNode summaryDiv)
                 {
-                    var itemData = new SeriesDetails();
+                    var itemData = new SeriesDetails() { SeriesLink = link };
                     if (doc.DocumentNode.Descendants("h1").Where(a => a.HasClass("channel-title")).FirstOrDefault() is HtmlNode _titleNode)
                     {
                         if (_titleNode.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "name").FirstOrDefault() is HtmlNode titleNode)

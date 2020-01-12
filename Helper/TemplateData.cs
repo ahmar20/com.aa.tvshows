@@ -94,6 +94,7 @@ namespace com.aa.tvshows.Helper
     {
         public string Title { get; set; }
         public string ImageLink { get; set; }
+        public string SeriesLink { get; set; }
         public string Description { get; set; }
         public string ReleaseDate { get; set; }
         public string Genres { get; set; }

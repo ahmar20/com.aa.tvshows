@@ -197,6 +197,10 @@ namespace com.aa.tvshows.Helper
                 pageLink = episodeDetailLink.EpisodeLink;
                 canGoBackToSeriesHome = true;
             }
+            else if (item is SeriesDetails seriesDetailLink)
+            {
+                pageLink = seriesDetailLink.SeriesLink;
+            }
 
             if (string.IsNullOrEmpty(pageLink))
             {

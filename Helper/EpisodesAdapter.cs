@@ -96,6 +96,21 @@ namespace com.aa.tvshows.Helper
                         epHolder.Description.Text = showItem.EpisodeDetail;
                         break;
 
+                    case DataEnum.DataType.UserFavorites:
+                        var favItem = Items[position] as SeriesDetails;
+                        Picasso.With(epHolder.ItemView.Context).Load(favItem.ImageLink).Into(epHolder.Image);
+                        epHolder.Title.Text = favItem.Title;
+                        var episodesCount = 0;
+                        favItem.Seasons.ForEach(a => episodesCount += a.Episodes.Count);
+                        epHolder.EpisodeDetail.Text = string.Format("Total Seasons: {0} - Total Episodes: {1}",
+                            favItem.Seasons.Count, episodesCount);
+                        epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Unknown" : 
+                            string.Format("Last Episode: {0} @ {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
+                        epHolder.NextEpisode.Text = epHolder.NextEpisode is null ? "Unknown" : 
+                            string.Format("Next Episode: {0} @ {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
+                        epHolder.Description.Text = favItem.Description;
+                        break;
+
                     case DataEnum.DataType.TVSchedule:
                         var scheduleItem = Items[position] as CalenderScheduleList;
                         Picasso.With(epHolder.ItemView.Context).Load(scheduleItem.ImageLink).Into(epHolder.Image);
@@ -177,6 +192,10 @@ namespace com.aa.tvshows.Helper
                         itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episode_stream_list, parent, false);
                         break;
 
+                    case (int)DataEnum.DataType.UserFavorites:
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.user_favorites_list, parent, false);
+                        break;
+
                     default: break;
                 }
             }
@@ -226,6 +245,14 @@ namespace com.aa.tvshows.Helper
                 {
                     var items = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
                     if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
+                    {
+                        adapter.AddItem(items.ToArray());
+                    }
+                }
+                else if (dataType == DataEnum.DataType.UserFavorites)
+                {
+                    var items = await StorageData.GetSeriesListFromFavoritesFile().ConfigureAwait(true);
+                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<SeriesDetails> adapter)
                     {
                         adapter.AddItem(items.ToArray());
                     }
@@ -288,6 +315,10 @@ namespace com.aa.tvshows.Helper
             if (type == typeof(EpisodeStreamLink))
             {
                 return (int)DataEnum.DataType.EpisodeStreamLinks;
+            }
+            if (type == typeof(SeriesDetails))
+            {
+                return (int)DataEnum.DataType.UserFavorites;
             }
 
             return (int)DataEnum.DataType.None;
@@ -353,6 +384,9 @@ namespace com.aa.tvshows.Helper
         public AppCompatTextView EpisodeDetail { get; private set; }
         public AppCompatTextView Description { get; private set; }
 
+        public AppCompatTextView LastEpisode { get; private set; }
+        public AppCompatTextView NextEpisode { get; private set; }
+
         public DataEnum.DataType ItemType { get; private set; }
 
         public EpisodesViewHolder(View itemView, DataEnum.DataType type, Action<int> itemClick, Action<int> itemLongClick) : base(itemView)
@@ -389,6 +423,15 @@ namespace com.aa.tvshows.Helper
             {
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.stream_host_titletext);
                 Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.stream_host_imageview);
+            }
+            else if (ItemType == DataEnum.DataType.UserFavorites)
+            {
+                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.favorites_list_imageView);
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_title);
+                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_episode_detail);
+                Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_info_detail);
+                NextEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_next_ep_detail);
+                LastEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_last_ep_detail);
             }
 
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);
