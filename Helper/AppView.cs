@@ -123,6 +123,9 @@ namespace com.aa.tvshows.Helper
                         .SetIcon(Resource.Drawable.baseline_favorite_border_24)
                         .SetShowAsAction(ShowAsAction.Always);
                 }
+                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload")
+                    .SetIcon(Resource.Drawable.baseline_refresh_24)
+                    .SetShowAsAction(ShowAsAction.IfRoom);
             }
             //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
             menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);

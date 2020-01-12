@@ -154,6 +154,13 @@ namespace com.aa.tvshows
                     InvalidateOptionsMenu();
                 });
             }
+            else if (item.ItemId == AppView.ReloadId)
+            {
+                favAction = new Action(() =>
+                {
+                    LoadData(Intent.Extras.GetString("itemLink"));
+                });
+            }
 
             return AppView.OnOptionsItemSelected(item, this, favAction);
         }

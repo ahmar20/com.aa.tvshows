@@ -168,6 +168,10 @@ namespace com.aa.tvshows
                 menu.Add(AppView.mainItemsGroupId, AppView.GoToSeriesHomeId, 1, "Series Home")
                     .SetIcon(Resource.Drawable.baseline_store_24)
                     .SetShowAsAction(ShowAsAction.Always);
+            menu.Add(AppView.mainItemsGroupId, AppView.ReloadId, 2, "Reload")
+                    .SetIcon(Resource.Drawable.baseline_refresh_24)
+                    .SetShowAsAction(ShowAsAction.IfRoom);
+
             return AppView.ShowOptionsMenu(menu, this);
         }
 
@@ -181,6 +185,13 @@ namespace com.aa.tvshows
                     var intent = new Intent(this, typeof(ShowDetailActivity));
                     intent.PutExtra("itemLink", epData?.EpisodeShowLink);
                     StartActivity(intent);
+                });
+            }
+            else if (item.ItemId == AppView.ReloadId)
+            {
+                seriesHome = new Action(() =>
+                {
+                    LoadEpisodeData(Intent.GetStringExtra("itemLink"));
                 });
             }
             return AppView.OnOptionsItemSelected(item, this, seriesHome);
