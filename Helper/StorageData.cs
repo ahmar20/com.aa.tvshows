@@ -17,11 +17,10 @@ namespace com.aa.tvshows.Helper
     public static class StorageData
     {
         private static readonly Context DataContext = Application.Context;
-        private const string FavoriteItemPreText = "FavoriteItem_";
         private static readonly string GetAppDataPath = System.Environment.GetFolderPath
-            (System.Environment.SpecialFolder.ApplicationData, System.Environment.SpecialFolderOption.Create);
+            (System.Environment.SpecialFolder.Personal, System.Environment.SpecialFolderOption.Create);
         private const string FavoritesFileName = "UserFavorites.json";
-        private static readonly string FavoritesFilePath = GetAppDataPath + FavoritesFileName;
+        private static readonly string FavoritesFilePath = GetAppDataPath + "/" + FavoritesFileName;
 
         public static async Task<bool> IsMarkedFavorite(SeriesDetails series)
         {
@@ -120,7 +119,7 @@ namespace com.aa.tvshows.Helper
                 }
                 else
                 {
-                    using var writer = File.CreateText(FavoriteItemPreText);
+                    using var writer = File.CreateText(FavoritesFilePath);
                     await writer.WriteAsync(data);
                 }
                 return true;
