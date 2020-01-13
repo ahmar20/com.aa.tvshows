@@ -57,6 +57,8 @@ namespace com.aa.tvshows
 
             seasonsHeader = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             seasonEpisodesPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            seasonsHeader.Visibility = ViewStates.Gone;
+            seasonEpisodesPager.Visibility = ViewStates.Gone;
             seasonsHeader.TabMode = TabLayout.ModeScrollable;
 
             detailImage = FindViewById<AppCompatImageView>(Resource.Id.image_toolbar_main_image);
@@ -82,6 +84,8 @@ namespace com.aa.tvshows
             loadingView.Visibility = ViewStates.Visible;
             ShowData = await WebData.GetDetailsForTVShowSeries(link);
             loadingView.Visibility = ViewStates.Gone;
+            seasonsHeader.Visibility = ViewStates.Visible;
+            seasonEpisodesPager.Visibility = ViewStates.Visible;
             if (ShowData != null)
             {
                 if (await StorageData.IsMarkedFavorite(ShowData))
