@@ -108,7 +108,7 @@ namespace com.aa.tvshows.Helper
                         epHolder.NextEpisode.Text = epHolder.NextEpisode is null ? "Unknown" : 
                             string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
-                        epHolder.FavoriteRemoveBtn.Click += delegate { StorageData.RemoveSeriesFromFavoritesFile(favItem); };
+                        epHolder.FavoriteRemoveBtn.Click += delegate { StorageData.RemoveSeriesFromFavoritesFile(favItem); NotifyItemRemoved(position); };
                         break;
 
                     case DataEnum.DataType.TVSchedule:
@@ -343,8 +343,9 @@ namespace com.aa.tvshows.Helper
         {
             if (items != null)
             {
+                var currentPos = Items.Count - 1;
                 Items.AddRange(items);
-                NotifyDataSetChanged();
+                NotifyItemRangeInserted(currentPos, items.Length);
             }
         }
 
