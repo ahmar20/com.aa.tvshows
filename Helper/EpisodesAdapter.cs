@@ -17,7 +17,6 @@ namespace com.aa.tvshows.Helper
         View LoadingView { get; set; }
 
         private readonly DataEnum.DataType dataType = DataEnum.DataType.None;
-        private readonly DataEnum.GenreDataType genresType;
 
         public event EventHandler<int> ItemClick = delegate { };
         public event EventHandler<int> ItemLongClick = delegate { };
@@ -105,10 +104,11 @@ namespace com.aa.tvshows.Helper
                         epHolder.EpisodeDetail.Text = string.Format("Total Seasons: {0} - Total Episodes: {1}",
                             favItem.Seasons.Count, episodesCount);
                         epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Unknown" : 
-                            string.Format("Last Episode: {0} @ {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
+                            string.Format("Last Episode: {0} {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
                         epHolder.NextEpisode.Text = epHolder.NextEpisode is null ? "Unknown" : 
-                            string.Format("Next Episode: {0} @ {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
+                            string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
+                        epHolder.FavoriteRemoveBtn.Click += delegate { StorageData.RemoveSeriesFromFavoritesFile(favItem); };
                         break;
 
                     case DataEnum.DataType.TVSchedule:
@@ -386,6 +386,7 @@ namespace com.aa.tvshows.Helper
 
         public AppCompatTextView LastEpisode { get; private set; }
         public AppCompatTextView NextEpisode { get; private set; }
+        public AppCompatButton FavoriteRemoveBtn { get; private set; }
 
         public DataEnum.DataType ItemType { get; private set; }
 
@@ -432,6 +433,7 @@ namespace com.aa.tvshows.Helper
                 Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_info_detail);
                 NextEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_next_ep_detail);
                 LastEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_last_ep_detail);
+                FavoriteRemoveBtn = itemView.FindViewById<AppCompatButton>(Resource.Id.favorites_list_remove_btn);
             }
 
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);
