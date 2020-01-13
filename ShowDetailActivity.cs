@@ -91,8 +91,8 @@ namespace com.aa.tvshows
                 if (await StorageData.IsMarkedFavorite(ShowData))
                 {
                     isFavorite = true;
-                    InvalidateOptionsMenu();
                 }
+                InvalidateOptionsMenu();
                 collapseToolbar.TitleEnabled = false;
                 SupportActionBar.SetDisplayShowTitleEnabled(false);
                 Picasso.With(this).Load(ShowData.ImageLink).Into(detailImage);
@@ -134,7 +134,25 @@ namespace com.aa.tvshows
 
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            return AppView.ShowOptionsMenu(menu, this, isFavorite);
+            if (ShowData != null)
+            {
+                if (isFavorite)
+                {
+                    menu.Add(AppView.mainItemsGroupId, AppView.RemoveFavoritesId, 1, "Remove Favorite")
+                        .SetIcon(Resource.Drawable.baseline_favorite_24)
+                        .SetShowAsAction(ShowAsAction.Always);
+                }
+                else
+                {
+                    menu.Add(AppView.mainItemsGroupId, AppView.AddFavoritesId, 1, "Mark Favorite")
+                        .SetIcon(Resource.Drawable.baseline_favorite_border_24)
+                        .SetShowAsAction(ShowAsAction.Always);
+                }
+            }
+            menu.Add(AppView.mainItemsGroupId, AppView.ReloadId, 2, "Reload")
+                .SetIcon(Resource.Drawable.baseline_refresh_24)
+                .SetShowAsAction(ShowAsAction.IfRoom);
+            return AppView.ShowOptionsMenu(menu, this);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
@@ -162,7 +180,10 @@ namespace com.aa.tvshows
             {
                 favAction = new Action(() =>
                 {
-                    LoadData(Intent.Extras.GetString("itemLink"));
+                    if (loadingView.Visibility != ViewStates.Visible)
+                        LoadData(Intent.Extras.GetString("itemLink"));
+                    else
+                        Error.Instance.ShowErrorTip("Data is loading... Please wait!", this);
                 });
             }
 

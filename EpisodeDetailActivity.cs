@@ -117,6 +117,7 @@ namespace com.aa.tvshows
             loadingView.Visibility = Android.Views.ViewStates.Gone;
             if (epData != null)
             {
+                InvalidateOptionsMenu();
                 collapseToolbar.TitleEnabled = false;
                 SupportActionBar.SetDisplayShowTitleEnabled(false);
 
@@ -164,10 +165,12 @@ namespace com.aa.tvshows
 
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            if (!canGoBackToSeriesHome)
+            if (!canGoBackToSeriesHome && epData != null)
+            {
                 menu.Add(AppView.mainItemsGroupId, AppView.GoToSeriesHomeId, 1, "Series Home")
                     .SetIcon(Resource.Drawable.baseline_store_24)
                     .SetShowAsAction(ShowAsAction.Always);
+            }   
             menu.Add(AppView.mainItemsGroupId, AppView.ReloadId, 2, "Reload")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.IfRoom);
@@ -183,7 +186,7 @@ namespace com.aa.tvshows
                 seriesHome = new Action(() => 
                 {
                     var intent = new Intent(this, typeof(ShowDetailActivity));
-                    intent.PutExtra("itemLink", epData?.EpisodeShowLink);
+                    intent.PutExtra("itemLink", epData.EpisodeShowLink);
                     StartActivity(intent);
                 });
             }
@@ -191,7 +194,10 @@ namespace com.aa.tvshows
             {
                 seriesHome = new Action(() =>
                 {
-                    LoadEpisodeData(Intent.GetStringExtra("itemLink"));
+                    if (loadingView.Visibility != ViewStates.Visible)
+                        LoadEpisodeData(Intent.GetStringExtra("itemLink"));
+                    else
+                        Error.Instance.ShowErrorTip("Data is loading... Please wait!", this);
                 });
             }
             return AppView.OnOptionsItemSelected(item, this, seriesHome);

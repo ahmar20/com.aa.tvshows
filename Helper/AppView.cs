@@ -69,7 +69,7 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public static bool ShowOptionsMenu(IMenu menu, AppCompatActivity activity, bool isFavorite = false)
+        public static bool ShowOptionsMenu(IMenu menu, AppCompatActivity activity)
         {
             if (activity == null)
             {
@@ -93,9 +93,9 @@ namespace com.aa.tvshows.Helper
                 menu.Add(mainItemsGroupId, GenresId, itemsOrder++, "Browse by Genres")
                     .SetIcon(Resource.Drawable.film)
                     .SetShowAsAction(ShowAsAction.IfRoom);
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
+                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.Never);
+                    .SetShowAsAction(ShowAsAction.IfRoom);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
@@ -106,24 +106,6 @@ namespace com.aa.tvshows.Helper
             else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES"))
             {
                 menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
-                    .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
-            }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("SHOWDETAIL"))
-            {
-                if (isFavorite)
-                {
-                    menu.Add(mainItemsGroupId, RemoveFavoritesId, itemsOrder++, "Remove Favorite")
-                        .SetIcon(Resource.Drawable.baseline_favorite_24)
-                        .SetShowAsAction(ShowAsAction.Always);
-                }
-                else
-                {
-                    menu.Add(mainItemsGroupId, AddFavoritesId, itemsOrder++, "Mark Favorite")
-                        .SetIcon(Resource.Drawable.baseline_favorite_border_24)
-                        .SetShowAsAction(ShowAsAction.Always);
-                }
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.IfRoom);
             }
