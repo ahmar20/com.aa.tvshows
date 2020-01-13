@@ -23,8 +23,7 @@
             android:layout_width="80dp"
             android:layout_height="120dp"
             android:layout_margin="5dp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentLeft="true"/>
+            android:layout_alignParentStart="true"/>
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -32,6 +31,7 @@
             style="@style/TextAppearance.AppCompat.Title"
             android:layout_marginStart="5dp"
             android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/favorites_list_remove_btn"
             android:layout_toRightOf="@id/favorites_list_imageView"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:ellipsize="end" />
@@ -39,6 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:id="@+id/title_bottom_space"
+            android:layout_toLeftOf="@id/favorites_list_remove_btn"
             android:layout_below="@id/favorites_list_title"
             android:layout_toRightOf="@id/favorites_list_imageView"
         />
@@ -47,6 +48,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/favorites_list_episode_detail"
             android:layout_below="@id/title_bottom_space"
+            android:layout_toLeftOf="@id/favorites_list_remove_btn"
             android:layout_toRightOf="@id/favorites_list_imageView"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:layout_marginStart="5dp"
@@ -85,6 +87,14 @@
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:layout_marginStart="5dp"
             android:ellipsize="end" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="x"
+            android:tooltipText="Remove"
+            android:id="@+id/favorites_list_remove_btn"
+            android:layout_alignParentEnd="true"
+        />
     </RelativeLayout>
 
 </com.google.android.material.card.MaterialCardView>
