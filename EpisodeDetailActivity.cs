@@ -37,13 +37,13 @@ namespace com.aa.tvshows
 
         Android.Widget.LinearLayout titleContainer;
 
+        ShowEpisodeDetails epData;
         bool IsTitleContainerVisible = true;
         bool IsTitleVisible = false;
+        bool canGoBackToSeriesHome = false;
         readonly int AlphaAnimationDuration = 200;
         readonly double PercentageToShowTitle = 0.600;
         readonly double PercentageToHideTitle = 0.599;
-
-        IMenu optionsMenu;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -67,6 +67,7 @@ namespace com.aa.tvshows
             callBack = new JavaValueCallback();
             callBack.ValueReceived += JavaCallBack_ValueReceived;
 
+            canGoBackToSeriesHome = Intent.GetBooleanExtra("canGoBackToSeriesHome", false);
             var link = Intent.GetStringExtra("itemLink");
             LoadEpisodeData(link);
         }
@@ -112,10 +113,11 @@ namespace com.aa.tvshows
         private async void LoadEpisodeData(string link)
         {
             loadingView.Visibility = Android.Views.ViewStates.Visible;
-            ShowEpisodeDetails epData = await WebData.GetDetailsForTVShowEpisode(link);
+            epData = await WebData.GetDetailsForTVShowEpisode(link);
             loadingView.Visibility = Android.Views.ViewStates.Gone;
             if (epData != null)
             {
+                InvalidateOptionsMenu();
                 collapseToolbar.TitleEnabled = false;
                 SupportActionBar.SetDisplayShowTitleEnabled(false);
 
@@ -163,13 +165,42 @@ namespace com.aa.tvshows
 
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            optionsMenu = menu;
-            return AppView.ShowOptionsMenu(optionsMenu, this);
+            if (!canGoBackToSeriesHome && epData != null)
+            {
+                menu.Add(AppView.mainItemsGroupId, AppView.GoToSeriesHomeId, 1, "Series Home")
+                    .SetIcon(Resource.Drawable.baseline_store_24)
+                    .SetShowAsAction(ShowAsAction.Always);
+            }   
+            menu.Add(AppView.mainItemsGroupId, AppView.ReloadId, 2, "Reload")
+                    .SetIcon(Resource.Drawable.baseline_refresh_24)
+                    .SetShowAsAction(ShowAsAction.IfRoom);
+
+            return AppView.ShowOptionsMenu(menu, this);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            return AppView.OnOptionsItemSelected(item, this);
+            Action seriesHome = null;
+            if (item.ItemId == AppView.GoToSeriesHomeId)
+            {
+                seriesHome = new Action(() => 
+                {
+                    var intent = new Intent(this, typeof(ShowDetailActivity));
+                    intent.PutExtra("itemLink", epData.EpisodeShowLink);
+                    StartActivity(intent);
+                });
+            }
+            else if (item.ItemId == AppView.ReloadId)
+            {
+                seriesHome = new Action(() =>
+                {
+                    if (loadingView.Visibility != ViewStates.Visible)
+                        LoadEpisodeData(Intent.GetStringExtra("itemLink"));
+                    else
+                        Error.Instance.ShowErrorTip("Data is loading... Please wait!", this);
+                });
+            }
+            return AppView.OnOptionsItemSelected(item, this, seriesHome);
         }
 
         public override bool OnSupportNavigateUp()

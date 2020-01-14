@@ -17,13 +17,17 @@ namespace com.aa.tvshows.Helper
         public enum DataType
         {
             None,
+
             PopularShows,
             NewPopularEpisodes,
             NewEpisodes,
+            UserFavorites,
+
             TVSchedule,
             Genres,
             SearchSuggestions,
             Search,
+            
             SeasonsEpisodes,
             EpisodeStreamLinks
         }

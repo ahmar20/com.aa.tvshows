@@ -480,7 +480,7 @@ namespace com.aa.tvshows.Helper
             {
                 if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("show-summary")).FirstOrDefault() is HtmlNode summaryDiv)
                 {
-                    var itemData = new SeriesDetails();
+                    var itemData = new SeriesDetails() { SeriesLink = link };
                     if (doc.DocumentNode.Descendants("h1").Where(a => a.HasClass("channel-title")).FirstOrDefault() is HtmlNode _titleNode)
                     {
                         if (_titleNode.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "name").FirstOrDefault() is HtmlNode titleNode)
@@ -511,21 +511,25 @@ namespace com.aa.tvshows.Helper
                         foreach (HtmlNode episodeNode in lastEpisode.Descendants("a").Where(a => !string.IsNullOrEmpty(a.GetAttributeValue("href", string.Empty))))
                         {
                             // first one is last episode
+                            string epAirDate = "Unknown";
+                            if (episodeNode.NextSibling != null && episodeNode.NextSibling.NodeType == HtmlNodeType.Text)
+                            {
+                                epAirDate = episodeNode.NextSibling.InnerText.Split("\n").FirstOrDefault()?.Trim();
+                            }
+                            var episode = new ShowEpisodeDetails()
+                            {
+                                EpisodeFullNameNumber = episodeNode.GetDirectInnerText().Trim(),
+                                EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty),
+                                EpisodeAirDate = epAirDate
+                            };
+
                             if (itemData.LastEpisode == null)
                             {
-                                itemData.LastEpisode = new ShowEpisodeDetails()
-                                {
-                                    EpisodeShowTitle = episodeNode.GetDirectInnerText().Trim(),
-                                    EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty)
-                                };
+                                itemData.LastEpisode = episode;
                             }
                             else
                             {
-                                itemData.NextEpisode = new ShowEpisodeDetails()
-                                {
-                                    EpisodeShowTitle = episodeNode.GetDirectInnerText().Trim(),
-                                    EpisodeLink = episodeNode.GetAttributeValue("href", string.Empty)
-                                };
+                                itemData.NextEpisode = episode;
                             }
                         }
                     }
@@ -583,6 +587,10 @@ namespace com.aa.tvshows.Helper
                     var itemData = new ShowEpisodeDetails();
                     if (doc.DocumentNode.Descendants("h1").Where(a => a.HasClass("channel-title")).FirstOrDefault() is HtmlNode _titleNode)
                     {
+                        if (_titleNode.Descendants("a").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "url").FirstOrDefault() is HtmlNode showUrlNode)
+                        {
+                            itemData.EpisodeShowLink = showUrlNode.GetAttributeValue("href", string.Empty);
+                        }
                         if (_titleNode.Descendants("span").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "name").FirstOrDefault() is HtmlNode titleNode)
                         {
                             itemData.EpisodeShowTitle = WebUtility.HtmlDecode(titleNode.GetDirectInnerText().Trim());

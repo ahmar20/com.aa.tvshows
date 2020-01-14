@@ -7,6 +7,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using System;
+using System.Threading.Tasks;
 
 namespace com.aa.tvshows.Helper
 {
@@ -16,10 +17,13 @@ namespace com.aa.tvshows.Helper
         const int SearchId = 101;
         public const int ReloadId = 102;
         const int GenresId = 103;
+        public const int AddFavoritesId = 104;
+        public const int RemoveFavoritesId = 105;
+        public const int GoToSeriesHomeId = 106;
         const int SettingsId = 110;
         const int AboutId = 111;
-        const int mainItemsGroupId = 200;
-        const int appItemsGroupId = 201;
+        public const int mainItemsGroupId = 200;
+        public const int appItemsGroupId = 201;
 
         public static void SetActionBarForActivity(Toolbar toolbar, AppCompatActivity activity)
         {
@@ -77,8 +81,8 @@ namespace com.aa.tvshows.Helper
                 throw new ArgumentNullException(nameof(menu));
             }
 
-            int itemsOrder = 0;
-            if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.Ordinal))
+            int itemsOrder = 1;
+            if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN"))
             {
                 menu.Add(mainItemsGroupId, SearchId, itemsOrder++, "Search")
                     .SetIcon(Resource.Drawable.baseline_search_24)
@@ -89,23 +93,23 @@ namespace com.aa.tvshows.Helper
                 menu.Add(mainItemsGroupId, GenresId, itemsOrder++, "Browse by Genres")
                     .SetIcon(Resource.Drawable.film)
                     .SetShowAsAction(ShowAsAction.IfRoom);
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
+                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.Never);
+                    .SetShowAsAction(ShowAsAction.IfRoom);
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.Ordinal))
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
                 menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.IfRoom);
             }
-            else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.Ordinal))
+            else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES"))
             {
                 menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
                     .SetIcon(Resource.Drawable.baseline_refresh_24)
                     .SetShowAsAction(ShowAsAction.IfRoom);
             }
-            menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
+            //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
             menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
 
             return true;
@@ -132,6 +136,10 @@ namespace com.aa.tvshows.Helper
                     activity.StartActivity(typeof(GenresActivity));
                     break;
 
+                case AboutId:
+                    activity.StartActivity(typeof(AboutActivity));
+                    break;
+
                 default:
                     return false;
             }
@@ -141,6 +149,7 @@ namespace com.aa.tvshows.Helper
         public static void HandleItemShowEpisodeClick(object item, Context context)
         {
             var pageLink = string.Empty;
+            var canGoBackToSeriesHome = false;
             if (item is CalenderScheduleList calenderItem)
             {
                 pageLink = calenderItem.PageLink;
@@ -168,6 +177,11 @@ namespace com.aa.tvshows.Helper
             else if (item is ShowEpisodeDetails episodeDetailLink)
             {
                 pageLink = episodeDetailLink.EpisodeLink;
+                canGoBackToSeriesHome = true;
+            }
+            else if (item is SeriesDetails seriesDetailLink)
+            {
+                pageLink = seriesDetailLink.SeriesLink;
             }
 
             if (string.IsNullOrEmpty(pageLink))
@@ -187,6 +201,7 @@ namespace com.aa.tvshows.Helper
                 // tv episode detail
                 var intent = new Android.Content.Intent(context, typeof(EpisodeDetailActivity));
                 intent.PutExtra("itemLink", pageLink);
+                intent.PutExtra("canGoBackToSeriesHome", canGoBackToSeriesHome);
                 context.StartActivity(intent);
             }
         }

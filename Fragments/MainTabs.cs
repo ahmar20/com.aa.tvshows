@@ -148,6 +148,15 @@ namespace com.aa.tvshows.Fragments
                     };
                     break;
 
+                case DataEnum.DataType.UserFavorites:
+                    var favsAdapter = new EpisodesAdapter<SeriesDetails>(tabType, emptyView, loadingView);
+                    recyclerView.SetAdapter(favsAdapter);
+                    favsAdapter.ItemClick += (s, e) =>
+                    {
+                        AppView.HandleItemShowEpisodeClick(favsAdapter.GetItem(e), Activity);
+                    };
+                    break;
+
                 default:
                     break;
             }

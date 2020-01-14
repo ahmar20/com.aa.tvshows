@@ -43,7 +43,8 @@ namespace com.aa.tvshows
         MediaController controller;
         ContentLoadingProgressBar videoLoading;
         bool isSystemUIVisible = true;
-        
+        int videoControllerTimeout = 7000;
+
         //IDataSourceFactory mediaSourceFactory;
         //TrackSelector trackSelector;
         //readonly IBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
@@ -130,15 +131,20 @@ namespace com.aa.tvshows
         {
             if (e.Event.Action == MotionEventActions.Down)
             {
+                e.Handled = true;
                 if (isSystemUIVisible)
                 {
                     HideSoftwareMenuBars();
-                    controller.Hide();
+                    if (controller.IsShowing) controller.Hide();
                 }
                 else
                 {
-                    controller.Show(0);
+                    controller.Show(videoControllerTimeout);
                 }
+            }
+            else
+            {
+                e.Handled = false;
             }
         }
 
@@ -207,11 +213,8 @@ namespace com.aa.tvshows
         private void HideSoftwareMenuBars()
         {
             int uiOptions = (int)Window.DecorView.SystemUiVisibility;
-
-            //uiOptions |= (int)SystemUiFlags.LowProfile;
             uiOptions |= (int)SystemUiFlags.HideNavigation;
             uiOptions |= (int)SystemUiFlags.Fullscreen;
-
             uiOptions |= (int)SystemUiFlags.ImmersiveSticky;
 
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
