@@ -52,19 +52,20 @@
     <AndroidDexTool>d8</AndroidDexTool>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidLinkTool>r8</AndroidLinkTool>
+    <AndroidSupportedAbis />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>portable</DebugType>
-    <Optimize>True</Optimize>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
-    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
-    <AndroidLinkMode>Full</AndroidLinkMode>
-    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AndroidKeyStore>false</AndroidKeyStore>
     <AndroidSigningKeyStore>C:\Users\pakah\AppData\Local\Xamarin\Mono for Android\Keystore\ahmar16\ahmar16.keystore</AndroidSigningKeyStore>
     <AndroidSigningStorePass>.&lt;IamAhmar&gt;.</AndroidSigningStorePass>
@@ -77,9 +78,10 @@
     <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidDexTool>d8</AndroidDexTool>
-    <AndroidLinkTool>r8</AndroidLinkTool>
-    <AndroidSupportedAbis />
+    <AndroidSupportedAbis>
+    </AndroidSupportedAbis>
     <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
+    <AndroidUseAapt2>true</AndroidUseAapt2>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -148,22 +150,22 @@
       <Version>2.5.2.2</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.AppCompat">
-      <Version>1.1.0-preview06</Version>
+      <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Core">
-      <Version>1.1.0-preview06</Version>
+      <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Fragment">
-      <Version>1.1.0-preview06</Version>
+      <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Preference">
-      <Version>1.1.0-preview06</Version>
+      <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.RecyclerView">
-      <Version>1.0.0-preview06</Version>
+      <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout">
-      <Version>1.0.0-preview06</Version>
+      <Version>1.0.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Google.Android.Material">
       <Version>1.1.0-preview06</Version>
