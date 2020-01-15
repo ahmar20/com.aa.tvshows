@@ -23,7 +23,6 @@ namespace com.aa.tvshows.Helper
 
         public EpisodesAdapter() : base()
         {
-            HasStableIds = true;
         }
 
         #region DataType CTOR
@@ -453,24 +452,11 @@ namespace com.aa.tvshows.Helper
 
     public class CachingLayoutManager : LinearLayoutManager
     {
-        bool firstTimeAccess = true;
-        readonly int extraSpace = 600;
-
         public CachingLayoutManager(Context context) : base(context)
         {
             base.AutoMeasureEnabled = true;
             base.ItemPrefetchEnabled = true;
             base.MeasurementCacheEnabled = true;
-        }
-
-        protected override int GetExtraLayoutSpace(RecyclerView.State state)
-        {
-            if (firstTimeAccess || this.ItemCount < 1)
-            {
-                firstTimeAccess = false;
-                return extraSpace;
-            }
-            return base.GetExtraLayoutSpace(state);
         }
     }
 }
