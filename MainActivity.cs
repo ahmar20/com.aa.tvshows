@@ -31,6 +31,7 @@ namespace com.aa.tvshows
             AppView.SetActionBarForActivity(toolbar, this);
 
             viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            viewPager.OffscreenPageLimit = 3;
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             SetupTabs();
             //SetupSearchView();
