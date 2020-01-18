@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Android.Views;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using Square.Picasso;
 using System;
@@ -109,8 +109,30 @@ namespace com.aa.tvshows.Helper
                         epHolder.Description.Text = favItem.Description;
                         epHolder.FavoritesBtn.Click += delegate 
                         {
-                            StorageData.RemoveSeriesFromFavoritesFile(favItem);
-                            RemoveItemAtPosition(position);
+                            PopupMenu popup = new PopupMenu(epHolder.FavoritesBtn.Context, epHolder.FavoritesBtn);
+                            popup.Menu.Add(0, 1, 1, "Update").SetIcon(Android.Resource.Drawable.IcPopupSync).SetShowAsAction(ShowAsAction.Never);
+                            popup.Menu.Add(0, 2, 2, "Remove").SetIcon(Android.Resource.Drawable.IcMenuDelete).SetShowAsAction(ShowAsAction.Never);
+                            popup.MenuItemClick += async(s, e) =>
+                            {
+                                epHolder.FavoritesBtn.Enabled = false;
+                                if (e.Item.ItemId == 1)         // update
+                                {
+                                    epHolder.ProgressBar.Visibility = ViewStates.Visible;
+                                    if (await WebData.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
+                                    {
+                                        StorageData.RemoveSeriesFromFavoritesFile(favItem);
+                                        StorageData.SaveSeriesToFavoritesFile(updatedFavItem);
+                                        UpdateItemAtPosition(position, (T)(object)updatedFavItem);
+                                    }
+                                    epHolder.ProgressBar.Visibility = ViewStates.Gone;
+                                }
+                                else if (e.Item.ItemId == 2)    // delete
+                                {
+                                    StorageData.RemoveSeriesFromFavoritesFile(favItem);
+                                    RemoveItemAtPosition(position);
+                                }
+                                epHolder.FavoritesBtn.Enabled = true;
+                            };
                         };
                         break;
 
@@ -370,6 +392,16 @@ namespace com.aa.tvshows.Helper
             }
         }
 
+        public void UpdateItemAtPosition(int position, T item)
+        {
+            if (Items != null)
+            {
+                Items.RemoveAt(position);
+                Items.Insert(0, item);
+                NotifyItemChanged(position);
+            }
+        }
+
         public void ResetAdapter()
         {
             Items.Clear();
@@ -400,6 +432,7 @@ namespace com.aa.tvshows.Helper
         public AppCompatTextView LastEpisode { get; private set; }
         public AppCompatTextView NextEpisode { get; private set; }
         public AppCompatButton FavoritesBtn { get; private set; }
+        public ContentLoadingProgressBar ProgressBar { get; private set; }
 
         public DataEnum.DataType ItemType { get; private set; }
 
@@ -447,6 +480,7 @@ namespace com.aa.tvshows.Helper
                 NextEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_next_ep_detail);
                 LastEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_last_ep_detail);
                 FavoritesBtn = itemView.FindViewById<AppCompatButton>(Resource.Id.favorites_list_remove_btn);
+                ProgressBar = itemView.FindViewById<ContentLoadingProgressBar>(Resource.Id.favorites_list_loading);
             }
 
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);
