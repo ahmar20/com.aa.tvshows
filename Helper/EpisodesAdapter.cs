@@ -104,7 +104,7 @@ namespace com.aa.tvshows.Helper
                             favItem.Seasons.Count, episodesCount);
                         epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Unknown" : 
                             string.Format("Last Episode: {0} {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
-                        epHolder.NextEpisode.Text = epHolder.NextEpisode is null ? "Unknown" : 
+                        epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Unknown" : 
                             string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
                         epHolder.FavoriteRemoveBtn.Click += delegate { StorageData.RemoveSeriesFromFavoritesFile(favItem); RemoveItemAtPosition(position); };
