@@ -87,17 +87,13 @@
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:layout_marginStart="5dp"
             android:ellipsize="end" />
-        <androidx.appcompat.widget.AppCompatButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:tooltipText="Remove"
+            android:src="@android:drawable/ic_menu_more"
             android:id="@+id/favorites_list_remove_btn"
-            android:layout_alignParentEnd="true">
-            <androidx.appcompat.widget.AppCompatImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_more"/>
-        </androidx.appcompat.widget.AppCompatButton>
+            android:layout_alignParentEnd="true" />
         <androidx.core.widget.ContentLoadingProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

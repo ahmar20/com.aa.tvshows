@@ -431,7 +431,7 @@ namespace com.aa.tvshows.Helper
 
         public AppCompatTextView LastEpisode { get; private set; }
         public AppCompatTextView NextEpisode { get; private set; }
-        public AppCompatButton FavoritesBtn { get; private set; }
+        public AppCompatImageButton FavoritesBtn { get; private set; }
         public ContentLoadingProgressBar ProgressBar { get; private set; }
 
         public DataEnum.DataType ItemType { get; private set; }
@@ -479,7 +479,7 @@ namespace com.aa.tvshows.Helper
                 Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_info_detail);
                 NextEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_next_ep_detail);
                 LastEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_last_ep_detail);
-                FavoritesBtn = itemView.FindViewById<AppCompatButton>(Resource.Id.favorites_list_remove_btn);
+                FavoritesBtn = itemView.FindViewById<AppCompatImageButton>(Resource.Id.favorites_list_remove_btn);
                 ProgressBar = itemView.FindViewById<ContentLoadingProgressBar>(Resource.Id.favorites_list_loading);
             }
 
