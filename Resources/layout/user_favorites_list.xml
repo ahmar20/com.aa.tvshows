@@ -90,10 +90,21 @@
         <androidx.appcompat.widget.AppCompatButton
             android:layout_width="40dp"
             android:layout_height="wrap_content"
-            android:text="x"
             android:tooltipText="Remove"
             android:id="@+id/favorites_list_remove_btn"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentEnd="true">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_more"/>
+        </androidx.appcompat.widget.AppCompatButton>
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/favorites_list_loading"
+            android:layout_centerInParent="true"
+            android:indeterminate="true"
+            style="@style/Widget.AppCompat.ProgressBar"
         />
     </RelativeLayout>
 
