@@ -18,7 +18,7 @@
         android:id="@+id/developer_details_text"
         android:textColorLink="@color/colorAccent"
         android:linksClickable="true"
-        android:autoLink="all"
+        android:autoLink="web"
         style="@style/TextAppearance.AppCompat.Body1"
         />
     <androidx.appcompat.widget.AppCompatTextView
