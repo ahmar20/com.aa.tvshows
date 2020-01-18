@@ -398,7 +398,7 @@ namespace com.aa.tvshows.Helper
             if (Items != null)
             {
                 Items.RemoveAt(position);
-                Items.Insert(0, item);
+                Items.Insert(position, item);
                 NotifyItemChanged(position);
             }
         }
