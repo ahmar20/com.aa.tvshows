@@ -102,9 +102,9 @@ namespace com.aa.tvshows.Helper
                         favItem.Seasons.ForEach(a => episodesCount += a.Episodes.Count);
                         epHolder.EpisodeDetail.Text = string.Format("Total Seasons: {0} - Total Episodes: {1}",
                             favItem.Seasons.Count, episodesCount);
-                        epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Unknown" : 
+                        epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Last Episode: Unknown" : 
                             string.Format("Last Episode: {0} {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
-                        epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Unknown" : 
+                        epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Next Episode: Unknown" : 
                             string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
                         epHolder.FavoriteRemoveBtn.Click += delegate { StorageData.RemoveSeriesFromFavoritesFile(favItem); RemoveItemAtPosition(position); };
