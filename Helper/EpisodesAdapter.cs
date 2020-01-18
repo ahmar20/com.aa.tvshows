@@ -133,6 +133,7 @@ namespace com.aa.tvshows.Helper
                                 }
                                 epHolder.FavoritesBtn.Enabled = true;
                             };
+                            popup.Show();
                         };
                         break;
 
