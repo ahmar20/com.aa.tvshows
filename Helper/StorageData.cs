@@ -45,7 +45,22 @@ namespace com.aa.tvshows.Helper
         {
             if (await GetFavoritesFileData() is string fileData)
             {
-                return JsonConvert.DeserializeObject<List<SeriesDetails>>(fileData);
+                try
+                {
+                    if (JsonConvert.DeserializeObject<List<SeriesDetails>>(fileData) is List<SeriesDetails> seriesList)
+                    {
+                        return seriesList.OrderBy(a => a.Title).ToList();
+                    }
+                }
+                catch(JsonReaderException)
+                {
+                    Error.Instance.ShowErrorTip("Favorites data is corrupt. Removing favorites...", DataContext);
+                    await SaveFavoritesFileData("");
+                }
+                catch(Exception e)
+                {
+                    Error.Instance.ShowErrorTip("Favorites loading error: " + e.Message, DataContext);
+                }
             }
             return null;
         }
@@ -80,11 +95,19 @@ namespace com.aa.tvshows.Helper
             {
                 seriesList = new List<SeriesDetails>();
             }
-            seriesList.Add(series);
-
-            if (! await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
+            if (seriesList.Where(a => a.Title == series.Title).FirstOrDefault() is SeriesDetails saved)
             {
-                Error.Instance.ShowErrorTip("Marking series as favorite failed.", DataContext);
+                // already here
+                seriesList.Remove(saved);
+                seriesList.Add(series);
+            }
+            else
+            {
+                seriesList.Add(series);
+            }
+            if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
+            {
+                Error.Instance.ShowErrorTip("Adding series to favorites failed.", DataContext);
             }
         }
 
