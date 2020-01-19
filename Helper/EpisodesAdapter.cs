@@ -17,6 +17,7 @@ namespace com.aa.tvshows.Helper
         View LoadingView { get; set; }
 
         private readonly DataEnum.DataType dataType = DataEnum.DataType.None;
+        private bool isFavoritesMenuShowing = false;
 
         public event EventHandler<int> ItemClick = delegate { };
         public event EventHandler<int> ItemLongClick = delegate { };
@@ -102,39 +103,12 @@ namespace com.aa.tvshows.Helper
                         favItem.Seasons.ForEach(a => episodesCount += a.Episodes.Count);
                         epHolder.EpisodeDetail.Text = string.Format("Total Seasons: {0} - Total Episodes: {1}",
                             favItem.Seasons.Count, episodesCount);
-                        epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Last Episode: Unknown" : 
+                        epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Last Episode: Unknown" :
                             string.Format("Last Episode: {0} {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
-                        epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Next Episode: Unknown" : 
+                        epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Next Episode: Unknown" :
                             string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
-                        epHolder.FavoritesBtn.Click += delegate 
-                        {
-                            PopupMenu popup = new PopupMenu(epHolder.FavoritesBtn.Context, epHolder.FavoritesBtn);
-                            popup.Menu.Add(0, 1, 1, "Update").SetIcon(Android.Resource.Drawable.IcPopupSync).SetShowAsAction(ShowAsAction.Never);
-                            popup.Menu.Add(0, 2, 2, "Remove").SetIcon(Android.Resource.Drawable.IcMenuDelete).SetShowAsAction(ShowAsAction.Never);
-                            popup.MenuItemClick += async(s, e) =>
-                            {
-                                epHolder.FavoritesBtn.Enabled = false;
-                                if (e.Item.ItemId == 1)         // update
-                                {
-                                    epHolder.ProgressBar.Visibility = ViewStates.Visible;
-                                    if (await WebData.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
-                                    {
-                                        StorageData.RemoveSeriesFromFavoritesFile(favItem);
-                                        StorageData.SaveSeriesToFavoritesFile(updatedFavItem);
-                                        UpdateItemAtPosition(position, (T)(object)updatedFavItem);
-                                    }
-                                    epHolder.ProgressBar.Visibility = ViewStates.Gone;
-                                }
-                                else if (e.Item.ItemId == 2)    // delete
-                                {
-                                    StorageData.RemoveSeriesFromFavoritesFile(favItem);
-                                    RemoveItemAtPosition(position);
-                                }
-                                epHolder.FavoritesBtn.Enabled = true;
-                            };
-                            popup.Show();
-                        };
+                        epHolder.FavoritesBtn.Click += delegate { ShowFavoritesMenu(epHolder, position, favItem); };
                         break;
 
                     case DataEnum.DataType.TVSchedule:
@@ -176,7 +150,7 @@ namespace com.aa.tvshows.Helper
                         Picasso.With(epHolder.ItemView.Context).Load(streamLink.HostImage).Into(epHolder.Image);
                         break;
 
-                    default:break;
+                    default: break;
                 }
             }
         }
@@ -227,6 +201,44 @@ namespace com.aa.tvshows.Helper
             }
             var holder = new EpisodesViewHolder(itemView, (DataEnum.DataType)viewType, OnClick, OnLongClick);
             return holder;
+        }
+
+        private void ShowFavoritesMenu(EpisodesViewHolder holder, int position, SeriesDetails favItem)
+        {
+            var popup = new PopupMenu(holder.FavoritesBtn.Context, holder.FavoritesBtn);
+            popup.MenuItemClick += async (s, e) =>
+            {
+                holder.FavoritesBtn.Enabled = false;
+                if (e.Item.ItemId == 1)         // update
+                    {
+                    holder.ProgressBar.Visibility = ViewStates.Visible;
+                    if (await WebData.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
+                    {
+                        if (await StorageData.SaveSeriesToFavoritesFile(updatedFavItem))
+                        {
+                            UpdateItemAtPosition(position, (T)(object)updatedFavItem);
+                        }
+                    }
+                    holder.ProgressBar.Visibility = ViewStates.Gone;
+                }
+                else if (e.Item.ItemId == 2)    // delete
+                    {
+                    if (await StorageData.RemoveSeriesFromFavoritesFile(favItem))
+                        RemoveItemAtPosition(position);
+                }
+                holder.FavoritesBtn.Enabled = true;
+            };
+            popup.DismissEvent += delegate
+            {
+                isFavoritesMenuShowing = false;
+            };
+            popup.Menu.Add(0, 1, 1, "Update").SetIcon(Android.Resource.Drawable.IcPopupSync).SetShowAsAction(ShowAsAction.Never);
+            popup.Menu.Add(0, 2, 2, "Remove").SetIcon(Android.Resource.Drawable.IcMenuDelete).SetShowAsAction(ShowAsAction.Never);
+            if (!isFavoritesMenuShowing)
+            {
+                popup.Show();
+                isFavoritesMenuShowing = true;
+            }
         }
 
         public override async void OnAttachedToRecyclerView(RecyclerView recyclerView)
@@ -397,7 +409,7 @@ namespace com.aa.tvshows.Helper
         {
             if (Items != null)
             {
-                Items.RemoveAt(position);
+                RemoveItemAtPosition(position);
                 Items.Insert(position, item);
                 NotifyItemChanged(position);
             }
