@@ -26,17 +26,17 @@ namespace com.aa.tvshows.Helper
         {
             if (series is null) return false;
 
-            if (await GetFavoriteSeriesDataForKey(series.Title) is SeriesDetails) return true;
+            if (await GetFavoriteSeriesDataForKey(series.SeriesLink) is SeriesDetails) return true;
             return false;
         }
 
-        private static async Task<SeriesDetails> GetFavoriteSeriesDataForKey(string seriesTitle)
+        private static async Task<SeriesDetails> GetFavoriteSeriesDataForKey(string seriesLink)
         {
-            if (string.IsNullOrEmpty(seriesTitle)) return null;
+            if (string.IsNullOrEmpty(seriesLink)) return null;
 
             if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> seriesData)
             {
-                return seriesData.Where(a => a.Title == seriesTitle).FirstOrDefault();
+                return seriesData.Where(a => a.SeriesLink == seriesLink).FirstOrDefault();
             }
             return null;
         }
@@ -82,9 +82,9 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
-        public static async void SaveSeriesToFavoritesFile(SeriesDetails series)
+        public static async Task<bool> SaveSeriesToFavoritesFile(SeriesDetails series)
         {
-            if (series is null) return;
+            if (series is null) return false;
 
             List<SeriesDetails> seriesList;
             if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> savedSeries)
@@ -95,7 +95,7 @@ namespace com.aa.tvshows.Helper
             {
                 seriesList = new List<SeriesDetails>();
             }
-            if (seriesList.Where(a => a.Title == series.Title).FirstOrDefault() is SeriesDetails saved)
+            if (seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault() is SeriesDetails saved)
             {
                 // already here
                 seriesList.Remove(saved);
@@ -107,13 +107,14 @@ namespace com.aa.tvshows.Helper
             }
             if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
             {
-                Error.Instance.ShowErrorTip("Adding series to favorites failed.", DataContext);
+                return false;
             }
+            return true;
         }
 
-        public static async void RemoveSeriesFromFavoritesFile(SeriesDetails series)
+        public static async Task<bool> RemoveSeriesFromFavoritesFile(SeriesDetails series)
         {
-            if (series is null) return;
+            if (series is null) return false;
 
             List<SeriesDetails> seriesList;
             if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> savedSeries)
@@ -124,12 +125,13 @@ namespace com.aa.tvshows.Helper
             {
                 seriesList = new List<SeriesDetails>();
             }
-            seriesList.Remove(seriesList.Where(a => a.Title == series.Title).FirstOrDefault());
+            seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault());
 
             if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
             {
-                Error.Instance.ShowErrorTip("Removing series from favorites failed.", DataContext);
+                return false;
             }
+            return true;
         }
 
         private static async Task<bool> SaveFavoritesFileData(string data)
