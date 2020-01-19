@@ -160,20 +160,32 @@ namespace com.aa.tvshows
             Action favAction = null;
             if (item.ItemId == AppView.AddFavoritesId)
             {
-                favAction = new Action(() => 
+                favAction = new Action(async() => 
                 {
-                    StorageData.SaveSeriesToFavoritesFile(ShowData);
-                    isFavorite = true;
-                    InvalidateOptionsMenu();
+                    if (await StorageData.SaveSeriesToFavoritesFile(ShowData))
+                    {
+                        isFavorite = true;
+                        InvalidateOptionsMenu();
+                    }
+                    else
+                    {
+                        Error.Instance.ShowErrorSnack(ShowData.Title + " could not be added to favorites.", this.titleContainer);
+                    }
                 });
             }
             else if (item.ItemId == AppView.RemoveFavoritesId)
             {
-                favAction = new Action(() =>
+                favAction = new Action(async() =>
                 {
-                    StorageData.RemoveSeriesFromFavoritesFile(ShowData);
-                    isFavorite = false;
-                    InvalidateOptionsMenu();
+                    if (await StorageData.RemoveSeriesFromFavoritesFile(ShowData))
+                    {
+                        isFavorite = false;
+                        InvalidateOptionsMenu();
+                    }
+                    else
+                    {
+                        Error.Instance.ShowErrorSnack(ShowData.Title + " could not be removed from favorites.", this.titleContainer);
+                    }
                 });
             }
             else if (item.ItemId == AppView.ReloadId)
