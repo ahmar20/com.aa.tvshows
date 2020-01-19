@@ -66,7 +66,7 @@ namespace com.aa.tvshows.Helper
                 }
                 catch (Exception e)
                 {
-                    //Error.Instance.ShowErrorTip(e.Message);
+                    Error.Instance.ShowErrorTip(e.Message, Application.Context);
                 }
             }
             return null;
@@ -84,7 +84,7 @@ namespace com.aa.tvshows.Helper
                 }
                 catch (Exception e)
                 {
-                    //Error.Instance.ShowErrorTip(e.Message);
+                    Error.Instance.ShowErrorTip(e.Message, Application.Context);
                 }
             }
             return null;
@@ -107,7 +107,7 @@ namespace com.aa.tvshows.Helper
                 }
                 catch (Exception e)
                 {
-                    //Error.ErrorInstance.ShowErrorSnack(e.Message);
+                    Error.Instance.ShowErrorTip(e.Message, Application.Context);
                 }
             }
             return null;
@@ -133,6 +133,7 @@ namespace com.aa.tvshows.Helper
             }
             catch (Exception e)
             {
+                Error.Instance.ShowErrorTip(e.Message, Application.Context);
                 return null;
             }
         }
