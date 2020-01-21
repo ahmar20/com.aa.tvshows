@@ -108,7 +108,7 @@ namespace com.aa.tvshows.Helper
                         epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Next Episode: Unknown" :
                             string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
-                        epHolder.FavoritesBtn.Click += delegate { ShowFavoritesMenu(epHolder, position, favItem); };
+                        epHolder.FavoritesBtn.Click += delegate { ShowFavoritesMenu(epHolder, position); };
                         break;
 
                     case DataEnum.DataType.TVSchedule:
@@ -203,9 +203,11 @@ namespace com.aa.tvshows.Helper
             return holder;
         }
 
-        private void ShowFavoritesMenu(EpisodesViewHolder holder, int position, SeriesDetails favItem)
+        private void ShowFavoritesMenu(EpisodesViewHolder holder, int position)
         {
+            var favItem = GetItem(position) as SeriesDetails;
             var popup = new PopupMenu(holder.FavoritesBtn.Context, holder.FavoritesBtn);
+
             popup.MenuItemClick += async (s, e) =>
             {
                 holder.FavoritesBtn.Enabled = false;
@@ -222,18 +224,21 @@ namespace com.aa.tvshows.Helper
                     holder.ProgressBar.Visibility = ViewStates.Gone;
                 }
                 else if (e.Item.ItemId == 2)    // delete
-                    {
+                {
                     if (await StorageData.RemoveSeriesFromFavoritesFile(favItem))
                         RemoveItemAtPosition(position);
                 }
                 holder.FavoritesBtn.Enabled = true;
             };
+            
             popup.DismissEvent += delegate
             {
                 isFavoritesMenuShowing = false;
             };
+
             popup.Menu.Add(0, 1, 1, "Update").SetIcon(Android.Resource.Drawable.IcPopupSync).SetShowAsAction(ShowAsAction.Never);
             popup.Menu.Add(0, 2, 2, "Remove").SetIcon(Android.Resource.Drawable.IcMenuDelete).SetShowAsAction(ShowAsAction.Never);
+            
             if (!isFavoritesMenuShowing)
             {
                 popup.Show();
@@ -384,6 +389,7 @@ namespace com.aa.tvshows.Helper
                 var currentPos = Items.Count - 1;
                 Items.AddRange(items);
                 NotifyItemRangeInserted(currentPos, items.Length);
+                NotifyDataSetChanged();
             }
         }
 
@@ -402,6 +408,7 @@ namespace com.aa.tvshows.Helper
             {
                 Items.RemoveAt(position);
                 NotifyItemRemoved(position);
+                NotifyDataSetChanged();
             }
         }
 
@@ -412,6 +419,7 @@ namespace com.aa.tvshows.Helper
                 RemoveItemAtPosition(position);
                 Items.Insert(position, item);
                 NotifyItemChanged(position);
+                NotifyDataSetChanged();
             }
         }
 
