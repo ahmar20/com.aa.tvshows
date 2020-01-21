@@ -62,7 +62,22 @@ namespace com.aa.tvshows.Helper
         {
             get
             {
-                return Items == null ? 0 : Items.Count;
+                var count = Items == null ? 0 : Items.Count;
+                if (count == 0)
+                {
+                    if (EmptyView != null)
+                    {
+                        EmptyView.Visibility = ViewStates.Visible;
+                    }
+                }
+                else
+                {
+                    if (EmptyView != null)
+                    {
+                        EmptyView.Visibility = ViewStates.Gone;
+                    }
+                }
+                return count;
             }
         }
 
