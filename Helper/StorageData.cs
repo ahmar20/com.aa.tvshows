@@ -98,7 +98,7 @@ namespace com.aa.tvshows.Helper
             if (seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault() is SeriesDetails saved)
             {
                 // already here
-                seriesList.Remove(saved);
+                if (!seriesList.Remove(saved)) return false;
                 seriesList.Add(series);
             }
             else
@@ -125,13 +125,15 @@ namespace com.aa.tvshows.Helper
             {
                 seriesList = new List<SeriesDetails>();
             }
-            seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault());
-
-            if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
+            if (seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault()))
             {
-                return false;
+                if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
+            return false;
         }
 
         private static async Task<bool> SaveFavoritesFileData(string data)
