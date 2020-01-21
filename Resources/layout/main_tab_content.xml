@@ -23,7 +23,7 @@
         android:id="@+id/main_tab_loading"
         android:indeterminate="true"
         android:visibility="gone"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_centerVertical="true"/>
+        android:layout_above="@id/main_tab_emptytext"
+        style="@style/Widget.AppCompat.ProgressBar"/>
 
 </RelativeLayout>
