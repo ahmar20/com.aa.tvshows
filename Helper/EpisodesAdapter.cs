@@ -95,6 +95,8 @@ namespace com.aa.tvshows.Helper
                 {
                     case DataEnum.DataType.NewPopularEpisodes:
                     case DataEnum.DataType.NewEpisodes:
+                    case DataEnum.DataType.PopularShows:
+
                         var epItem = Items[position] as EpisodeList;
                         Picasso.With(epHolder.ItemView.Context).Load(epItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = epItem.Title;
@@ -102,28 +104,13 @@ namespace com.aa.tvshows.Helper
                         //epHolder.Info.Text = newEpItem.ShowDetail;    // not implemented
                         break;
 
-                    case DataEnum.DataType.PopularShows:
-                        var showItem = Items[position] as ShowList;
-                        Picasso.With(epHolder.ItemView.Context).Load(showItem.ImageLink).Into(epHolder.Image);
-                        epHolder.Title.Text = showItem.Title;
-                        epHolder.EpisodeDetail.Text = showItem.EpisodeNo;
-                        epHolder.Description.Text = showItem.EpisodeDetail;
-                        break;
 
                     case DataEnum.DataType.UserFavorites:
                         var favItem = Items[position] as SeriesDetails;
                         Picasso.With(epHolder.ItemView.Context).Load(favItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = favItem.Title;
-                        var episodesCount = 0;
-                        favItem.Seasons.ForEach(a => episodesCount += a.Episodes.Count);
-                        epHolder.EpisodeDetail.Text = string.Format("Total Seasons: {0} - Total Episodes: {1}",
-                            favItem.Seasons.Count, episodesCount);
-                        epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Last Episode: Unknown" :
-                            string.Format("Last Episode: {0} {1}", favItem.LastEpisode?.EpisodeFullNameNumber, favItem.LastEpisode.EpisodeAirDate);
-                        epHolder.NextEpisode.Text = favItem.NextEpisode is null ? "Next Episode: Unknown" :
-                            string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
-                        epHolder.Description.Text = favItem.Description;
                         epHolder.FavoritesBtn.Click += delegate { ShowFavoritesMenu(epHolder, position); };
+
                         break;
 
                     case DataEnum.DataType.TVSchedule:
@@ -183,12 +170,12 @@ namespace com.aa.tvshows.Helper
             {
                 switch (viewType)
                 {
+                    case (int)DataEnum.DataType.PopularShows:
                     case (int)DataEnum.DataType.NewPopularEpisodes:
                     case (int)DataEnum.DataType.NewEpisodes:
-                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.episodes_list_layout, parent, false);
+                        itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.home_page_cards, parent, false);
                         break;
 
-                    case (int)DataEnum.DataType.PopularShows:
                     case (int)DataEnum.DataType.TVSchedule:
                     case (int)DataEnum.DataType.Search:
                         itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.shows_list_layout, parent, false);
@@ -227,7 +214,7 @@ namespace com.aa.tvshows.Helper
             {
                 holder.FavoritesBtn.Enabled = false;
                 if (e.Item.ItemId == 1)         // update
-                    {
+                {
                     holder.ProgressBar.Visibility = ViewStates.Visible;
                     if (await WebData.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
                     {
@@ -245,7 +232,7 @@ namespace com.aa.tvshows.Helper
                 }
                 holder.FavoritesBtn.Enabled = true;
             };
-            
+
             popup.DismissEvent += delegate
             {
                 isFavoritesMenuShowing = false;
@@ -253,7 +240,7 @@ namespace com.aa.tvshows.Helper
 
             popup.Menu.Add(0, 1, 1, "Update").SetIcon(Android.Resource.Drawable.IcPopupSync).SetShowAsAction(ShowAsAction.Never);
             popup.Menu.Add(0, 2, 2, "Remove").SetIcon(Android.Resource.Drawable.IcMenuDelete).SetShowAsAction(ShowAsAction.Never);
-            
+
             if (!isFavoritesMenuShowing)
             {
                 popup.Show();
@@ -283,30 +270,55 @@ namespace com.aa.tvshows.Helper
                     EmptyView.Visibility = ViewStates.Visible;
                 }
 
-                if (dataType == DataEnum.DataType.NewPopularEpisodes)
+                if (dataType == DataEnum.DataType.Home)
                 {
-                    var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
+
+                  
+
+                    if(recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
                     {
-                        adapter.AddItem(items.ToArray());
+                        while (recyclerView.ItemDecorationCount > 0)
+                        {
+                            recyclerView.RemoveItemDecorationAt(0);
+                        }
+                        recyclerView.AddItemDecoration(new HeaderDecoration(recyclerView, "Popular shows", 0));
+
+                        var itemsPopularShows = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
+                        if (itemsPopularShows != null)
+                        {
+                            adapter.AddItem(itemsPopularShows.ToArray());
+                        }
+
+                        recyclerView.AddItemDecoration(new HeaderDecoration(recyclerView, "New episodes", adapter.Items.Count -1));
+
+                        var itemsNewestEpisodes = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
+
+                        if (itemsNewestEpisodes != null)
+                        {
+                            adapter.AddItem(itemsNewestEpisodes.ToArray());
+                        }
+
+                        recyclerView.AddItemDecoration(new HeaderDecoration(recyclerView, "Popular episodes", adapter.Items.Count ));
+
+                        var itemsPopularEpisodes = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
+
+                        if (itemsPopularEpisodes != null)
+                        {
+                            adapter.AddItem(itemsPopularEpisodes.ToArray());
+                        }
+
                     }
+
+
+
+
+
+
+
+
+
                 }
-                else if (dataType == DataEnum.DataType.PopularShows)
-                {
-                    var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
-                    {
-                        adapter.AddItem(items.ToArray());
-                    }
-                }
-                else if (dataType == DataEnum.DataType.NewEpisodes)
-                {
-                    var items = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
-                    {
-                        adapter.AddItem(items.ToArray());
-                    }
-                }
+
                 else if (dataType == DataEnum.DataType.UserFavorites)
                 {
                     var items = await StorageData.GetSeriesListFromFavoritesFile().ConfigureAwait(true);
@@ -423,7 +435,7 @@ namespace com.aa.tvshows.Helper
             {
                 Items.RemoveAt(position);
                 NotifyItemRemoved(position);
-                NotifyDataSetChanged();
+                // NotifyDataSetChanged();
             }
         }
 
@@ -480,13 +492,13 @@ namespace com.aa.tvshows.Helper
             }
 
             ItemType = type;
-            if (ItemType == DataEnum.DataType.NewPopularEpisodes || ItemType == DataEnum.DataType.NewEpisodes)
+            if (ItemType == DataEnum.DataType.NewPopularEpisodes || ItemType == DataEnum.DataType.PopularShows || ItemType == DataEnum.DataType.NewEpisodes)
             {
-                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.episodes_list_imageView);
-                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_title);
-                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_detail);
+                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.home_thumb);
+                Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.home_list_title);
+                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.home_list_subtitle);
             }
-            else if (ItemType == DataEnum.DataType.PopularShows || ItemType == DataEnum.DataType.TVSchedule || ItemType == DataEnum.DataType.Search)
+            else if (ItemType == DataEnum.DataType.TVSchedule || ItemType == DataEnum.DataType.Search)
             {
                 Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.shows_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_title);
@@ -511,14 +523,14 @@ namespace com.aa.tvshows.Helper
             {
                 Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.favorites_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_title);
-                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_episode_detail);
-                Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_info_detail);
-                NextEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_next_ep_detail);
-                LastEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_last_ep_detail);
+                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_title);
+                Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_title);
+                NextEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_title);
+                LastEpisode = itemView.FindViewById<AppCompatTextView>(Resource.Id.favorites_list_title);
                 FavoritesBtn = itemView.FindViewById<AppCompatImageButton>(Resource.Id.favorites_list_remove_btn);
                 ProgressBar = itemView.FindViewById<ContentLoadingProgressBar>(Resource.Id.favorites_list_loading);
             }
-
+            
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);
             itemView.LongClick += (s, e) => itemLongClick?.Invoke(AdapterPosition);
         }
@@ -533,4 +545,17 @@ namespace com.aa.tvshows.Helper
             base.MeasurementCacheEnabled = true;
         }
     }
+    public class CachingGridLayoutManager : GridLayoutManager
+    {
+        public CachingGridLayoutManager(Context context) : base(context,3)
+        {
+            base.AutoMeasureEnabled = true;
+            base.ItemPrefetchEnabled = true;
+            base.MeasurementCacheEnabled = true;
+
+
+        }
+    }
+
+
 }

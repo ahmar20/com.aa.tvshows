@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+      android:id="@+id/navigation_home"
+      android:icon="@drawable/home_outline"
+      android:title="Home" />
+  <item
+      android:id="@+id/navigation_fav"
+      android:icon="@drawable/baseline_favorite_border_24"
+      android:title="Favorites" />
+  <item
+      android:id="@+id/navigation_schedule"
+      android:icon="@drawable/baseline_date_range_24"
+      android:title="Schedule" />
+  <item
+     android:id="@+id/navigation_genres"
+     android:icon="@drawable/movie_outline"
+     android:title="Genres" />
+
+  <item
+    android:id="@+id/navigation_search"
+    android:icon="@drawable/baseline_search_24"
+    android:title="Search" />
+</menu>

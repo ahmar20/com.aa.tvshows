@@ -22,10 +22,9 @@ namespace com.aa.tvshows
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
+            
             // Create your application here
             SetContentView(Resource.Layout.about_app);
-            AppView.SetActionBarForActivity(FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.main_toolbar), this);
             ShowAboutText();
         }
 

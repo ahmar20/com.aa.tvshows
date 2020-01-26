@@ -16,7 +16,7 @@ namespace com.aa.tvshows.Helper
 {
     public class PageTabsAdapter : FragmentStatePagerAdapter
     {
-        private List<TitleFragment> Fragments { get; set; }
+       public List<TitleFragment> Fragments { get; set; }
 
         public PageTabsAdapter(FragmentManager manager) : base(manager, BehaviorResumeOnlyCurrentFragment) => Fragments = new List<TitleFragment>();
 

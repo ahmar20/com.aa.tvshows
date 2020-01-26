@@ -5,8 +5,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:longClickable="true"
     android:clickable="true"
+    android:background="@color/bg_2"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card"
+
     android:foreground="?android:attr/selectableItemBackground"
     app:rippleColor="@color/colorAccent"
     app:cardCornerRadius="@dimen/list_card_corner_radius"

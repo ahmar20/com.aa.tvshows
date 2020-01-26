@@ -17,13 +17,5 @@
         android:textAlignment="center"
         android:visibility="gone"
         android:layout_centerVertical="true"/>
-    <androidx.core.widget.ContentLoadingProgressBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/main_tab_loading"
-        android:indeterminate="true"
-        android:visibility="gone"
-        android:layout_above="@id/main_tab_emptytext"
-        style="@style/Widget.AppCompat.ProgressBar"/>
 
 </RelativeLayout>

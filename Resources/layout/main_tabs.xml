@@ -14,11 +14,14 @@
         android:minHeight="?actionBarSize"
         android:id="@+id/main_tabs_header"
         android:elevation="@dimen/tabs_elevation"
-        android:background="@color/colorTabsHeader"
-        app:tabIndicatorColor="@color/colorPrimary"
+        app:tabIndicatorHeight="3dp"
+        android:background="?android:attr/colorBackground"
+        app:tabSelectedTextColor="@color/colorAccent"
+        app:tabIndicatorColor="@color/colorAccent"
         app:tabMode="fixed"
-        app:tabGravity="fill"
-        app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget" />
+        app:tabBackground="?android:attr/colorBackground"
+        app:tabGravity="fill" 
+        app:tabTextAppearance="@style/SelectedItem" />
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/main_tabs_viewpager"
         android:background="@color/colorTransparent"

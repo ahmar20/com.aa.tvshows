@@ -10,83 +10,60 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
+using AndroidX.Interpolator.View.Animation;
 using AndroidX.ViewPager.Widget;
 using com.aa.tvshows.Fragments;
 using com.aa.tvshows.Helper;
 using Google.Android.Material.Tabs;
+using Java.Lang;
 
 namespace com.aa.tvshows
 {
-    [Activity(Label = "TV Schedule", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
-    public class TVScheduleActivity : AppCompatActivity
+    public class TVScheduleActivity : RefreshableFragment
     {
-        protected override void OnCreate(Bundle savedInstanceState)
+
+        public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
+            var view = LayoutInflater.Inflate(Resource.Layout.tv_schedule_base, container, false);
+            SetUpTVScheduleTabs(view);
 
-            // Create your application here
-            SetContentView(Resource.Layout.tv_schedule_base);
-            var toolbar = FindViewById<Toolbar>(Resource.Id.main_toolbar);
-            AppView.SetActionBarForActivity(toolbar, this);
-
-            SetUpTVScheduleTabs();
+            return view;
         }
 
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            return AppView.ShowOptionsMenu(menu, this);
-        }
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            if (item.ItemId == AppView.ReloadId)
-            {
-                var action = new Action(() =>
-                {
-                    SetUpTVScheduleTabs();
-                });
-                return AppView.OnOptionsItemSelected(item, this, action);
-            }
-            return AppView.OnOptionsItemSelected(item, this);
-        }
 
-        public override bool OnSupportNavigateUp()
+        public override void refresh()
         {
-            OnBackPressed();
-            return true;
+            if (View != null)
+                SetUpTVScheduleTabs(View);
         }
-
-        private async void SetUpTVScheduleTabs()
+        PageTabsAdapter tabsAdapter;
+        private async void SetUpTVScheduleTabs(View v)
         {
             // load data and show tabs from dates
             // load each tab in a fragment and show relevant data
-            var viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
-            var tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            var loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.tv_schedule_loading);
-            var emptyView = FindViewById<AppCompatTextView>(Resource.Id.tv_schedule_base_emptytext);
+            var viewPager = v.FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            var tabLayout = v.FindViewById<TabLayout>(Resource.Id.main_tabs_header);
 
             tabLayout.Visibility = ViewStates.Invisible;
-            emptyView.Visibility = ViewStates.Visible;
-            loadingView.Visibility = ViewStates.Visible;
-
             tabLayout.TabMode = TabLayout.ModeScrollable;
             tabLayout.SetupWithViewPager(viewPager);
-            emptyView.Text = "Loading...";
 
             var data = await WebData.GetTVSchedule().ConfigureAwait(true);
-            var tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
-            viewPager.Adapter = tabsAdapter;
+            if (tabsAdapter == null) tabsAdapter = new PageTabsAdapter(ChildFragmentManager);
+            if (viewPager.Adapter == null) viewPager.Adapter = tabsAdapter;
             if (data != null && data.Count > 0)
             {
-                emptyView.Visibility = ViewStates.Gone;
                 tabLayout.Visibility = ViewStates.Visible;
+                if (tabsAdapter.Fragments != null) tabsAdapter.Fragments.Clear();
                 foreach (var item in data)
                 {
                     tabsAdapter.AddTab(new TitleFragment() { Title = item.Key, Fragmnet = new MainTabs(DataEnum.DataType.TVSchedule, new List<object>(item.Value)) });
                 }
             }
-            emptyView.Text = Resources.GetString(Resource.String.empty_data_view);
-            loadingView.Visibility = ViewStates.Gone;
         }
+
+
+
     }
 }

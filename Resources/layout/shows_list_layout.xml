@@ -12,7 +12,7 @@
     app:rippleColor="@color/colorPrimary"
     app:cardCornerRadius="@dimen/list_card_corner_radius"
     app:cardElevation="@dimen/episodes_list_card_elevation"
-    app:contentPadding="5dp"
+    app:cardBackgroundColor="@color/card"
     app:cardUseCompatPadding="true">
 
     <RelativeLayout
@@ -22,7 +22,6 @@
             android:id="@+id/shows_list_imageView"
             android:layout_width="80dp"
             android:layout_height="120dp"
-            android:layout_margin="5dp"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"/>
         <androidx.appcompat.widget.AppCompatTextView

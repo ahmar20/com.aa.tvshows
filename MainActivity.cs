@@ -10,33 +10,80 @@ using Android.Views;
 using System;
 using AndroidX.CursorAdapter.Widget;
 using Android.Database;
+using Google.Android.Material.BottomNavigation;
+using static Google.Android.Material.BottomNavigation.BottomNavigationView;
+using AndroidX.SwipeRefreshLayout.Widget;
+using static AndroidX.SwipeRefreshLayout.Widget.SwipeRefreshLayout;
+using com.aa.tvshows.Fragments;
+using Java.Lang;
+using AndroidX.Interpolator.View.Animation;
 
 namespace com.aa.tvshows
 {
-    [Activity(Theme = "@style/AppTheme", MainLauncher = true, 
+    [Activity(Theme = "@style/AppTheme", MainLauncher = true,
         ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : AppCompatActivity, IOnRefreshListener, BottomNavigationView.IOnNavigationItemSelectedListener
     {
-        ViewPager viewPager;
-        TabLayout tabLayout;
 
+        BottomNavigationView bottomNavigation;
+        SwipeRefreshLayout swipeRefreshLayout;
+        View contents;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             //Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
+            swipeRefreshLayout = FindViewById<SwipeRefreshLayout>(Resource.Id.swipe_refresh);
+            swipeRefreshLayout.SetProgressBackgroundColor(Resource.Color.colorAccent);
+            swipeRefreshLayout.SetColorSchemeResources(Resource.Color.card);
+            contents = FindViewById<View>(Resource.Id.contents);
+            swipeRefreshLayout.SetOnRefreshListener(this);
+            bottomNavigation = FindViewById<BottomNavigationView>(Resource.Id.bottom_navigation);
+            bottomNavigation.SetOnNavigationItemSelectedListener(this);
+            bottomNavigation.SelectedItemId = Resource.Id.navigation_home;
 
-            var toolbar = FindViewById<Toolbar>(Resource.Id.main_toolbar);
-            AppView.SetActionBarForActivity(toolbar, this);
 
-            viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
-            viewPager.OffscreenPageLimit = 3;
-            tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            SetupTabs();
             //SetupSearchView();
         }
 
+        public void toggleLoader(bool toggle)
+        {
+            if (swipeRefreshLayout != null) swipeRefreshLayout.Refreshing = toggle;
+
+        }
+        public void openFragment(AndroidX.Fragment.App.Fragment fragment)
+        {
+            if (fragment == null) return;
+            toggleLoader(true);
+            SupportFragmentManager.BeginTransaction().Replace(Resource.Id.contents, fragment, "current_fragmnet").Commit();
+        }
+
+        public bool OnNavigationItemSelected(IMenuItem item)
+        {
+            switch (item.ItemId)
+            {
+                default:
+                case Resource.Id.navigation_home:
+                    openFragment(new Fragments.MainTabs(DataEnum.DataType.Home));
+                    return true;
+                case Resource.Id.navigation_fav:
+                    openFragment(new Fragments.MainTabs(DataEnum.DataType.UserFavorites));
+                    return true;
+                case Resource.Id.navigation_schedule:
+                    openFragment(new TVScheduleActivity());
+                    return true;
+                case Resource.Id.navigation_genres:
+                    openFragment(new GenresActivity());
+                    return true;
+                case Resource.Id.navigation_search:
+                    StartActivity(typeof(SearchActivity));
+                    return false;
+
+
+
+            }
+        }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             //Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -49,52 +96,20 @@ namespace com.aa.tvshows
             return AppView.ShowOptionsMenu(menu, this);
         }
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
+
+
+        public void OnRefresh()
         {
-            if (item.ItemId == AppView.ReloadId)
+            var fragment = SupportFragmentManager.FindFragmentByTag("current_fragmnet");
+            if (fragment is RefreshableFragment frag)
             {
-                var action = new Action(() =>
-                {
-                    if (viewPager.Adapter is PageTabsAdapter adapter)
-                    {
-                        adapter.GetTabFragment(tabLayout.SelectedTabPosition)?.ReloadCurrentData();
-                    }
-                });
-                return AppView.OnOptionsItemSelected(item, this, action);
+                frag?.refresh();
             }
-            return AppView.OnOptionsItemSelected(item, this);
+
+            swipeRefreshLayout.Refreshing = false;
+
         }
 
-        public void SetupTabs()
-        {
-            PageTabsAdapter tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
-            viewPager.Adapter = tabsAdapter;
-            /*
-            // not really needed because there is not much difference between
-            // popular episodes and new episodes and also new episodes are more
-            // than popular ones
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.MainTabsType.PopularEpisodes),
-                Title = "Popular Episodes"
-            });
-            */
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
-                Title = "Popular Shows"
-            });
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
-                Title = "New Episodes"
-            });
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
-                Title = "Your Favorites"
-            });
-            tabLayout.SetupWithViewPager(viewPager);
-        }
+
     }
 }

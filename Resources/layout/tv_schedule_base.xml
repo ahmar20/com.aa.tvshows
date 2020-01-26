@@ -4,28 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="?android:attr/colorBackground"
     android:layout_height="match_parent">
 
-    <include
-       layout="@layout/main_toolbar"/>
 
     <include
         layout="@layout/main_tabs"/>
 
-    <androidx.core.widget.ContentLoadingProgressBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_schedule_loading"
-        android:layout_gravity="center"
-        android:indeterminate="true"
-        style="@style/Widget.AppCompat.ProgressBar"/>
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_schedule_base_emptytext"
-        android:textAlignment="center"
-        android:layout_gravity="center"
-        style="@style/TextAppearance.AppCompat.Medium"
-        android:text="@string/empty_data_view"
-        android:visibility="gone"/>
+   
+ 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

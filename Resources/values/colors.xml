@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="colorPrimary">#C52424</color>
-  <color name="colorPrimaryDark">#600707</color>
-  <color name="colorAccent">#A23A3A</color>
-  <color name="colorTabsHeader">#55C52424</color>
+  <color name="colorPrimary">@color/background</color>
+  <color name="colorPrimaryDark">@color/status_bar</color>
+  <color name="colorAccent">#ff1744</color>
+  <color name="colorTabsHeader">@color/background</color>
   <color name="colorTransparent">#00000000</color>
+  <color name="background">@color/bg_1</color>
+  <color name="card">@color/bg_2</color>
+  <color name="status_bar">#000</color>
+
+  <color name="bg_1">#111</color>
+  <color name="bg_2">#191919</color>
+  <color name="muted_text">#888</color>
+
 </resources>

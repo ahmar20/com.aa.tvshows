@@ -11,12 +11,14 @@ using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using AndroidX.Fragment.App;
+using AndroidX.Interpolator.View.Animation;
 using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
+using Java.Lang;
 
 namespace com.aa.tvshows.Fragments
 {
-    public class MainTabs : Fragment
+    public class MainTabs : RefreshableFragment
     {
         readonly DataEnum.DataType tabType = DataEnum.DataType.None;
         readonly List<object> items;
@@ -27,7 +29,6 @@ namespace com.aa.tvshows.Fragments
 
         RecyclerView recyclerView;
         AppCompatTextView emptyView;
-        ContentLoadingProgressBar loadingView;
         LinearLayoutManager layoutManager;
 
         public MainTabs() : base()
@@ -56,14 +57,16 @@ namespace com.aa.tvshows.Fragments
             // Use this to return your custom view for this Fragment
             var view = LayoutInflater.Inflate(Resource.Layout.main_tab_content, container, false);
             recyclerView = view.FindViewById<RecyclerView>(Resource.Id.main_tab_rv);
-            layoutManager = new CachingLayoutManager(view.Context);
+
+            if (tabType == DataEnum.DataType.UserFavorites || tabType == DataEnum.DataType.Home)
+                layoutManager = new CachingGridLayoutManager(view.Context);
+            else layoutManager = new CachingLayoutManager(view.Context);
             recyclerView.SetLayoutManager(layoutManager);
             recyclerView.ClearOnScrollListeners();
             emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
-            if (tabType != DataEnum.DataType.TVSchedule)
-            {
-                loadingView = view.FindViewById<ContentLoadingProgressBar>(Resource.Id.main_tab_loading);
-            }
+
+            AnimHelper.FadeContents(view, true, false, null);
+
             return view;
         }
 
@@ -71,6 +74,13 @@ namespace com.aa.tvshows.Fragments
         {
             base.OnViewCreated(view, savedInstanceState);
             LoadDataForType();
+            recyclerView.Post(new Java.Lang.Runnable(() => { AnimHelper.FadeContents(View, false, true, new Java.Lang.Runnable(() => { toggleLoader(false); })); }));
+
+        }
+
+        public override void refresh()
+        {
+            ReloadCurrentData();
         }
 
         public void ReloadCurrentData()
@@ -81,13 +91,16 @@ namespace com.aa.tvshows.Fragments
 
         private async void LoadDataForType()
         {
+
             switch (tabType)
             {
+                case DataEnum.DataType.Home:
                 case DataEnum.DataType.NewEpisodes:
                 case DataEnum.DataType.NewPopularEpisodes:
                 case DataEnum.DataType.PopularShows:
-                    var mainAdapter = new EpisodesAdapter<EpisodeList>(tabType, emptyView, loadingView);
+                    var mainAdapter = new EpisodesAdapter<EpisodeList>(DataEnum.DataType.Home, emptyView);
                     recyclerView.SetAdapter(mainAdapter);
+                  
                     mainAdapter.ItemClick += (s, e) =>
                     {
                         AppView.HandleItemShowEpisodeClick(mainAdapter.GetItem(e), Activity);
@@ -107,28 +120,27 @@ namespace com.aa.tvshows.Fragments
                     EpisodesAdapter<GenresShow> genresAdapter = null;
                     if (genresType == DataEnum.GenreDataType.LatestEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, loadingView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView);
                     }
                     else if (genresType == DataEnum.GenreDataType.PopularEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, loadingView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView);
                     }
                     else if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        loadingView.Visibility = ViewStates.Visible;
+                        toggleLoader(true);
                         var genreList = await WebData.GetGenresShows(genre, genrePage++, year);
-                        loadingView.Visibility = ViewStates.Invisible;
                         genresAdapter = new EpisodesAdapter<GenresShow>(genreList, tabType, emptyView);
                         var scrollListener = new EndlessScroll(layoutManager);
                         scrollListener.LoadMoreTask += async delegate
                         {
-                            loadingView.Visibility = ViewStates.Visible;
+                            toggleLoader(true);
                             var items = await WebData.GetGenresShows(genre, genrePage++, year);
                             if (items != null)
                             {
                                 genresAdapter.AddItem(items.ToArray());
                             }
-                            loadingView.Visibility = ViewStates.Invisible;
+                            toggleLoader(false);
                         };
                         recyclerView.AddOnScrollListener(scrollListener);
                     }
@@ -149,7 +161,7 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.UserFavorites:
-                    var favsAdapter = new EpisodesAdapter<SeriesDetails>(tabType, emptyView, loadingView);
+                    var favsAdapter = new EpisodesAdapter<SeriesDetails>(tabType, emptyView);
                     recyclerView.SetAdapter(favsAdapter);
                     favsAdapter.ItemClick += (s, e) =>
                     {
@@ -157,8 +169,28 @@ namespace com.aa.tvshows.Fragments
                     };
                     break;
 
+
                 default:
                     break;
+            }
+
+        }
+
+
+
+        Handler handler = new Android.OS.Handler();
+
+        private void toggleLoader(bool toggle)
+        {
+            if (View == null || Activity == null) return;
+
+            if (Activity is MainActivity x)
+            {
+                if (toggle) x.toggleLoader(toggle);
+                else
+                {
+                    handler.PostDelayed(new Java.Lang.Runnable(() => { x.toggleLoader(toggle); }), 2000);
+                }
             }
         }
     }

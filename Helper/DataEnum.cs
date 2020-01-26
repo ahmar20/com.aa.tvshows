@@ -18,6 +18,7 @@ namespace com.aa.tvshows.Helper
         {
             None,
 
+            Home,
             PopularShows,
             NewPopularEpisodes,
             NewEpisodes,

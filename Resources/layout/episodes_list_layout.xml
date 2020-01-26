@@ -10,6 +10,7 @@
     android:id="@+id/episodes_list_cardView"
     android:foreground="?android:attr/selectableItemBackground"
     app:rippleColor="@color/colorPrimary"
+        app:cardBackgroundColor="@color/card"
     app:cardCornerRadius="@dimen/list_card_corner_radius"
     app:cardElevation="@dimen/episodes_list_card_elevation"
     app:contentPadding="5dp"

@@ -12,8 +12,9 @@
   <dimen name="tabs_elevation">6dp</dimen>
   <dimen name="recyclerView_under_padding">-5dp</dimen>
   <dimen name="list_card_corner_radius">4dp</dimen>
-  <dimen name="episodes_list_card_elevation">4dp</dimen>
+  <dimen name="episodes_list_card_elevation">0dp</dimen>
   <dimen name="genres_list_year_margin">10dp</dimen>
   <dimen name="margin_8dp">8dp</dimen>
   <dimen name="margin_10dp">10dp</dimen>
+  <dimen name="header_height">50dp</dimen>
 </resources>

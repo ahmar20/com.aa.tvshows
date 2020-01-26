@@ -41,7 +41,6 @@ namespace com.aa.tvshows.Helper
             if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = activity.Resources.GetString(Resource.String.app_name);
-                activity.SupportActionBar.Subtitle = "Watch TV Shows of your choice";
             }
             else
             {
@@ -52,12 +51,10 @@ namespace com.aa.tvshows.Helper
             if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = "TV Shows Schedule";
-                activity.SupportActionBar.Subtitle = "See what's missed and what's next!";
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.InvariantCulture))
             {
                 activity.SupportActionBar.Title = "TV Shows Genres";
-                activity.SupportActionBar.Subtitle = "Browse all types of shows";
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("SEARCH", StringComparison.InvariantCulture))
             {
@@ -84,18 +81,14 @@ namespace com.aa.tvshows.Helper
             int itemsOrder = 1;
             if (activity.LocalClassName.ToUpperInvariant().Contains("MAIN"))
             {
-                menu.Add(mainItemsGroupId, SearchId, itemsOrder++, "Search")
-                    .SetIcon(Resource.Drawable.baseline_search_24)
-                    .SetShowAsAction(ShowAsAction.Always);
+               
                 menu.Add(mainItemsGroupId, TVScheduleId, itemsOrder++, "TV Shows Schedule")
                     .SetIcon(Resource.Drawable.baseline_date_range_24)
                     .SetShowAsAction(ShowAsAction.Always);
                 menu.Add(mainItemsGroupId, GenresId, itemsOrder++, "Browse by Genres")
                     .SetIcon(Resource.Drawable.film)
                     .SetShowAsAction(ShowAsAction.IfRoom);
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload")
-                    .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
+            
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
@@ -128,10 +121,7 @@ namespace com.aa.tvshows.Helper
                     activity.StartActivity(typeof(TVScheduleActivity));
                     break;
 
-                case SearchId:
-                    activity.StartActivity(typeof(SearchActivity));
-                    break;
-
+           
                 case GenresId:
                     activity.StartActivity(typeof(GenresActivity));
                     break;

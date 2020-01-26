@@ -26,10 +26,7 @@ namespace com.aa.tvshows
 
             // Create your application here
             SetContentView(Resource.Layout.search_activity);
-
-            AppView.SetActionBarForActivity(FindViewById<Toolbar>(Resource.Id.main_toolbar), this);
-
-            SetupSearch();
+           SetupSearch();
         }
 
         public override bool OnSupportNavigateUp()

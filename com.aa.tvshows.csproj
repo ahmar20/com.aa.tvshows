@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutActivity.cs" />
+    <Compile Include="Helper\AnimHelper.cs" />
     <Compile Include="EpisodeDetailActivity.cs" />
     <Compile Include="Fragments\MainTabs.cs" />
     <Compile Include="GenresActivity.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Helper\EndlessScroll.cs" />
     <Compile Include="Helper\EpisodesAdapter.cs" />
     <Compile Include="Helper\Error.cs" />
+    <Compile Include="Helper\HeaderDecoration.cs" />
     <Compile Include="Helper\LoadingViewDialog.cs" />
     <Compile Include="Helper\SimpleListAdapter.cs" />
     <Compile Include="Helper\StorageData.cs" />
@@ -109,6 +111,7 @@
     <Compile Include="Helper\WebData.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PlayerActivity.cs" />
+    <Compile Include="RefreshableFragment.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchActivity.cs" />
@@ -149,8 +152,14 @@
     <PackageReference Include="Square.Picasso">
       <Version>2.5.2.2</Version>
     </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Constraint.Layout">
+      <Version>1.1.2</Version>
+    </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.AppCompat">
       <Version>1.1.0-rc1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.ConstraintLayout">
+      <Version>1.1.3-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Core">
       <Version>1.1.0-rc1</Version>
@@ -173,11 +182,6 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\episodes_list_layout.xml">
-      <SubType>Designer</SubType>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\layout\main_toolbar.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
@@ -653,6 +657,36 @@
     <AndroidResource Include="Resources\layout\user_favorites_list.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\menu\bottom_navigation_menu.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\color\bottom_nav_item_color.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\home_outline.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\movie_outline.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\trash_can_outline.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\circle.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\dots_horizontal.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\home_page_cards.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\home_header_item.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
