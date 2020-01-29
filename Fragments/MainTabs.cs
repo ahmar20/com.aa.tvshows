@@ -64,7 +64,7 @@ namespace com.aa.tvshows.Fragments
             if (tabType != DataEnum.DataType.TVSchedule)
             {
                 refreshView = view.FindViewById<SwipeRefreshLayout>(Resource.Id.main_tab_content_refresh);
-                refreshView.SetProgressBackgroundColorSchemeColor(Resource.Color.colorAccent);
+                refreshView.SetProgressBackgroundColorSchemeResource(Resource.Color.colorPrimaryDark);
                 refreshView.Refresh += (s, e) => { ReloadCurrentData(); };
             }
             //AnimHelper.FadeContents(view, true, false, null);
