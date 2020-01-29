@@ -49,17 +49,6 @@ namespace com.aa.tvshows
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            if (item.ItemId == AppView.ReloadId)
-            {
-                var action = new Action(() =>
-                {
-                    if (pager.Adapter is PageTabsAdapter adapter)
-                    {
-                        adapter.GetTabFragment(tabLayout.SelectedTabPosition)?.ReloadCurrentData();
-                    }
-                });
-                return AppView.OnOptionsItemSelected(item, this, action);
-            }
             return AppView.OnOptionsItemSelected(item, this);
         }
 
@@ -72,13 +61,13 @@ namespace com.aa.tvshows
         private void SetupTabsForGenres()
         {
             pager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            pager.OffscreenPageLimit = 3;
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             tabLayout.SetupWithViewPager(pager);
             tabLayout.TabMode = TabLayout.ModeScrollable;
 
             var adapter = new PageTabsAdapter(SupportFragmentManager);
             pager.Adapter = adapter;
-
             foreach(var item in Genres)
             {
                 adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.DataType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
