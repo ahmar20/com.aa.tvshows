@@ -96,11 +96,13 @@
     <Compile Include="EpisodeDetailActivity.cs" />
     <Compile Include="Fragments\MainTabs.cs" />
     <Compile Include="GenresActivity.cs" />
+    <Compile Include="Helper\AnimHelper.cs" />
     <Compile Include="Helper\DataEnum.cs" />
     <Compile Include="Helper\EndlessScroll.cs" />
     <Compile Include="Helper\EpisodesAdapter.cs" />
     <Compile Include="Helper\Error.cs" />
     <Compile Include="Helper\LoadingViewDialog.cs" />
+    <Compile Include="Helper\ShowsNotificationService.cs" />
     <Compile Include="Helper\SimpleListAdapter.cs" />
     <Compile Include="Helper\StorageData.cs" />
     <Compile Include="Helper\TemplateData.cs" />
@@ -159,13 +161,16 @@
       <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Preference">
-      <Version>1.1.0-rc1</Version>
+      <Version>1.1.0-rc2</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.RecyclerView">
       <Version>1.1.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout">
       <Version>1.0.0-rc1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Work.Runtime">
+      <Version>2.2.0-rc1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Google.Android.Material">
       <Version>1.1.0-preview06</Version>

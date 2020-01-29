@@ -1844,7 +1844,16 @@ namespace com.aa.tvshows
 			public const int config_materialPreferenceIconSpaceReserved = 2130968579;
 			
 			// aapt resource value: 0x7F040004
-			public const int mtrl_btn_textappearance_all_caps = 2130968580;
+			public const int enable_system_alarm_service_default = 2130968580;
+			
+			// aapt resource value: 0x7F040005
+			public const int enable_system_job_service_default = 2130968581;
+			
+			// aapt resource value: 0x7F040006
+			public const int mtrl_btn_textappearance_all_caps = 2130968582;
+			
+			// aapt resource value: 0x7F040007
+			public const int workmanager_test_configuration = 2130968583;
 			
 			static Boolean()
 			{
@@ -3927,10 +3936,10 @@ namespace com.aa.tvshows
 			public const int main_tabs_viewpager = 2131230879;
 			
 			// aapt resource value: 0x7F08009B
-			public const int main_tab_emptytext = 2131230875;
+			public const int main_tab_content_refresh = 2131230875;
 			
 			// aapt resource value: 0x7F08009C
-			public const int main_tab_loading = 2131230876;
+			public const int main_tab_emptytext = 2131230876;
 			
 			// aapt resource value: 0x7F08009D
 			public const int main_tab_rv = 2131230877;
