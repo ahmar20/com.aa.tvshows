@@ -3,6 +3,7 @@ using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using Square.Picasso;
 using System;
 using System.Collections.Generic;
@@ -274,13 +275,17 @@ namespace com.aa.tvshows.Helper
             {
                 if (LoadingView != null)
                 {
-                    LoadingView.Visibility = ViewStates.Visible;
-                }
-
-                if (EmptyView != null)
-                {
-                    (EmptyView as AppCompatTextView).Text = "Loading...";
-                    EmptyView.Visibility = ViewStates.Visible;
+                    if (LoadingView is SwipeRefreshLayout swipe)
+                    {
+                        swipe.Refreshing = true;
+                        if (EmptyView != null)
+                        {
+                            (EmptyView as AppCompatTextView).Text = "Loading...";
+                            EmptyView.Visibility = ViewStates.Visible;
+                        }
+                    }
+                    else
+                        LoadingView.Visibility = ViewStates.Visible;
                 }
 
                 if (dataType == DataEnum.DataType.NewPopularEpisodes)
@@ -318,7 +323,12 @@ namespace com.aa.tvshows.Helper
 
                 if (LoadingView != null)
                 {
-                    LoadingView.Visibility = ViewStates.Invisible;
+                    if (LoadingView is SwipeRefreshLayout swipe)
+                    {
+                        swipe.Refreshing = false;
+                    }
+                    else
+                        LoadingView.Visibility = ViewStates.Visible;
                 }
 
                 if (EmptyView != null)

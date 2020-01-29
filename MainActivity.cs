@@ -51,17 +51,6 @@ namespace com.aa.tvshows
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            if (item.ItemId == AppView.ReloadId)
-            {
-                var action = new Action(() =>
-                {
-                    if (viewPager.Adapter is PageTabsAdapter adapter)
-                    {
-                        adapter.GetTabFragment(tabLayout.SelectedTabPosition)?.ReloadCurrentData();
-                    }
-                });
-                return AppView.OnOptionsItemSelected(item, this, action);
-            }
             return AppView.OnOptionsItemSelected(item, this);
         }
 

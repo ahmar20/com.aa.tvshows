@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_tab_content_refresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <androidx.recyclerview.widget.RecyclerView
@@ -17,13 +18,4 @@
         android:textAlignment="center"
         android:visibility="gone"
         android:layout_centerVertical="true"/>
-    <androidx.core.widget.ContentLoadingProgressBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/main_tab_loading"
-        android:indeterminate="true"
-        android:visibility="gone"
-        android:layout_above="@id/main_tab_emptytext"
-        style="@style/Widget.AppCompat.ProgressBar"/>
-
-</RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -12,6 +12,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using com.aa.tvshows.Helper;
 
 namespace com.aa.tvshows.Fragments
@@ -27,7 +28,7 @@ namespace com.aa.tvshows.Fragments
 
         RecyclerView recyclerView;
         AppCompatTextView emptyView;
-        ContentLoadingProgressBar loadingView;
+        SwipeRefreshLayout refreshView;
         LinearLayoutManager layoutManager;
 
         public MainTabs() : base()
@@ -62,15 +63,19 @@ namespace com.aa.tvshows.Fragments
             emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
             if (tabType != DataEnum.DataType.TVSchedule)
             {
-                loadingView = view.FindViewById<ContentLoadingProgressBar>(Resource.Id.main_tab_loading);
+                refreshView = view.FindViewById<SwipeRefreshLayout>(Resource.Id.main_tab_content_refresh);
+                refreshView.SetProgressBackgroundColorSchemeColor(Resource.Color.colorAccent);
+                refreshView.Refresh += (s, e) => { ReloadCurrentData(); };
             }
+            //AnimHelper.FadeContents(view, true, false, null);
             return view;
         }
 
         public override void OnViewCreated(View view, Bundle savedInstanceState)
         {
             base.OnViewCreated(view, savedInstanceState);
-            LoadDataForType();
+            ReloadCurrentData();
+            //recyclerView.Post(new Action(() => { AnimHelper.FadeContents(view, false, true, null); }));
         }
 
         public void ReloadCurrentData()
@@ -86,7 +91,7 @@ namespace com.aa.tvshows.Fragments
                 case DataEnum.DataType.NewEpisodes:
                 case DataEnum.DataType.NewPopularEpisodes:
                 case DataEnum.DataType.PopularShows:
-                    var mainAdapter = new EpisodesAdapter<EpisodeList>(tabType, emptyView, loadingView);
+                    var mainAdapter = new EpisodesAdapter<EpisodeList>(tabType, emptyView, refreshView);
                     recyclerView.SetAdapter(mainAdapter);
                     mainAdapter.ItemClick += (s, e) =>
                     {
@@ -107,28 +112,28 @@ namespace com.aa.tvshows.Fragments
                     EpisodesAdapter<GenresShow> genresAdapter = null;
                     if (genresType == DataEnum.GenreDataType.LatestEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, loadingView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, refreshView);
                     }
                     else if (genresType == DataEnum.GenreDataType.PopularEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, loadingView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, refreshView);
                     }
                     else if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        loadingView.Visibility = ViewStates.Visible;
+                        refreshView.Refreshing = true;
                         var genreList = await WebData.GetGenresShows(genre, genrePage++, year);
-                        loadingView.Visibility = ViewStates.Invisible;
+                        refreshView.Refreshing = false;
                         genresAdapter = new EpisodesAdapter<GenresShow>(genreList, tabType, emptyView);
                         var scrollListener = new EndlessScroll(layoutManager);
                         scrollListener.LoadMoreTask += async delegate
                         {
-                            loadingView.Visibility = ViewStates.Visible;
+                            refreshView.Refreshing = true;
                             var items = await WebData.GetGenresShows(genre, genrePage++, year);
                             if (items != null)
                             {
                                 genresAdapter.AddItem(items.ToArray());
                             }
-                            loadingView.Visibility = ViewStates.Invisible;
+                            refreshView.Refreshing = false;
                         };
                         recyclerView.AddOnScrollListener(scrollListener);
                     }
@@ -149,7 +154,7 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.UserFavorites:
-                    var favsAdapter = new EpisodesAdapter<SeriesDetails>(tabType, emptyView, loadingView);
+                    var favsAdapter = new EpisodesAdapter<SeriesDetails>(tabType, emptyView, refreshView);
                     recyclerView.SetAdapter(favsAdapter);
                     favsAdapter.ItemClick += (s, e) =>
                     {
