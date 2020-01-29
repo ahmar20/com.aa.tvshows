@@ -93,21 +93,12 @@ namespace com.aa.tvshows.Helper
                 menu.Add(mainItemsGroupId, GenresId, itemsOrder++, "Browse by Genres")
                     .SetIcon(Resource.Drawable.film)
                     .SetShowAsAction(ShowAsAction.IfRoom);
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload")
-                    .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
-                    .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES"))
             {
-                menu.Add(mainItemsGroupId, ReloadId, itemsOrder++, "Reload Data")
-                    .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
             }
             //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
             menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
