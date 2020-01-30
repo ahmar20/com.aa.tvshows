@@ -34,7 +34,6 @@ namespace com.aa.tvshows.Helper
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"sources:\s?.*?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
-        const string StreamplayPostUrl = "https://streamp1ay.me/";
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
         const string UpstreamSourcePattern = @"sources:\s?.*?\s?(http.*?m3u8).*?\s{0,10}?image.*?(http.*?jpg)";
@@ -840,9 +839,21 @@ namespace com.aa.tvshows.Helper
                 if (doc.DocumentNode.Descendants("form").FirstOrDefault() is HtmlNode form)
                 {
                     var webCollection = GetFormInputNodes(form);
-                    if (webCollection != null)
+                    var streamplayPostUrl = string.Empty;
+                    if (doc.DocumentNode.Descendants("script").Where(a => a.GetAttributeValue("type", string.Empty) == "text/javascript" &&
+                        a.InnerText.Contains(".ready(function()")).FirstOrDefault() is HtmlNode postUrlScript)
                     {
-                        if (await PostHtmlContentToUrl(new Uri(StreamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseDoc)
+                        if (Regex.Match(postUrlScript.InnerText, @"\'action\'\,\s\'(https.*?)\'") is Match postUrlMatch)
+                        {
+                            if (postUrlMatch.Success && postUrlMatch.Groups.Count > 0)
+                            {
+                                streamplayPostUrl = postUrlMatch.Groups[1].Value + "/";
+                            }
+                        }
+                    }
+                    if (webCollection != null && !string.IsNullOrEmpty(streamplayPostUrl))
+                    {
+                        if (await PostHtmlContentToUrl(new Uri(streamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseDoc)
                         {
                             string playerDataScript = string.Empty;
                             webCollection = GetFormInputNodes(responseDoc.DocumentNode.Descendants("form").FirstOrDefault());
@@ -856,7 +867,7 @@ namespace com.aa.tvshows.Helper
                             }
                             else
                             {
-                                if (await PostHtmlContentToUrl(new Uri(StreamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseVideoDoc)
+                                if (await PostHtmlContentToUrl(new Uri(streamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseVideoDoc)
                                 {
                                     if (responseVideoDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
                                     {
