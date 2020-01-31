@@ -62,8 +62,7 @@ namespace com.aa.tvshows
         {
             if (viewPager.Adapter != null)
             {
-                tabLayout.Visibility = ViewStates.Gone;
-                viewPager.Adapter = null;
+                tabLayout.Visibility = viewPager.Visibility = ViewStates.Gone;
             }
             var emptyView = FindViewById<AppCompatTextView>(Resource.Id.tv_schedule_base_emptytext);
             var tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
@@ -72,11 +71,12 @@ namespace com.aa.tvshows
             if (swipeRefresh != null)swipeRefresh.Refreshing = true;
 
             var data = await WebData.GetTVSchedule().ConfigureAwait(true);
-            viewPager.Adapter = tabsAdapter;
             if (data != null && data.Count > 0)
             {
                 emptyView.Visibility = ViewStates.Gone;
                 tabLayout.Visibility = ViewStates.Visible;
+                viewPager.Visibility = ViewStates.Visible;
+                viewPager.Adapter = tabsAdapter;
                 foreach (var item in data)
                 {
                     tabsAdapter.AddTab(new TitleFragment() { Title = item.Key, Fragmnet = new MainTabs(DataEnum.DataType.TVSchedule, new List<object>(item.Value)) });
