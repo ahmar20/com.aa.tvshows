@@ -9,10 +9,10 @@
     android:layout_height="wrap_content"
     android:id="@+id/shows_list_cardView"
     android:foreground="?android:attr/selectableItemBackground"
-    app:rippleColor="@color/colorPrimary"
+    app:rippleColor="@color/colorAccent"
     app:cardCornerRadius="@dimen/list_card_corner_radius"
     app:cardElevation="@dimen/episodes_list_card_elevation"
-    app:contentPadding="5dp"
+    app:contentPadding="10dp"
     app:cardUseCompatPadding="true">
     <RelativeLayout
         android:layout_width="match_parent"
@@ -23,6 +23,7 @@
             android:ellipsize="end"
             android:id="@+id/genres_show_title"
             android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:layout_toStartOf="@id/genres_show_year"
             style="@style/TextAppearance.AppCompat.Medium"/>

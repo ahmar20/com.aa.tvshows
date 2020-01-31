@@ -4,26 +4,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:id="@+id/tabBlurParent"
-    android:background="@color/colorTransparent"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:elevation="@dimen/tabs_elevation"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
     <com.google.android.material.tabs.TabLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:minHeight="?actionBarSize"
         android:id="@+id/main_tabs_header"
-        android:elevation="@dimen/tabs_elevation"
-        android:background="@color/colorTabsHeader"
-        app:tabIndicatorColor="@color/colorPrimary"
+        app:tabIndicatorColor="@color/colorAccent"
+        app:tabSelectedTextColor="@color/colorAccent"
+        app:tabIndicatorHeight="3dp"
         app:tabMode="fixed"
+        app:tabBackground="@color/colorPrimary"
         app:tabGravity="fill"
-        app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget" />
+        app:tabTextAppearance="?android:attr/textAppearance" />
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/main_tabs_viewpager"
         android:background="@color/colorTransparent"
         android:clipToPadding="false"
-        android:paddingTop="-10dp"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 </LinearLayout>

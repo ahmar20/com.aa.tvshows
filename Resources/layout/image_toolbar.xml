@@ -14,7 +14,7 @@
         android:id="@+id/image_toolbar_collapsing_layout"
         app:toolbarId="@id/image_toolbar_main_toolbar"
         android:background="@color/colorPrimaryDark"
-        app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+        app:layout_scrollFlags="scroll|exitUntilCollapsed">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/image_toolbar_main_toolbar"
             android:layout_width="fill_parent"
