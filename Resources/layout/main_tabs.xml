@@ -4,26 +4,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:id="@+id/tabBlurParent"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:elevation="@dimen/tabs_elevation"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
     <com.google.android.material.tabs.TabLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="?actionBarSize"
         android:id="@+id/main_tabs_header"
-        app:tabIndicatorColor="@color/colorAccent"
-        app:tabSelectedTextColor="@color/colorAccent"
-        app:tabIndicatorHeight="3dp"
-        app:tabMode="fixed"
-        app:tabBackground="@color/colorPrimary"
+        app:tabIndicatorColor="@color/colorPrimaryDark"
+        app:tabSelectedTextColor="@color/colorPrimaryDark"
+        app:tabMaxWidth="0dp"
         app:tabGravity="fill"
-        app:tabTextAppearance="?android:attr/textAppearance" />
+        app:tabTextAppearance="?android:attr/textAppearanceSearchResultSubtitle"/>
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/main_tabs_viewpager"
-        android:background="@color/colorTransparent"
         android:clipToPadding="false"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>

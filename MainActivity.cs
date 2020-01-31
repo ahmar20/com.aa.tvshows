@@ -57,7 +57,6 @@ namespace com.aa.tvshows
         public void SetupTabs()
         {
             PageTabsAdapter tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
-            viewPager.Adapter = tabsAdapter;
             /*
             // not really needed because there is not much difference between
             // popular episodes and new episodes and also new episodes are more
@@ -84,6 +83,7 @@ namespace com.aa.tvshows
                 Title = "Your Favorites"
             });
             tabLayout.SetupWithViewPager(viewPager);
+            viewPager.Adapter = tabsAdapter;
         }
     }
 }

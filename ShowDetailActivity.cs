@@ -59,7 +59,6 @@ namespace com.aa.tvshows
             seasonEpisodesPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
             seasonsHeader.Visibility = ViewStates.Gone;
             seasonEpisodesPager.Visibility = ViewStates.Gone;
-            seasonsHeader.TabMode = TabLayout.ModeScrollable;
 
             detailImage = FindViewById<AppCompatImageView>(Resource.Id.image_toolbar_main_image);
             titleText = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_title);
@@ -84,8 +83,6 @@ namespace com.aa.tvshows
             loadingView.Visibility = ViewStates.Visible;
             ShowData = await WebData.GetDetailsForTVShowSeries(link);
             loadingView.Visibility = ViewStates.Gone;
-            seasonsHeader.Visibility = ViewStates.Visible;
-            seasonEpisodesPager.Visibility = ViewStates.Visible;
             if (ShowData != null)
             {
                 if (await StorageData.IsMarkedFavorite(ShowData))
@@ -100,7 +97,9 @@ namespace com.aa.tvshows
                 descriptionText.Text = "Description: " + ShowData.Description;
                 releaseText.Text = "Released: " + ShowData.ReleaseDate;
                 genreText.Text = ShowData.Genres;
-                
+
+                seasonsHeader.Visibility = ViewStates.Visible;
+                seasonEpisodesPager.Visibility = ViewStates.Visible;
                 if (ShowData.Seasons != null && ShowData.Seasons.Count > 0)
                 {
                     var adapter = new PageTabsAdapter(SupportFragmentManager);
@@ -108,6 +107,7 @@ namespace com.aa.tvshows
                     {
                         adapter.AddTab(new TitleFragment() { Fragmnet = new MainTabs(DataEnum.DataType.SeasonsEpisodes, season.Episodes.Cast<object>()), Title = season.SeasonName });
                     }
+                    seasonsHeader.TabMode = ShowData.Seasons.Count < 5 ? TabLayout.ModeFixed : TabLayout.ModeScrollable;
                     seasonsHeader.SetupWithViewPager(seasonEpisodesPager);
                     seasonEpisodesPager.Adapter = adapter;
                 }
