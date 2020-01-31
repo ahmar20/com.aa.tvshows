@@ -61,10 +61,15 @@ namespace com.aa.tvshows.Fragments
             recyclerView.SetLayoutManager(layoutManager);
             recyclerView.ClearOnScrollListeners();
             emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
-            if (tabType != DataEnum.DataType.TVSchedule)
+
+            refreshView = view.FindViewById<SwipeRefreshLayout>(Resource.Id.main_tab_content_refresh);
+            refreshView.SetProgressBackgroundColorSchemeResource(Resource.Color.colorPrimaryDark);
+            if (tabType == DataEnum.DataType.TVSchedule)
             {
-                refreshView = view.FindViewById<SwipeRefreshLayout>(Resource.Id.main_tab_content_refresh);
-                refreshView.SetProgressBackgroundColorSchemeResource(Resource.Color.colorPrimaryDark);
+                refreshView.Refresh += delegate { (Activity as TVScheduleActivity).SetupScheduleData(refreshView); };
+            }
+            else
+            {
                 refreshView.Refresh += (s, e) => { ReloadCurrentData(); };
             }
             //AnimHelper.FadeContents(view, true, false, null);
@@ -120,9 +125,9 @@ namespace com.aa.tvshows.Fragments
                     }
                     else if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        refreshView.Refreshing = true;
+                        if (refreshView != null) refreshView.Refreshing = true;
                         var genreList = await WebData.GetGenresShows(genre, genrePage++, year);
-                        refreshView.Refreshing = false;
+                        if (refreshView != null) refreshView.Refreshing = false;
                         genresAdapter = new EpisodesAdapter<GenresShow>(genreList, tabType, emptyView);
                         var scrollListener = new EndlessScroll(layoutManager);
                         scrollListener.LoadMoreTask += async delegate

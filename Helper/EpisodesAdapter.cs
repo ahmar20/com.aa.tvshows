@@ -228,7 +228,7 @@ namespace com.aa.tvshows.Helper
             {
                 holder.FavoritesBtn.Enabled = false;
                 if (e.Item.ItemId == 1)         // update
-                    {
+                {
                     holder.ProgressBar.Visibility = ViewStates.Visible;
                     if (await WebData.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
                     {
@@ -246,7 +246,7 @@ namespace com.aa.tvshows.Helper
                 }
                 holder.FavoritesBtn.Enabled = true;
             };
-            
+
             popup.DismissEvent += delegate
             {
                 isFavoritesMenuShowing = false;
@@ -254,7 +254,7 @@ namespace com.aa.tvshows.Helper
 
             popup.Menu.Add(0, 1, 1, "Update").SetIcon(Android.Resource.Drawable.IcPopupSync).SetShowAsAction(ShowAsAction.Never);
             popup.Menu.Add(0, 2, 2, "Remove").SetIcon(Android.Resource.Drawable.IcMenuDelete).SetShowAsAction(ShowAsAction.Never);
-            
+
             if (!isFavoritesMenuShowing)
             {
                 popup.Show();
@@ -273,32 +273,20 @@ namespace com.aa.tvshows.Helper
             recyclerView.SetItemViewCacheSize(20);
             if (dataType != DataEnum.DataType.None)
             {
-                if (LoadingView != null)
-                {
-                    if (LoadingView is SwipeRefreshLayout swipe)
-                    {
-                        swipe.Refreshing = true;
-                        if (EmptyView != null)
-                        {
-                            (EmptyView as AppCompatTextView).Text = "Loading...";
-                            EmptyView.Visibility = ViewStates.Visible;
-                        }
-                    }
-                    else
-                        LoadingView.Visibility = ViewStates.Visible;
-                }
+                SetEmptyViewText(EmptyView, "Loading...", true);
+                ShowLoadingView(LoadingView, true);
 
-                if (dataType == DataEnum.DataType.NewPopularEpisodes)
+                if (dataType == DataEnum.DataType.PopularShows)
                 {
-                    var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
+                    var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
                     if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
                     {
                         adapter.AddItem(items.ToArray());
                     }
                 }
-                else if (dataType == DataEnum.DataType.PopularShows)
+                else if (dataType == DataEnum.DataType.NewPopularEpisodes)
                 {
-                    var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
+                    var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
                     if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
                     {
                         adapter.AddItem(items.ToArray());
@@ -321,28 +309,36 @@ namespace com.aa.tvshows.Helper
                     }
                 }
 
-                if (LoadingView != null)
+                ShowLoadingView(LoadingView, false);
+                if (ItemCount <= 0)
                 {
-                    if (LoadingView is SwipeRefreshLayout swipe)
-                    {
-                        swipe.Refreshing = false;
-                    }
-                    else
-                        LoadingView.Visibility = ViewStates.Visible;
+                    SetEmptyViewText(EmptyView, recyclerView.Resources.GetString(Resource.String.empty_data_view), true);
                 }
+                else
+                {
+                    SetEmptyViewText(EmptyView, recyclerView.Resources.GetString(Resource.String.empty_data_view), false);
+                }
+            }
+        }
 
-                if (EmptyView != null)
-                {
-                    (EmptyView as AppCompatTextView).Text = EmptyView.Resources.GetString(Resource.String.empty_data_view);
-                    if (ItemCount <= 0)
-                    {
-                        EmptyView.Visibility = ViewStates.Visible;
-                    }
-                    else
-                    {
-                        EmptyView.Visibility = ViewStates.Gone;
-                    }
-                }
+        private void SetEmptyViewText(View view, string text, bool show)
+        {
+            if (view is null) return;
+            view.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
+            (view as AppCompatTextView).Text = text;
+        }
+
+        private void ShowLoadingView(View view, bool show)
+        {
+            if (view is null) return;
+            if (view is SwipeRefreshLayout swipe)
+            {
+                swipe.Refreshing = show;
+            }
+            else if (view is ContentLoadingProgressBar prog)
+            {
+                prog.Indeterminate = true;
+                prog.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
             }
         }
 
