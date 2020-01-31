@@ -10,6 +10,7 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using AndroidX.ViewPager.Widget;
 using com.aa.tvshows.Fragments;
 using com.aa.tvshows.Helper;
@@ -20,6 +21,9 @@ namespace com.aa.tvshows
     [Activity(Label = "TV Schedule", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class TVScheduleActivity : AppCompatActivity
     {
+        ViewPager viewPager;
+        TabLayout tabLayout;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -29,7 +33,13 @@ namespace com.aa.tvshows
             var toolbar = FindViewById<Toolbar>(Resource.Id.main_toolbar);
             AppView.SetActionBarForActivity(toolbar, this);
 
-            SetUpTVScheduleTabs();
+            viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
+            tabLayout.Visibility = ViewStates.Invisible;
+            tabLayout.TabMode = TabLayout.ModeScrollable;
+            tabLayout.SetupWithViewPager(viewPager);
+
+            SetupScheduleData();
         }
 
         public override bool OnCreateOptionsMenu(IMenu menu)
@@ -39,14 +49,6 @@ namespace com.aa.tvshows
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            if (item.ItemId == AppView.ReloadId)
-            {
-                var action = new Action(() =>
-                {
-                    SetUpTVScheduleTabs();
-                });
-                return AppView.OnOptionsItemSelected(item, this, action);
-            }
             return AppView.OnOptionsItemSelected(item, this);
         }
 
@@ -56,25 +58,20 @@ namespace com.aa.tvshows
             return true;
         }
 
-        private async void SetUpTVScheduleTabs()
+        public async void SetupScheduleData(SwipeRefreshLayout swipeRefresh = default)
         {
-            // load data and show tabs from dates
-            // load each tab in a fragment and show relevant data
-            var viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
-            var tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            var loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.tv_schedule_loading);
+            if (viewPager.Adapter != null)
+            {
+                tabLayout.Visibility = ViewStates.Gone;
+                viewPager.Adapter = null;
+            }
             var emptyView = FindViewById<AppCompatTextView>(Resource.Id.tv_schedule_base_emptytext);
-
-            tabLayout.Visibility = ViewStates.Invisible;
+            var tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
             emptyView.Visibility = ViewStates.Visible;
-            loadingView.Visibility = ViewStates.Visible;
-
-            tabLayout.TabMode = TabLayout.ModeScrollable;
-            tabLayout.SetupWithViewPager(viewPager);
             emptyView.Text = "Loading...";
+            if (swipeRefresh != null)swipeRefresh.Refreshing = true;
 
             var data = await WebData.GetTVSchedule().ConfigureAwait(true);
-            var tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
             viewPager.Adapter = tabsAdapter;
             if (data != null && data.Count > 0)
             {
@@ -86,7 +83,7 @@ namespace com.aa.tvshows
                 }
             }
             emptyView.Text = Resources.GetString(Resource.String.empty_data_view);
-            loadingView.Visibility = ViewStates.Gone;
+            if (swipeRefresh != null) swipeRefresh.Refreshing = false;
         }
     }
 }
