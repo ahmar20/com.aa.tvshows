@@ -185,6 +185,7 @@ namespace com.aa.tvshows
             uiOptions |= (int)SystemUiFlags.LayoutHideNavigation;
 
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
+            Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
             isSystemUIVisible = true;
         }
 
