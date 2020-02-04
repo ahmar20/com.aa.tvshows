@@ -39,7 +39,7 @@ namespace com.aa.tvshows.Helper
         const string UpstreamSourcePattern = @"sources:\s?.*?\s?(http.*?m3u8).*?\s{0,10}?image.*?(http.*?jpg)";
         const string VideobinSourcePattern = @"sources.*?(http.*?m3u8).*?(http.*?mp4).*?(http.*?mp4).*?\s{0,}poster.*?(http.*?jpg)";
 
-        const int CurrentYear = 2019;
+        const int CurrentYear = 2020;
         const int MinimumYear = 1990;
         public const double CancellationTokenDelayInSeconds = 30;
 
