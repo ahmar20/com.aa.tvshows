@@ -124,6 +124,7 @@ namespace com.aa.tvshows
                     }
                     seasonsHeader.TabMode = ShowData.Seasons.Count < 5 ? TabLayout.ModeFixed : TabLayout.ModeScrollable;
                     seasonsHeader.SetupWithViewPager(seasonEpisodesPager);
+                    seasonEpisodesPager.OffscreenPageLimit = ShowData.Seasons.Count;
                     seasonEpisodesPager.Adapter = adapter;
                 }
                 else
