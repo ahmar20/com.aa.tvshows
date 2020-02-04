@@ -18,7 +18,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/image_toolbar_main_toolbar"
             android:layout_width="fill_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:background="@color/colorPrimaryDark"
             app:layout_collapseMode="pin" />
         <LinearLayout
@@ -26,10 +26,12 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:id="@+id/image_toolbar_collapsing_root"
-            android:layout_margin="@dimen/margin_8dp"
-            android:padding="@dimen/margin_8dp"
+            android:paddingStart="@dimen/margin_8dp"
+            android:paddingEnd="@dimen/margin_8dp"
+            android:paddingBottom="@dimen/margin_8dp"
             app:layout_collapseMode="parallax"
-            app:layout_collapseParallaxMultiplier="0.3">
+            app:layout_collapseParallaxMultiplier="0.3"
+            android:layout_marginTop="?android:attr/actionBarSize">
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/image_toolbar_main_image"
                 android:layout_width="match_parent"
