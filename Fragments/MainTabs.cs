@@ -150,8 +150,10 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.SeasonsEpisodes:
+                    if (refreshView != null) refreshView.Refreshing = true;
                     var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisodeDetails>(new List<ShowEpisodeDetails>(items.Cast<ShowEpisodeDetails>()), tabType, emptyView);
                     recyclerView.SetAdapter(seasonsEpisodesAdapter);
+                    if (refreshView != null) refreshView.Refreshing = false;
                     seasonsEpisodesAdapter.ItemClick += (s, e) =>
                     {
                         AppView.HandleItemShowEpisodeClick(seasonsEpisodesAdapter.GetItem(e), Activity);
