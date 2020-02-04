@@ -42,7 +42,8 @@ namespace com.aa.tvshows
         readonly int AlphaAnimationDuration = 200;
         readonly double PercentageToShowTitle = 0.600;
         readonly double PercentageToHideTitle = 0.599;
-        
+        readonly string ShowDetailSaveInstanceName = "showDetail";
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -73,15 +74,29 @@ namespace com.aa.tvshows
             appBarLayout.OffsetChanged += AppLayout_OffsetChanged;
 
             // load data from link
-            // set title, set image
-            var link = Intent.Extras.GetString("itemLink");
-            LoadData(link);
+            if (savedInstanceState is null)
+            {
+                var link = Intent.Extras.GetString("itemLink");
+                LoadData(link);
+            }
+            else
+            {
+                // get saved show data
+                var show = Newtonsoft.Json.JsonConvert.DeserializeObject<SeriesDetails>(savedInstanceState.GetString(ShowDetailSaveInstanceName));
+                LoadData(null, show);
+            }
         }
 
-        private async void LoadData(string link)
+        protected override void OnSaveInstanceState(Bundle outState)
+        {
+            base.OnSaveInstanceState(outState);
+            outState.PutString(ShowDetailSaveInstanceName, Newtonsoft.Json.JsonConvert.SerializeObject(ShowData));
+        }
+
+        private async void LoadData(string link, SeriesDetails showData = default)
         {
             loadingView.Visibility = ViewStates.Visible;
-            ShowData = await WebData.GetDetailsForTVShowSeries(link);
+            ShowData = showData is null ? await WebData.GetDetailsForTVShowSeries(link) : showData;
             loadingView.Visibility = ViewStates.Gone;
             if (ShowData != null)
             {
@@ -103,7 +118,7 @@ namespace com.aa.tvshows
                 if (ShowData.Seasons != null && ShowData.Seasons.Count > 0)
                 {
                     var adapter = new PageTabsAdapter(SupportFragmentManager);
-                    foreach(var season in ShowData.Seasons)
+                    foreach (var season in ShowData.Seasons)
                     {
                         adapter.AddTab(new TitleFragment() { Fragmnet = new MainTabs(DataEnum.DataType.SeasonsEpisodes, season.Episodes.Cast<object>()), Title = season.SeasonName });
                     }
@@ -160,7 +175,7 @@ namespace com.aa.tvshows
             Action favAction = null;
             if (item.ItemId == AppView.AddFavoritesId)
             {
-                favAction = new Action(async() => 
+                favAction = new Action(async () =>
                 {
                     if (await StorageData.SaveSeriesToFavoritesFile(ShowData))
                     {
@@ -175,7 +190,7 @@ namespace com.aa.tvshows
             }
             else if (item.ItemId == AppView.RemoveFavoritesId)
             {
-                favAction = new Action(async() =>
+                favAction = new Action(async () =>
                 {
                     if (await StorageData.RemoveSeriesFromFavoritesFile(ShowData))
                     {
