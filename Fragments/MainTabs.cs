@@ -9,6 +9,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Content;
 using AndroidX.Core.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
@@ -27,7 +28,8 @@ namespace com.aa.tvshows.Fragments
         int genrePage = 1;
 
         RecyclerView recyclerView;
-        AppCompatTextView emptyView;
+        //AppCompatTextView emptyView;
+        LinearLayoutCompat emptyView;
         SwipeRefreshLayout refreshView;
         LinearLayoutManager layoutManager;
 
@@ -59,9 +61,7 @@ namespace com.aa.tvshows.Fragments
             recyclerView = view.FindViewById<RecyclerView>(Resource.Id.main_tab_rv);
             layoutManager = new CachingLayoutManager(view.Context);
             recyclerView.SetLayoutManager(layoutManager);
-            recyclerView.ClearOnScrollListeners();
-            emptyView = view.FindViewById<AppCompatTextView>(Resource.Id.main_tab_emptytext);
-
+            emptyView = view.FindViewById<LinearLayoutCompat>(Resource.Id.main_tab_empty_view);
             refreshView = view.FindViewById<SwipeRefreshLayout>(Resource.Id.main_tab_content_refresh);
             refreshView.SetProgressBackgroundColorSchemeResource(Resource.Color.colorPrimaryDark);
             if (tabType == DataEnum.DataType.TVSchedule)
@@ -91,21 +91,98 @@ namespace com.aa.tvshows.Fragments
 
         private async void LoadDataForType()
         {
-            switch (tabType)
+            ShowLoadingView(refreshView, true);
+            switch(tabType)
             {
-                case DataEnum.DataType.NewEpisodes:
-                case DataEnum.DataType.NewPopularEpisodes:
                 case DataEnum.DataType.PopularShows:
-                    var mainAdapter = new EpisodesAdapter<EpisodeList>(tabType, emptyView, refreshView);
-                    recyclerView.SetAdapter(mainAdapter);
-                    mainAdapter.ItemClick += (s, e) =>
+                    if (recyclerView.GetAdapter() is null)
                     {
-                        AppView.HandleItemShowEpisodeClick(mainAdapter.GetItem(e), Activity);
+                        if (await WebData.GetPopularShowsForMainView().ConfigureAwait(true) is List<ShowList> newShows)
+                        {
+                            SetEmptyView(false);
+                            var adapter = new EpisodesAdapter<ShowList>(tabType, newShows, emptyView);
+                            adapter.ItemClick += (s, e) =>
+                            {
+                                AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
+                            };
+                            recyclerView.SetAdapter(adapter);
+                        }
+                        else
+                        {
+                            SetEmptyView(true);
+                        }
+                    }
+                    else
+                    {
+                        recyclerView.SetAdapter(null);
+                        LoadDataForType();
+                        return;
+                    }
+                    break;
+
+                case DataEnum.DataType.NewPopularEpisodes:
+                    if (recyclerView.GetAdapter() is null)
+                    {
+                        if (await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
+                        {
+                            SetEmptyView(false);
+                            var adapter = new EpisodesAdapter<EpisodeList>(tabType, popularEpisodes, emptyView);
+                            adapter.ItemClick += (s, e) =>
+                            {
+                                AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
+                            };
+                            recyclerView.SetAdapter(adapter);
+                        }
+                        else
+                        {
+                            SetEmptyView(true);
+                        }
+                    }
+                    else
+                    {
+                        recyclerView.SetAdapter(null);
+                        LoadDataForType();
+                        return;
+                    }
+                    break;
+
+                case DataEnum.DataType.NewEpisodes:
+                    if (recyclerView.GetAdapter() is null)
+                    {
+                        if (await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> newEpisodes)
+                        {
+                            SetEmptyView(false);
+                            var adapter = new EpisodesAdapter<EpisodeList>(tabType, newEpisodes, emptyView);
+                            adapter.ItemClick += (s, e) =>
+                            {
+                                AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
+                            };
+                            recyclerView.SetAdapter(adapter);
+                        }
+                        else
+                        {
+                            SetEmptyView(true);
+                        }
+                    }
+                    else
+                    {
+                        recyclerView.SetAdapter(null);
+                        LoadDataForType();
+                        return;
+                    }
+                    break;
+
+                case DataEnum.DataType.SeasonsEpisodes:
+                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisodeDetails>(tabType, new List<ShowEpisodeDetails>(items.Cast<ShowEpisodeDetails>()));
+                    recyclerView.SetAdapter(seasonsEpisodesAdapter);
+                    seasonsEpisodesAdapter.ItemClick += (s, e) =>
+                    {
+                        AppView.HandleItemShowEpisodeClick(seasonsEpisodesAdapter.GetItem(e), Activity);
                     };
                     break;
 
                 case DataEnum.DataType.TVSchedule:
-                    var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(new List<CalenderScheduleList>(items.Cast<CalenderScheduleList>()), tabType, emptyView);
+                    var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(tabType, new List<CalenderScheduleList>(items.Cast<CalenderScheduleList>()));
                     recyclerView.SetAdapter(scheduleAdapter);
                     scheduleAdapter.ItemClick += (s, e) =>
                     {
@@ -115,62 +192,125 @@ namespace com.aa.tvshows.Fragments
 
                 case DataEnum.DataType.Genres:
                     EpisodesAdapter<GenresShow> genresAdapter = null;
+                    /*
                     if (genresType == DataEnum.GenreDataType.LatestEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, refreshView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView);
                     }
                     else if (genresType == DataEnum.GenreDataType.PopularEpisodes)
                     {
-                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView, refreshView);
+                        genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView);
                     }
-                    else if (genresType == DataEnum.GenreDataType.Shows)
+                    else 
+                    */
+                    if (genresType == DataEnum.GenreDataType.Shows)
                     {
-                        if (refreshView != null) refreshView.Refreshing = true;
-                        var genreList = await WebData.GetGenresShows(genre, genrePage++, year);
-                        if (refreshView != null) refreshView.Refreshing = false;
-                        genresAdapter = new EpisodesAdapter<GenresShow>(genreList, tabType, emptyView);
-                        var scrollListener = new EndlessScroll(layoutManager);
-                        scrollListener.LoadMoreTask += async delegate
+                        if (await WebData.GetGenresShows(genre, genrePage++, year).ConfigureAwait(true) is List<GenresShow> genresShows)
                         {
-                            refreshView.Refreshing = true;
-                            var items = await WebData.GetGenresShows(genre, genrePage++, year);
-                            if (items != null)
+                            SetEmptyView(false);
+                            genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresShows);
+                            var scrollListener = new EndlessScroll(layoutManager);
+                            scrollListener.LoadMoreTask += async delegate
                             {
-                                genresAdapter.AddItem(items.ToArray());
-                            }
-                            refreshView.Refreshing = false;
-                        };
-                        recyclerView.AddOnScrollListener(scrollListener);
+                                refreshView.Refreshing = true;
+                                var items = await WebData.GetGenresShows(genre, genrePage++, year);
+                                if (items != null)
+                                {
+                                    genresAdapter.AddItem(items.ToArray());
+                                }
+                                refreshView.Refreshing = false;
+                            };
+                            recyclerView.AddOnScrollListener(scrollListener);
+                            genresAdapter.ItemClick += (s, e) =>
+                            {
+                                AppView.HandleItemShowEpisodeClick(genresAdapter.GetItem(e), Activity);
+                            };
+                        }
+                        else
+                        {
+                            SetEmptyView(true);
+                        }
+                        recyclerView.SetAdapter(genresAdapter);
                     }
-                    recyclerView.SetAdapter(genresAdapter);
-                    genresAdapter.ItemClick += (s, e) =>
-                    {
-                        AppView.HandleItemShowEpisodeClick(genresAdapter.GetItem(e), Activity);
-                    };
-                    break;
-
-                case DataEnum.DataType.SeasonsEpisodes:
-                    if (refreshView != null) refreshView.Refreshing = true;
-                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisodeDetails>(new List<ShowEpisodeDetails>(items.Cast<ShowEpisodeDetails>()), tabType, emptyView);
-                    recyclerView.SetAdapter(seasonsEpisodesAdapter);
-                    if (refreshView != null) refreshView.Refreshing = false;
-                    seasonsEpisodesAdapter.ItemClick += (s, e) =>
-                    {
-                        AppView.HandleItemShowEpisodeClick(seasonsEpisodesAdapter.GetItem(e), Activity);
-                    };
                     break;
 
                 case DataEnum.DataType.UserFavorites:
-                    var favsAdapter = new EpisodesAdapter<SeriesDetails>(tabType, emptyView, refreshView);
-                    recyclerView.SetAdapter(favsAdapter);
-                    favsAdapter.ItemClick += (s, e) =>
+                    if (recyclerView.GetAdapter() is null)
                     {
-                        AppView.HandleItemShowEpisodeClick(favsAdapter.GetItem(e), Activity);
-                    };
+                        if (await StorageData.GetSeriesListFromFavoritesFile().ConfigureAwait(true) is List<SeriesDetails> userFavorites)
+                        {
+                            SetEmptyView(false);
+                            var adapter = new EpisodesAdapter<SeriesDetails>(tabType, userFavorites, emptyView);
+                            adapter.ItemClick += (s, e) =>
+                            {
+                                AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
+                            };
+                            recyclerView.SetAdapter(adapter);
+                        }
+                        else
+                        {
+                            SetEmptyView(true);
+                        }
+                    }
+                    else
+                    {
+                        recyclerView.SetAdapter(null);
+                        LoadDataForType();
+                        return;
+                    }
                     break;
 
                 default:
                     break;
+            }
+            ShowLoadingView(refreshView, false);
+        }
+
+        private void SetEmptyView(bool show)
+        {
+            if (emptyView is null) return;
+
+            emptyView.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
+            emptyView.RemoveAllViews();
+            if (!show)
+            {
+                return;
+            }
+            var parent = LayoutInflater.Inflate(Resource.Layout.empty_view, null, false);
+            var emptyHeader = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_header);
+            var emptyContent = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_content);
+            var emptyImage = parent.FindViewById<AppCompatImageView>(Resource.Id.empty_view_tagline_image);
+            var emptyRetryBtn = parent.FindViewById<AppCompatButton>(Resource.Id.empty_view_retry_btn);
+            if (tabType == DataEnum.DataType.UserFavorites)
+            {
+                emptyHeader.Text = Resources.GetString(Resource.String.empty_favorites_header);
+                emptyContent.Text = Resources.GetString(Resource.String.empty_favorites_content);
+                emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.baseline_favorite_24));
+                emptyRetryBtn.Click += delegate { ReloadCurrentData(); };
+            }
+            else
+            {
+                emptyHeader.Text = Resources.GetString(Resource.String.internet_error_header);
+                emptyContent.Text = Resources.GetString(Resource.String.internet_error_content);
+                emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.sharp_error_outline_24));
+                emptyRetryBtn.Click += delegate { ReloadCurrentData(); };
+            }
+            emptyView.AddView(parent);
+        }
+
+        private void ShowLoadingView(View view, bool show)
+        {
+            if (view is null) return;
+            if (view is SwipeRefreshLayout swipe)
+            {
+                if (swipe.Refreshing && show) return;
+                swipe.Enabled = !show;
+                swipe.Refreshing = show;
+            }
+            else if (view is ContentLoadingProgressBar prog)
+            {
+                prog.Indeterminate = true;
+                prog.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
             }
         }
     }
