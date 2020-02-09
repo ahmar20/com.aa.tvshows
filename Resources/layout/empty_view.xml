@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:padding="30dp">
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:padding="@dimen/margin_8dp"
+        android:id="@+id/empty_view_tagline_image" />
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:id="@+id/empty_view_header"
+        android:layout_margin="@dimen/margin_8dp"
+        style="@style/TextAppearance.MaterialComponents.Headline4" />
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:id="@+id/empty_view_content"
+        android:layout_margin="@dimen/margin_8dp"
+        style="@style/TextAppearance.MaterialComponents.Subtitle1" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/empty_view_retry_btn"
+        android:layout_marginTop="@dimen/margin_8dp"
+        android:text="@string/try_again_action"
+        android:textAllCaps="false"
+        android:background="@color/colorPrimaryDark"/>
+</LinearLayout>

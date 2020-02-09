@@ -5,6 +5,11 @@
   <string name="tv_show_load_error">TV Show could not be loaded. Please try again!</string>
   <string name="tv_show_episodes_error">No Episodes were found for this Series.</string>
   <string name="loading_text">Please wait a moment...</string>
+  <string name="empty_favorites_header">It looks like favorites are empty!</string>
+  <string name="empty_favorites_content">Navigate to a Show to mark it as favorite, so it appears here.</string>
+  <string name="try_again_action">Try again!</string>
+  <string name="internet_error_header">Oops! This is strange</string>
+  <string name="internet_error_content">It looks like internet is not working at the moment. You can try again or contact the developer if the error keeps showing up.</string>
 
   <integer name="episodes_list_detail_max_lines">2</integer>
   <dimen name="episodes_list_padding">5dp</dimen>
