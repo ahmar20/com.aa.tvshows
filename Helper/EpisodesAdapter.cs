@@ -15,7 +15,6 @@ namespace com.aa.tvshows.Helper
     {
         List<T> Items { get; set; }
         View EmptyView { get; set; }
-        View LoadingView { get; set; }
 
         private readonly DataEnum.DataType dataType = DataEnum.DataType.None;
         private bool isFavoritesMenuShowing = false;
@@ -39,11 +38,6 @@ namespace com.aa.tvshows.Helper
             EmptyView = emptyView;
         }
 
-        public EpisodesAdapter(DataEnum.DataType dataType, View emptyView, View loadingView) : this(dataType, emptyView)
-        {
-            LoadingView = loadingView;
-        }
-
         #endregion
 
         #region List CTOR
@@ -51,9 +45,14 @@ namespace com.aa.tvshows.Helper
         {
             Items = items;
         }
-        public EpisodesAdapter(List<T> items, DataEnum.DataType dataType, View emptyView) : this(items)
+
+        public EpisodesAdapter(DataEnum.DataType dataType, List<T> items) : this(items)
         {
             this.dataType = dataType;
+        }
+
+        public EpisodesAdapter(DataEnum.DataType dataType, List<T> items, View emptyView) : this(dataType, items)
+        {
             EmptyView = emptyView;
         }
 
@@ -262,86 +261,6 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public override async void OnAttachedToRecyclerView(RecyclerView recyclerView)
-        {
-            base.OnAttachedToRecyclerView(recyclerView);
-            if (recyclerView == null)
-            {
-                throw new ArgumentNullException(nameof(recyclerView));
-            }
-            recyclerView.HasFixedSize = true;
-            recyclerView.SetItemViewCacheSize(20);
-            if (dataType != DataEnum.DataType.None)
-            {
-                SetEmptyViewText(EmptyView, "Loading...", true);
-                ShowLoadingView(LoadingView, true);
-
-                if (dataType == DataEnum.DataType.PopularShows)
-                {
-                    var items = await WebData.GetPopularShowsForMainView().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
-                    {
-                        adapter.AddItem(items.ToArray());
-                    }
-                }
-                else if (dataType == DataEnum.DataType.NewPopularEpisodes)
-                {
-                    var items = await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
-                    {
-                        adapter.AddItem(items.ToArray());
-                    }
-                }
-                else if (dataType == DataEnum.DataType.NewEpisodes)
-                {
-                    var items = await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<EpisodeList> adapter)
-                    {
-                        adapter.AddItem(items.ToArray());
-                    }
-                }
-                else if (dataType == DataEnum.DataType.UserFavorites)
-                {
-                    var items = await StorageData.GetSeriesListFromFavoritesFile().ConfigureAwait(true);
-                    if (items != null && recyclerView.GetAdapter() is EpisodesAdapter<SeriesDetails> adapter)
-                    {
-                        adapter.AddItem(items.ToArray());
-                    }
-                }
-
-                ShowLoadingView(LoadingView, false);
-                if (ItemCount <= 0)
-                {
-                    SetEmptyViewText(EmptyView, recyclerView.Resources.GetString(Resource.String.empty_data_view), true);
-                }
-                else
-                {
-                    SetEmptyViewText(EmptyView, recyclerView.Resources.GetString(Resource.String.empty_data_view), false);
-                }
-            }
-        }
-
-        private void SetEmptyViewText(View view, string text, bool show)
-        {
-            if (view is null) return;
-            view.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
-            (view as AppCompatTextView).Text = text;
-        }
-
-        private void ShowLoadingView(View view, bool show)
-        {
-            if (view is null) return;
-            if (view is SwipeRefreshLayout swipe)
-            {
-                swipe.Refreshing = show;
-            }
-            else if (view is ContentLoadingProgressBar prog)
-            {
-                prog.Indeterminate = true;
-                prog.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
-            }
-        }
-
         public override int GetItemViewType(int position)
         {
             var type = Items[position].GetType();
@@ -444,9 +363,16 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public void ResetAdapter()
+        public void ResetAdapter(params T[] items)
         {
+            var itemsCount = Items.Count;
             Items.Clear();
+            NotifyItemRangeRemoved(0, itemsCount);
+            if (items != null)
+            {
+                Items.AddRange(items);
+                NotifyItemRangeInserted(0, items.Length);
+            }
             NotifyDataSetChanged();
         }
 
@@ -457,7 +383,6 @@ namespace com.aa.tvshows.Helper
                 Items.Clear();
                 Items = null;
                 EmptyView = null;
-                LoadingView = null;
             }
 
             base.Dispose(disposing);

@@ -69,7 +69,7 @@ namespace com.aa.tvshows
                     loadingView.Visibility = ViewStates.Visible;
                     var suggestions = await WebData.GetTVShowSearchSuggestions(query);
                     loadingView.Visibility = ViewStates.Gone;
-                    var adapter = new EpisodesAdapter<SearchSuggestionsData>(suggestions, DataEnum.DataType.SearchSuggestions, null);
+                    var adapter = new EpisodesAdapter<SearchSuggestionsData>(DataEnum.DataType.SearchSuggestions, suggestions);
                     adapter.ItemClick += (s, e) =>
                     {
                         // handle click here
@@ -100,7 +100,7 @@ namespace com.aa.tvshows
                     var searchResults = await WebData.GetTVShowSearchResults(query);
                     loadingView.Visibility = ViewStates.Gone;
 
-                    var adapter = new EpisodesAdapter<SearchList>(searchResults, DataEnum.DataType.Search, emptyView);
+                    var adapter = new EpisodesAdapter<SearchList>(DataEnum.DataType.Search, searchResults);
                     adapter.ItemClick += (s, e) =>
                     {
                         // handle item click

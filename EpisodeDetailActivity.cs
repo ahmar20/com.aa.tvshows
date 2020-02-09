@@ -135,7 +135,7 @@ namespace com.aa.tvshows
                 
                 if (epData.IsEpisodeWatchable)
                 {
-                    var adapter = new EpisodesAdapter<EpisodeStreamLink>(epData.EpisodeStreamLinks, DataEnum.DataType.EpisodeStreamLinks, null);
+                    var adapter = new EpisodesAdapter<EpisodeStreamLink>(DataEnum.DataType.EpisodeStreamLinks, epData.EpisodeStreamLinks);
                     dataRV.SetAdapter(adapter);
                     adapter.ItemClick += (s, e) =>
                     {
