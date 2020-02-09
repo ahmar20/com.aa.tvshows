@@ -23,11 +23,10 @@ namespace com.aa.tvshows.Helper
             Toast.MakeText(c, message, ToastLength.Short).Show();
         }
 
-        public void ShowErrorSnack(string message, View v, Action actionCallback = default, string actionName = default)
+        public void ShowErrorSnack(string message, View v, Action actionCallback = default, string actionName = default, int duration = Snackbar.LengthLong)
         {
-            var snack = Snackbar.Make(v, message, Snackbar.LengthLong)
-                        .SetAction("Dismiss", (s) => { })
-                        .SetActionTextColor(ContextCompat.GetColor(v.Context, Resource.Color.colorPrimary));
+            var snack = Snackbar.Make(v, message, duration);
+            snack.SetAction("Dismiss", (s) => { snack.Dismiss(); }).SetActionTextColor(ContextCompat.GetColor(v.Context, Resource.Color.colorPrimary));
             if (actionCallback != null && !string.IsNullOrEmpty(actionName))
             {
                 snack.SetAction(actionName, (s) => actionCallback.Invoke());
