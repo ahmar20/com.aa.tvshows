@@ -41,7 +41,7 @@ namespace com.aa.tvshows.Helper
 
         const int CurrentYear = 2020;
         const int MinimumYear = 1990;
-        public const double CancellationTokenDelayInSeconds = 30;
+        public const double CancellationTokenDelayInSeconds = 15;
 
         public static async Task<string> GetHtmlStringFromUrl(Uri url, CancellationTokenSource cts = default)
         {
@@ -62,6 +62,12 @@ namespace com.aa.tvshows.Helper
 
                     var htmlString = await response.Content.ReadAsStringAsync().ConfigureAwait(true);
                     return htmlString;
+                }
+                catch (TaskCanceledException)
+                {
+                }
+                catch (HttpRequestException)
+                {
                 }
                 catch (Exception e)
                 {
