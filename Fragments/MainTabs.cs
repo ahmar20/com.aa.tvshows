@@ -286,14 +286,14 @@ namespace com.aa.tvshows.Fragments
                 emptyHeader.Text = Resources.GetString(Resource.String.empty_favorites_header);
                 emptyContent.Text = Resources.GetString(Resource.String.empty_favorites_content);
                 emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.baseline_favorite_24));
-                emptyRetryBtn.Click += delegate { ReloadCurrentData(); };
+                emptyRetryBtn.Click += delegate { emptyView.RemoveAllViews(); ReloadCurrentData(); };
             }
             else
             {
                 emptyHeader.Text = Resources.GetString(Resource.String.internet_error_header);
                 emptyContent.Text = Resources.GetString(Resource.String.internet_error_content);
                 emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.sharp_error_outline_24));
-                emptyRetryBtn.Click += delegate { ReloadCurrentData(); };
+                emptyRetryBtn.Click += delegate { emptyView.RemoveAllViews(); ReloadCurrentData(); };
             }
             AnimHelper.SetAlphaAnimation(emptyImage);
             emptyView.AddView(parent);
