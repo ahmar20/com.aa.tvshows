@@ -51,12 +51,12 @@ namespace com.aa.tvshows.Helper
 
             if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE", StringComparison.InvariantCulture))
             {
-                activity.SupportActionBar.Title = "TV Shows Schedule";
+                activity.SupportActionBar.Title = "Schedule";
                 activity.SupportActionBar.Subtitle = "See what's missed and what's next!";
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES", StringComparison.InvariantCulture))
             {
-                activity.SupportActionBar.Title = "TV Shows Genres";
+                activity.SupportActionBar.Title = "Genres";
                 activity.SupportActionBar.Subtitle = "Browse all types of shows";
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("SEARCH", StringComparison.InvariantCulture))
