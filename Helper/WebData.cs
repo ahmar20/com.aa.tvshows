@@ -53,7 +53,6 @@ namespace com.aa.tvshows.Helper
                     using HttpClient client = new HttpClient(handler);
                     client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
                     client.DefaultRequestHeaders.Add("Accept", "text/html");
-                    //client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
                     client.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
                     cts ??= new CancellationTokenSource(TimeSpan.FromSeconds(CancellationTokenDelayInSeconds));
 
@@ -86,6 +85,9 @@ namespace com.aa.tvshows.Helper
                     var doc = new HtmlDocument();
                     doc.LoadHtml(await GetHtmlStringFromUrl(url, cts));
                     return doc;
+                }
+                catch(ArgumentNullException)
+                {
                 }
                 catch (Exception e)
                 {
