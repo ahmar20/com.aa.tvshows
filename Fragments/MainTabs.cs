@@ -92,7 +92,7 @@ namespace com.aa.tvshows.Fragments
         private async void LoadDataForType()
         {
             ShowLoadingView(refreshView, true);
-            switch(tabType)
+            switch (tabType)
             {
                 case DataEnum.DataType.PopularShows:
                     if (recyclerView.GetAdapter() is null)
