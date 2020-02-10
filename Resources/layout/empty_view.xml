@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:padding="@dimen/margin_8dp"
-        android:id="@+id/empty_view_tagline_image" />
+        android:id="@+id/empty_view_tagline_image"
+        />
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -295,6 +295,7 @@ namespace com.aa.tvshows.Fragments
                 emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.sharp_error_outline_24));
                 emptyRetryBtn.Click += delegate { ReloadCurrentData(); };
             }
+            AnimHelper.SetAlphaAnimation(emptyImage);
             emptyView.AddView(parent);
         }
 
