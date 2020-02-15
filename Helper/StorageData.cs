@@ -21,6 +21,7 @@ namespace com.aa.tvshows.Helper
             (System.Environment.SpecialFolder.Personal, System.Environment.SpecialFolderOption.Create);
         private const string FavoritesFileName = "UserFavorites.json";
         private static readonly string FavoritesFilePath = GetAppDataPath + "/" + FavoritesFileName;
+        private static readonly string InternalStoragePath = DataContext.FilesDir.AbsolutePath + "/" + DataContext.Resources.GetString(Resource.Id.application_name);
 
         public static async Task<bool> IsMarkedFavorite(SeriesDetails series)
         {
@@ -28,17 +29,6 @@ namespace com.aa.tvshows.Helper
 
             if (await GetFavoriteSeriesDataForKey(series.SeriesLink) is SeriesDetails) return true;
             return false;
-        }
-
-        private static async Task<SeriesDetails> GetFavoriteSeriesDataForKey(string seriesLink)
-        {
-            if (string.IsNullOrEmpty(seriesLink)) return null;
-
-            if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> seriesData)
-            {
-                return seriesData.Where(a => a.SeriesLink == seriesLink).FirstOrDefault();
-            }
-            return null;
         }
 
         public static async Task<List<SeriesDetails>> GetSeriesListFromFavoritesFile()
@@ -54,13 +44,78 @@ namespace com.aa.tvshows.Helper
                 }
                 catch(JsonReaderException)
                 {
-                    Error.Instance.ShowErrorTip("Favorites data is corrupt. Removing favorites...", DataContext);
+                    Error.Instance.ShowErrorTip("Favorites data is corrupt. Emptying file...", DataContext);
                     await SaveFavoritesFileData("");
                 }
                 catch(Exception e)
                 {
                     Error.Instance.ShowErrorTip("Favorites loading error: " + e.Message, DataContext);
                 }
+            }
+            return null;
+        }
+
+        public static async Task<bool> RemoveSeriesFromFavoritesFile(SeriesDetails series)
+        {
+            if (series is null) return false;
+
+            List<SeriesDetails> seriesList;
+            if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> savedSeries)
+            {
+                seriesList = savedSeries;
+            }
+            else
+            {
+                seriesList = new List<SeriesDetails>();
+            }
+            if (seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault()))
+            {
+                if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList), FavoritesFilePath))
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public static async Task<bool> ExportSavedFavorites()
+        {
+            if (await GetFavoritesFileData() is string favoritesFile)
+            {
+                try
+                {
+                    if (!Directory.Exists(InternalStoragePath))
+                    {
+                        Directory.CreateDirectory(InternalStoragePath);
+                    }
+                    return await SaveFavoritesFileData(favoritesFile, InternalStoragePath + "/" + FavoritesFileName);
+                }
+                catch(Exception e)
+                {
+                    Error.Instance.ShowErrorTip(e.Message, DataContext);
+                    return false;
+                }
+            }
+            else
+            {
+                Error.Instance.ShowErrorTip("No favorites were found to export.", DataContext);
+                return false;
+            }
+        }
+
+        public static async Task<bool> ImportSavedFavoritesFromFile()
+        {
+            return false;
+        }
+
+        private static async Task<SeriesDetails> GetFavoriteSeriesDataForKey(string seriesLink)
+        {
+            if (string.IsNullOrEmpty(seriesLink)) return null;
+
+            if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> seriesData)
+            {
+                return seriesData.Where(a => a.SeriesLink == seriesLink).FirstOrDefault();
             }
             return null;
         }
@@ -105,48 +160,26 @@ namespace com.aa.tvshows.Helper
             {
                 seriesList.Add(series);
             }
-            if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
+            if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList), FavoritesFilePath))
             {
                 return false;
             }
             return true;
         }
 
-        public static async Task<bool> RemoveSeriesFromFavoritesFile(SeriesDetails series)
-        {
-            if (series is null) return false;
-
-            List<SeriesDetails> seriesList;
-            if (await GetSeriesListFromFavoritesFile() is List<SeriesDetails> savedSeries)
-            {
-                seriesList = savedSeries;
-            }
-            else
-            {
-                seriesList = new List<SeriesDetails>();
-            }
-            if (seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault()))
-            {
-                if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
-                {
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-
-        private static async Task<bool> SaveFavoritesFileData(string data)
+        private static async Task<bool> SaveFavoritesFileData(string data, string path = default)
         {
             try
             {
-                if (File.Exists(FavoritesFilePath))
+                if (string.IsNullOrEmpty(path) || string.IsNullOrWhiteSpace(path)) path = FavoritesFilePath;
+
+                if (File.Exists(path))
                 {
-                    await File.WriteAllTextAsync(FavoritesFilePath, data);
+                    await File.WriteAllTextAsync(path, data);
                 }
                 else
                 {
-                    using var writer = File.CreateText(FavoritesFilePath);
+                    using var writer = File.CreateText(path);
                     await writer.WriteAsync(data);
                 }
                 return true;
