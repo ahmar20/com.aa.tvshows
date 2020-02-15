@@ -70,11 +70,10 @@ namespace com.aa.tvshows.Helper
             }
             if (seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault()))
             {
-                if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList), FavoritesFilePath))
+                if (await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList), FavoritesFilePath))
                 {
-                    return false;
+                    return true;
                 }
-                return true;
             }
             return false;
         }
