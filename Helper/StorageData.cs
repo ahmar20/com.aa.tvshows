@@ -21,7 +21,7 @@ namespace com.aa.tvshows.Helper
             (System.Environment.SpecialFolder.Personal, System.Environment.SpecialFolderOption.Create);
         private const string FavoritesFileName = "UserFavorites.json";
         private static readonly string FavoritesFilePath = GetAppDataPath + "/" + FavoritesFileName;
-        private static readonly string InternalStoragePath = DataContext.FilesDir.AbsolutePath + "/" + DataContext.Resources.GetString(Resource.Id.application_name);
+        private static readonly string InternalStoragePath = DataContext.FilesDir.AbsolutePath + "/" + DataContext.Resources.GetString(Resource.Id.app_name);
 
         public static async Task<bool> IsMarkedFavorite(SeriesDetails series)
         {
