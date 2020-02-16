@@ -91,8 +91,8 @@ namespace com.aa.tvshows.Helper
                     .SetIcon(Resource.Drawable.baseline_date_range_24)
                     .SetShowAsAction(ShowAsAction.Always);
                 menu.Add(mainItemsGroupId, GenresId, itemsOrder++, "Browse by Genres")
-                    .SetIcon(Resource.Drawable.film)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
+                    .SetIcon(Resource.Drawable.baseline_movie_24)
+                    .SetShowAsAction(ShowAsAction.Always);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
