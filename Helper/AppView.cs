@@ -5,7 +5,10 @@ using Android.Renderscripts;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Content;
 using AndroidX.Core.Graphics.Drawable;
+using AndroidX.Core.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using System;
 using System.Threading.Tasks;
 
@@ -93,6 +96,9 @@ namespace com.aa.tvshows.Helper
                 menu.Add(mainItemsGroupId, GenresId, itemsOrder++, "Browse by Genres")
                     .SetIcon(Resource.Drawable.baseline_movie_24)
                     .SetShowAsAction(ShowAsAction.Always);
+
+                //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
+                menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
             {
@@ -100,8 +106,6 @@ namespace com.aa.tvshows.Helper
             else if (activity.LocalClassName.ToUpperInvariant().Contains("GENRES"))
             {
             }
-            //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
-            menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
 
             return true;
         }
@@ -129,6 +133,10 @@ namespace com.aa.tvshows.Helper
 
                 case AboutId:
                     activity.StartActivity(typeof(AboutActivity));
+                    break;
+
+                case SettingsId:
+                    activity.StartActivity(typeof(SettingsActivity));
                     break;
 
                 default:
@@ -250,6 +258,56 @@ namespace com.aa.tvshows.Helper
                 ((RoundedBitmapDrawable)d).CornerRadius = 10;
             }
             view.Background = d;
+        }
+
+        public static void SetEmptyView(LinearLayoutCompat view, bool show, bool isFavorite = false, Action retryAction = default)
+        {
+            if (view is null) return;
+
+            view.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
+            view.RemoveAllViews();
+            if (!show)
+            {
+                return;
+            }
+            var context = view.Context;
+            var parent = LayoutInflater.From(view.Context).Inflate(Resource.Layout.empty_view, null, false);
+            var emptyHeader = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_header);
+            var emptyContent = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_content);
+            var emptyImage = parent.FindViewById<AppCompatImageView>(Resource.Id.empty_view_tagline_image);
+            var emptyRetryBtn = parent.FindViewById<AppCompatButton>(Resource.Id.empty_view_retry_btn);
+            if (isFavorite)
+            {
+                emptyHeader.Text = context.Resources.GetString(Resource.String.empty_favorites_header);
+                emptyContent.Text = context.Resources.GetString(Resource.String.empty_favorites_content);
+                emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.baseline_favorite_24));
+                emptyRetryBtn.Click += delegate { view.RemoveAllViews(); retryAction?.Invoke(); };
+            }
+            else
+            {
+                emptyHeader.Text = context.Resources.GetString(Resource.String.internet_error_header);
+                emptyContent.Text = context.Resources.GetString(Resource.String.internet_error_content);
+                emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.sharp_error_outline_24));
+                emptyRetryBtn.Click += delegate { view.RemoveAllViews(); retryAction.Invoke(); };
+            }
+            if (!isFavorite) AnimHelper.SetAlphaAnimation(emptyImage);
+            view.AddView(parent);
+        }
+
+        public static void ShowLoadingView(View view, bool show)
+        {
+            if (view is null) return;
+            if (view is SwipeRefreshLayout swipe)
+            {
+                if (swipe.Refreshing && show) return;
+                swipe.Enabled = !show;
+                swipe.Refreshing = show;
+            }
+            else if (view is ContentLoadingProgressBar prog)
+            {
+                prog.Indeterminate = true;
+                prog.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
+            }
         }
     }
 }

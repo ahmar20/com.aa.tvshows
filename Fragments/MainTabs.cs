@@ -28,7 +28,6 @@ namespace com.aa.tvshows.Fragments
         int genrePage = 1;
 
         RecyclerView recyclerView;
-        //AppCompatTextView emptyView;
         LinearLayoutCompat emptyView;
         SwipeRefreshLayout refreshView;
         LinearLayoutManager layoutManager;
@@ -91,7 +90,7 @@ namespace com.aa.tvshows.Fragments
 
         private async void LoadDataForType()
         {
-            ShowLoadingView(refreshView, true);
+            AppView.ShowLoadingView(refreshView, true);
             switch (tabType)
             {
                 case DataEnum.DataType.PopularShows:
@@ -99,7 +98,7 @@ namespace com.aa.tvshows.Fragments
                     {
                         if (await WebData.GetPopularShowsForMainView().ConfigureAwait(true) is List<ShowList> newShows)
                         {
-                            SetEmptyView(false);
+                            AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<ShowList>(tabType, newShows, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
@@ -109,7 +108,7 @@ namespace com.aa.tvshows.Fragments
                         }
                         else
                         {
-                            SetEmptyView(true);
+                            AppView.SetEmptyView(emptyView, true, false, delegate { ReloadCurrentData(); });
                         }
                     }
                     else
@@ -125,7 +124,7 @@ namespace com.aa.tvshows.Fragments
                     {
                         if (await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
                         {
-                            SetEmptyView(false);
+                            AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<EpisodeList>(tabType, popularEpisodes, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
@@ -135,7 +134,7 @@ namespace com.aa.tvshows.Fragments
                         }
                         else
                         {
-                            SetEmptyView(true);
+                            AppView.SetEmptyView(emptyView, true, false, delegate { ReloadCurrentData(); });
                         }
                     }
                     else
@@ -151,7 +150,7 @@ namespace com.aa.tvshows.Fragments
                     {
                         if (await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> newEpisodes)
                         {
-                            SetEmptyView(false);
+                            AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<EpisodeList>(tabType, newEpisodes, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
@@ -161,7 +160,7 @@ namespace com.aa.tvshows.Fragments
                         }
                         else
                         {
-                            SetEmptyView(true);
+                            AppView.SetEmptyView(emptyView, true, false, delegate { ReloadCurrentData(); });
                         }
                     }
                     else
@@ -201,13 +200,14 @@ namespace com.aa.tvshows.Fragments
                     {
                         genresAdapter = new EpisodesAdapter<GenresShow>(tabType, emptyView);
                     }
-                    else 
+                    else
                     */
                     if (genresType == DataEnum.GenreDataType.Shows)
                     {
+                        if (!(recyclerView.GetAdapter() is null)) recyclerView.SetAdapter(null);
                         if (await WebData.GetGenresShows(genre, genrePage++, year).ConfigureAwait(true) is List<GenresShow> genresShows)
                         {
-                            SetEmptyView(false);
+                            AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresShows);
                             var scrollListener = new EndlessScroll(layoutManager);
                             scrollListener.LoadMoreTask += async delegate
@@ -228,7 +228,7 @@ namespace com.aa.tvshows.Fragments
                         }
                         else
                         {
-                            SetEmptyView(true);
+                            AppView.SetEmptyView(emptyView, true, false, delegate { ReloadCurrentData(); });
                         }
                         recyclerView.SetAdapter(genresAdapter);
                     }
@@ -239,7 +239,7 @@ namespace com.aa.tvshows.Fragments
                     {
                         if (await StorageData.GetSeriesListFromFavoritesFile().ConfigureAwait(true) is List<SeriesDetails> userFavorites)
                         {
-                            SetEmptyView(false);
+                            AppView.SetEmptyView(emptyView, false, true, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<SeriesDetails>(tabType, userFavorites, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
@@ -249,7 +249,7 @@ namespace com.aa.tvshows.Fragments
                         }
                         else
                         {
-                            SetEmptyView(true);
+                            AppView.SetEmptyView(emptyView, true, true, delegate { ReloadCurrentData(); });
                         }
                     }
                     else
@@ -263,56 +263,7 @@ namespace com.aa.tvshows.Fragments
                 default:
                     break;
             }
-            ShowLoadingView(refreshView, false);
-        }
-
-        private void SetEmptyView(bool show)
-        {
-            if (emptyView is null) return;
-
-            emptyView.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
-            emptyView.RemoveAllViews();
-            if (!show)
-            {
-                return;
-            }
-            var parent = LayoutInflater.Inflate(Resource.Layout.empty_view, null, false);
-            var emptyHeader = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_header);
-            var emptyContent = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_content);
-            var emptyImage = parent.FindViewById<AppCompatImageView>(Resource.Id.empty_view_tagline_image);
-            var emptyRetryBtn = parent.FindViewById<AppCompatButton>(Resource.Id.empty_view_retry_btn);
-            if (tabType == DataEnum.DataType.UserFavorites)
-            {
-                emptyHeader.Text = Resources.GetString(Resource.String.empty_favorites_header);
-                emptyContent.Text = Resources.GetString(Resource.String.empty_favorites_content);
-                emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.baseline_favorite_24));
-                emptyRetryBtn.Click += delegate { emptyView.RemoveAllViews(); ReloadCurrentData(); };
-            }
-            else
-            {
-                emptyHeader.Text = Resources.GetString(Resource.String.internet_error_header);
-                emptyContent.Text = Resources.GetString(Resource.String.internet_error_content);
-                emptyImage.SetImageDrawable(ContextCompat.GetDrawable(parent.Context, Resource.Drawable.sharp_error_outline_24));
-                emptyRetryBtn.Click += delegate { emptyView.RemoveAllViews(); ReloadCurrentData(); };
-            }
-            AnimHelper.SetAlphaAnimation(emptyImage);
-            emptyView.AddView(parent);
-        }
-
-        private void ShowLoadingView(View view, bool show)
-        {
-            if (view is null) return;
-            if (view is SwipeRefreshLayout swipe)
-            {
-                if (swipe.Refreshing && show) return;
-                swipe.Enabled = !show;
-                swipe.Refreshing = show;
-            }
-            else if (view is ContentLoadingProgressBar prog)
-            {
-                prog.Indeterminate = true;
-                prog.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
-            }
+            AppView.ShowLoadingView(refreshView, false);
         }
     }
 }
