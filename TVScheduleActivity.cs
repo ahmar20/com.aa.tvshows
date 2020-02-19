@@ -9,6 +9,7 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Content;
 using AndroidX.Core.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using AndroidX.ViewPager.Widget;
@@ -23,6 +24,8 @@ namespace com.aa.tvshows
     {
         ViewPager viewPager;
         TabLayout tabLayout;
+        AppCompatTextView status;
+        LinearLayoutCompat emptyView;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -38,6 +41,11 @@ namespace com.aa.tvshows
             tabLayout.Visibility = ViewStates.Invisible;
             tabLayout.TabMode = TabLayout.ModeScrollable;
             tabLayout.SetupWithViewPager(viewPager);
+
+            status = new AppCompatTextView(this);
+            TextViewCompat.SetTextAppearance(status, Resource.Style.TextAppearance_AppCompat_Body2);
+            status.TextAlignment = TextAlignment.Center;
+            emptyView = FindViewById<LinearLayoutCompat>(Resource.Id.tv_schedule_empty_view);
 
             SetupScheduleData();
         }
@@ -60,29 +68,34 @@ namespace com.aa.tvshows
 
         public async void SetupScheduleData(SwipeRefreshLayout swipeRefresh = default)
         {
+            AppView.SetEmptyView(emptyView, false);
             if (viewPager.Adapter != null)
             {
                 tabLayout.Visibility = viewPager.Visibility = ViewStates.Gone;
             }
-            var emptyView = FindViewById<AppCompatTextView>(Resource.Id.tv_schedule_base_emptytext);
             var tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
-            emptyView.Visibility = ViewStates.Visible;
-            emptyView.Text = "Loading...";
             if (swipeRefresh != null)swipeRefresh.Refreshing = true;
-
+            
+            emptyView.Visibility = ViewStates.Visible;
+            status.Text = "Loading...";
+            emptyView.AddView(status);
             var data = await WebData.GetTVSchedule().ConfigureAwait(true);
             if (data != null && data.Count > 0)
             {
-                emptyView.Visibility = ViewStates.Gone;
+                AppView.SetEmptyView(emptyView, false);
                 tabLayout.Visibility = ViewStates.Visible;
                 viewPager.Visibility = ViewStates.Visible;
                 viewPager.Adapter = tabsAdapter;
+                
                 foreach (var item in data)
                 {
                     tabsAdapter.AddTab(new TitleFragment() { Title = item.Key, Fragmnet = new MainTabs(DataEnum.DataType.TVSchedule, new List<object>(item.Value)) });
                 }
             }
-            emptyView.Text = Resources.GetString(Resource.String.empty_data_view);
+            else
+            {
+                AppView.SetEmptyView(emptyView, true, false, delegate { SetupScheduleData(swipeRefresh); });
+            }
             if (swipeRefresh != null) swipeRefresh.Refreshing = false;
         }
     }
