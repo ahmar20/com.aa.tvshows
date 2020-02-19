@@ -17,6 +17,7 @@ The libraries included in the app are:
 4. [Newtonsoft Json](https://github.com/JamesNK/Newtonsoft.Json)
 5. [Square Picasso](https://github.com/mattleibow/square-bindings)
 6. [.NET Roslyn](https://github.com/dotnet/roslyn)
+7. [ExoPlayer for Xamarin](https://github.com/Baseflow/ExoPlayerXamarin)
 
 # Troubleshooting Guide
 If for some reason you experience problems and, you cannot stream anything or, the app does not show any data then it is recommended to use a VPN service for the app. I personally use [hide.me](https://hide.me) (use my [referral](https://ref.hide.io/VbpZ8L) please and help me) and they provide 2GB of monthly free data to those who sign-up for a free account.
