@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +9,6 @@
     android:layout_height="wrap_content"
     android:id="@+id/favorites_list_cardView"
     android:foreground="?android:attr/selectableItemBackground"
-    app:rippleColor="@color/colorPrimary"
     app:cardCornerRadius="@dimen/list_card_corner_radius"
     app:cardElevation="@dimen/episodes_list_card_elevation"
     app:contentPadding="5dp"
@@ -104,5 +103,4 @@
             android:visibility="gone"
         />
     </RelativeLayout>
-
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>
