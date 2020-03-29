@@ -136,7 +136,7 @@ namespace com.aa.tvshows.Helper
                     break;
 
                 case SettingsId:
-                    activity.StartActivity(typeof(SettingsActivity));
+                    //activity.StartActivity(typeof(SettingsActivity));
                     break;
 
                 default:
