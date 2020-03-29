@@ -10,6 +10,8 @@ using Android.Views;
 using System;
 using AndroidX.CursorAdapter.Widget;
 using Android.Database;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace com.aa.tvshows
 {
@@ -19,6 +21,12 @@ namespace com.aa.tvshows
     {
         ViewPager viewPager;
         TabLayout tabLayout;
+        PageTabsAdapter tabsAdapter;
+        /*
+        const string PopularShowsFragmentKey = "popularShows";
+        const string NewEpisodesFragmentKey = "newEpisodes";
+        const string FavoritesFragmentKey = "favorites";
+        */
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,6 +45,25 @@ namespace com.aa.tvshows
             //SetupSearchView();
         }
 
+        /*protected override void OnSaveInstanceState(Bundle outState)
+        {
+            base.OnSaveInstanceState(outState);
+            SupportFragmentManager.PutFragment(outState, PopularShowsFragmentKey, tabsAdapter.GetTab(0).Fragmnet);
+            SupportFragmentManager.PutFragment(outState, NewEpisodesFragmentKey, tabsAdapter.GetTab(1).Fragmnet);
+            SupportFragmentManager.PutFragment(outState, FavoritesFragmentKey, tabsAdapter.GetTab(2).Fragmnet);
+        }
+
+        protected override void OnRestoreInstanceState(Bundle savedInstanceState)
+        {
+            var fragments = new List<TitleFragment>()
+            {
+                new TitleFragment() { Title = "Popular Shows", Fragmnet = SupportFragmentManager.GetFragment(savedInstanceState, PopularShowsFragmentKey) },
+                new TitleFragment() { Title = "New Episodes", Fragmnet = SupportFragmentManager.GetFragment(savedInstanceState, NewEpisodesFragmentKey) },
+                new TitleFragment() { Title = "Your Favorites", Fragmnet = SupportFragmentManager.GetFragment(savedInstanceState, FavoritesFragmentKey) }
+            };
+            base.OnRestoreInstanceState(savedInstanceState);
+        }*/
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             //Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -54,9 +81,9 @@ namespace com.aa.tvshows
             return AppView.OnOptionsItemSelected(item, this);
         }
 
-        public void SetupTabs()
+        public void SetupTabs(List<TitleFragment> savedFragments = default)
         {
-            PageTabsAdapter tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
+            tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
             /*
             // not really needed because there is not much difference between
             // popular episodes and new episodes and also new episodes are more
@@ -67,21 +94,28 @@ namespace com.aa.tvshows
                 Title = "Popular Episodes"
             });
             */
-            tabsAdapter.AddTab(new TitleFragment()
+            if (savedFragments is null || savedFragments.Count == 0)
             {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
-                Title = "Popular Shows"
-            });
-            tabsAdapter.AddTab(new TitleFragment()
+                tabsAdapter.AddTab(new TitleFragment()
+                {
+                    Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
+                    Title = "Popular Shows"
+                });
+                tabsAdapter.AddTab(new TitleFragment()
+                {
+                    Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
+                    Title = "New Episodes"
+                });
+                tabsAdapter.AddTab(new TitleFragment()
+                {
+                    Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
+                    Title = "Your Favorites"
+                });
+            }
+            else
             {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
-                Title = "New Episodes"
-            });
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
-                Title = "Your Favorites"
-            });
+                tabsAdapter.AddTab(savedFragments.ToArray());
+            }
             tabLayout.SetupWithViewPager(viewPager);
             viewPager.Adapter = tabsAdapter;
         }

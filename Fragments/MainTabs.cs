@@ -15,6 +15,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using com.aa.tvshows.Helper;
+using Newtonsoft.Json;
 
 namespace com.aa.tvshows.Fragments
 {
@@ -36,6 +37,20 @@ namespace com.aa.tvshows.Fragments
         {
         }
 
+        /*public override void OnSaveInstanceState(Bundle outState)
+        {
+            base.OnSaveInstanceState(outState);
+            if (outState != null)
+                outState.PutString(tabType.ToString(), JsonConvert.SerializeObject(recyclerView.GetAdapter()));
+        }
+
+        public override void OnViewStateRestored(Bundle savedInstanceState)
+        {
+            base.OnViewStateRestored(savedInstanceState);
+            if (savedInstanceState != null)
+                recyclerView.SetAdapter(JsonConvert.DeserializeObject<RecyclerView.Adapter>(savedInstanceState.GetString(tabType.ToString())));
+        }*/
+
         public MainTabs(DataEnum.DataType tabType) : this()
         {
             this.tabType = tabType;
@@ -56,7 +71,7 @@ namespace com.aa.tvshows.Fragments
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             // Use this to return your custom view for this Fragment
-            var view = LayoutInflater.Inflate(Resource.Layout.main_tab_content, container, false);
+            var view = inflater.Inflate(Resource.Layout.main_tab_content, container, false);
             recyclerView = view.FindViewById<RecyclerView>(Resource.Id.main_tab_rv);
             layoutManager = new CachingLayoutManager(view.Context);
             recyclerView.SetLayoutManager(layoutManager);
