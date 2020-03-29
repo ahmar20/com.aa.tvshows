@@ -683,7 +683,7 @@ namespace com.aa.tvshows.Helper
                 "onlystream.tv" => await GetOnlyStreamStreamUrl(decodedLink),
                 "streamplay.to" => await GetStreamplayStreamUrl(decodedLink),
                 //"mixdrop.co" => await GetMixdropStreamUrl(decodedLink),   // not working yet -- requires more work
-                "powvideo.net" => await GetPowvideoStreamUrl(decodedLink),    // not working yet -- requires re-captcha
+                //"powvideo.net" => await GetPowvideoStreamUrl(decodedLink),    // not working yet -- requires re-captcha
                 "prostream.to" => await GetProstreamStreamUrl(decodedLink),
                 "upstream.to" => await GetUpstreamStreamUrl(decodedLink),
                 "videobin.co" => await GetVideobinStreamUrl(decodedLink),
