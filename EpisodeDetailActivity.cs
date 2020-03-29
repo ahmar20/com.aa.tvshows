@@ -85,9 +85,6 @@ namespace com.aa.tvshows
                         if (uri.StreamingUrl != null)
                         {
                             streamableLinkFound = true;
-                        }
-                        if (streamableLinkFound)
-                        {
                             break;
                         }
                     }

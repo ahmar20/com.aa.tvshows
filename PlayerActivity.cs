@@ -41,9 +41,7 @@ namespace com.aa.tvshows
         bool isSystemUIVisible = true;
         
         IDataSourceFactory mediaSourceFactory;
-        ITrackSelectionFactory trackSelectorFactory;
-        readonly IBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-
+        
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -63,9 +61,7 @@ namespace com.aa.tvshows
             if (player is null)
             {
                 mediaSourceFactory = new DefaultDataSourceFactory(this, Util.GetUserAgent(this, Application.PackageName));
-                trackSelectorFactory = new AdaptiveTrackSelection.Factory();
-                var renderersFactory = new DefaultRenderersFactory(this);
-                player = ExoPlayerFactory.NewSimpleInstance(this, renderersFactory, new DefaultTrackSelector(trackSelectorFactory));
+                player = new SimpleExoPlayer.Builder(this).Build();
                 playerView = FindViewById<PlayerView>(Resource.Id.playerView);
                 playerView.Player = player;
                 playerView.RequestFocus();
@@ -133,13 +129,11 @@ namespace com.aa.tvshows
             }
             if (link.StreamingUrl.OriginalString.Contains(".m3u8"))
             {
-                source = new HlsMediaSource.Factory(mediaSourceFactory)
-                        .SetPlaylistParserFactory(new DefaultHlsPlaylistParserFactory(new List<StreamKey>()))
-                        .CreateMediaSource(uri);
+                source = new HlsMediaSource.Factory(mediaSourceFactory).CreateMediaSource(uri);
             }
             if (link.StreamingUrl.OriginalString.Contains(".mp4"))
             {
-                source = new ExtractorMediaSource.Factory(mediaSourceFactory).CreateMediaSource(uri);
+                source = new ProgressiveMediaSource.Factory(mediaSourceFactory).CreateMediaSource(uri);
             }
             return source;
         }
