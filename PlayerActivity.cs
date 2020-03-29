@@ -55,8 +55,7 @@ namespace com.aa.tvshows
         private void InitializePlayback(StreamingUri itemToPlay)
         {
             if (mediaStreams == null)
-                mediaStreams = JsonConvert.DeserializeObject<List<StreamingUri>>(Intent.GetStringExtra("mediaStreams"))
-                    .Where(a => a.StreamingUrl.OriginalString.Contains(".mp4")).ToList();
+                mediaStreams = JsonConvert.DeserializeObject<List<StreamingUri>>(Intent.GetStringExtra("mediaStreams")).ToList();
             
             if (player is null)
             {
@@ -74,7 +73,7 @@ namespace com.aa.tvshows
                 if (mediaStreams != null && mediaStreams.Count > 0)
                 {
                     var titles = new List<string>() { };
-                    mediaStreams.ForEach(a => titles.Add(a.StreamingQuality + " - MP4"));
+                    mediaStreams.ForEach(a => titles.Add(a.StreamingQuality));
                     linksSpinner.Adapter = new ArrayAdapter(this, Android.Resource.Layout.SimpleSpinnerDropDownItem, titles);
                     linksSpinner.ItemSelected += LinksSpinner_ItemSelected;
                     linksSpinner.SetSelection(0);
