@@ -20,7 +20,7 @@ The libraries included in the app are:
 7. [ExoPlayer for Xamarin](https://github.com/Baseflow/ExoPlayerXamarin)
 
 # Troubleshooting Guide
-If for some reason you experience problems and, you cannot stream anything or, the app does not show any data then it is recommended to use a VPN service for the app. I personally use [hide.me](https://hide.me) (use my [referral](https://ref.hide.io/VbpZ8L) please and help me) and they provide 2GB of monthly free data to those who sign-up for a free account.
+If for some reason you experience problems and, you cannot stream anything or, the app does not show any data then it is recommended to use a VPN service for the app. I personally use [hide.me](https://hide.me) (use my [referral](https://ref.hide.io/VbpZ8L) please and help me) and they provide 10GB of monthly free data to those who sign-up for a free account.
 
 If you experience any other issues, for example: crashes etc or weird behavior from the app, then you can head to Issues above and create an issue with your problem.
 
