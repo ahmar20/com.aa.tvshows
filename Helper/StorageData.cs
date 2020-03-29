@@ -78,7 +78,7 @@ namespace com.aa.tvshows.Helper
             return false;
         }
 
-        public static async Task<bool> ExportSavedFavorites()
+        public static async Task<bool> ExportSavedFavoritesToFile()
         {
             if (await GetFavoritesFileData() is string favoritesFile)
             {
