@@ -123,7 +123,7 @@ namespace com.aa.tvshows.Helper
         public string EpisodeLink { get; set; }
         public string EpisodeShowLink { get; set; }
         public string EpisodeFullNameNumber { get; set; }
-        public string EpisodeAirDate { get; set; }
+        public string EpisodeAirDate { get; set; } = "Unknown";
         public bool IsEpisodeWatchable { get; set; }
         public List<EpisodeStreamLink> EpisodeStreamLinks { get; set; }
         public string EpisodeNumber { get; set; }
