@@ -30,8 +30,8 @@ namespace com.aa.tvshows.Helper
         static readonly string TVSearchUrl = BaseUrl + "/search/";
         static readonly string TVSearchSuggestionsUrl = BaseUrl + "/show/search-shows-json/";
 
-        const string ABCVideoSourcePattern = @"(http?s:.*?mp4).*?label:*.([0-9]{3,4}p)";
-        const string ABCVideoPosterPattern = @"image:*.(http?s:.*?jpg)";
+        const string ABCVideoSourcePattern = @"(http?s:.*?mp4)";
+        const string ABCVideoPosterPattern = @"image:\s.*?(http?s:.*?jpg)";
         const string ClipWatchingSourcePattern = @"(http?s:.*?mp4)";
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
@@ -698,21 +698,19 @@ namespace com.aa.tvshows.Helper
         {
             if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Trim().StartsWith("eval(function(p,a,c,k,e,d)", StringComparison.InvariantCulture))
+                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Trim().Contains("jwplayer(\"vplayer\")", StringComparison.InvariantCulture))
                     .FirstOrDefault() is HtmlNode script)
                 {
                     var sourceScript = script.InnerText.Trim().Replace("eval", string.Empty);
-                    var sourcesJint = new Jint.Engine().Execute(sourceScript).GetCompletionValue().ToString();
-
                     var linkList = new List<StreamingUri>();
-                    foreach (Match match in Regex.Matches(sourcesJint, ABCVideoSourcePattern))
+                    foreach (Match match in Regex.Matches(sourceScript, ABCVideoSourcePattern))
                     {
                         var uri = new StreamingUri()
                         {
                             StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
                             StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
                         };
-                        if (Regex.Match(sourcesJint, ABCVideoPosterPattern) is Match posterMatch)
+                        if (Regex.Match(sourceScript, ABCVideoPosterPattern) is Match posterMatch)
                         {
                             uri.PosterUrl = posterMatch.Groups[1].Value;
                         }
