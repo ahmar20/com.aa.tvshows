@@ -13,13 +13,13 @@ using AndroidX.AppCompat.Widget;
 
 namespace com.aa.tvshows.Helper
 {
-    public class SimpleListAdapter<T> : BaseAdapter<T>
+    public class SearchSuggestionsAdapter<T> : BaseAdapter<T>
     {
         private List<T> items;
         private Context context;
 
 
-        public SimpleListAdapter(Context context, List<T> items)
+        public SearchSuggestionsAdapter(Context context, List<T> items)
         {
             this.items = items;
             this.context = context;
