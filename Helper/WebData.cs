@@ -38,7 +38,7 @@ namespace com.aa.tvshows.Helper
         const string GoUnlimitedSourcePattern = @"src:\s?.*?(http?.*?mp4)";
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
-        const string UpstreamSourcePattern = @"sources:\s?.*?\s?(http.*?m3u8).*?\s{0,10}?image.*?(http.*?jpg)";
+        const string UpstreamSourcePattern = @"(http.*?mp4).*?\s{0,10}?image.*?(http.*?jpg)";
         const string VideobinSourcePattern = @"sources.*?(http.*?m3u8).*?(http.*?mp4).*?(http.*?mp4).*?\s{0,}poster.*?(http.*?jpg)";
 
         const int CurrentYear = 2020;
