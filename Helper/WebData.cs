@@ -32,7 +32,7 @@ namespace com.aa.tvshows.Helper
 
         const string ABCVideoSourcePattern = @"(http?s:.*?mp4).*?label:*.([0-9]{3,4}p)";
         const string ABCVideoPosterPattern = @"image:*.(http?s:.*?jpg)";
-        const string ClipWatchingSourcePattern = @"(http?s:.*?mp4).*?res:\s([0-9]{3,4})";
+        const string ClipWatchingSourcePattern = @"(http?s:.*?mp4)";
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"sources:\s?.*?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
@@ -728,7 +728,7 @@ namespace com.aa.tvshows.Helper
         {
             if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.StartsWith("var holaplayer;", StringComparison.InvariantCulture))
+                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("sources:", StringComparison.InvariantCulture))
                     .FirstOrDefault() is HtmlNode script)
                 {
                     var linkList = new List<StreamingUri>();
