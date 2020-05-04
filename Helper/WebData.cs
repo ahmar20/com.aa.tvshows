@@ -35,7 +35,7 @@ namespace com.aa.tvshows.Helper
         const string ClipWatchingSourcePattern = @"(http?s:.*?mp4)";
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
-        const string GoUnlimitedSourcePattern = @"sources:\s?.*?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
+        const string GoUnlimitedSourcePattern = @"src:\s?.*?(http?.*?mp4)";
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
         const string UpstreamSourcePattern = @"sources:\s?.*?\s?(http.*?m3u8).*?\s{0,10}?image.*?(http.*?jpg)";
@@ -813,13 +813,14 @@ namespace com.aa.tvshows.Helper
 
                     var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
                     var match = Regex.Match(javaEvalute, GoUnlimitedSourcePattern);
-                    if (match.Success && match.Groups.Count > 1)
+                    if (match.Success && match.Groups.Count > 0)
                     {
                         return new List<StreamingUri>()
                         {
                             new StreamingUri()
                             {
-                                PosterUrl = match.Groups[2].Value,
+                                // Poster not available
+                                //PosterUrl = match.Groups[2].Value,
                                 StreamingQuality = "HD",
                                 StreamingUrl = new Uri(match.Groups[1].Value)
                             }
