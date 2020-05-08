@@ -136,7 +136,7 @@ namespace com.aa.tvshows
             }
             else
             {
-                Error.Instance.ShowErrorSnack($"TV Show '{ShowData.Title}' could not be loaded.", titleContainer);
+                Error.Instance.ShowErrorSnack($"TV Show could not be loaded.", titleContainer);
             }
         }
 
