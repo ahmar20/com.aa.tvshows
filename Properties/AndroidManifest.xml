@@ -1,14 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ahm.tv.show.media" android:installLocation="auto" android:versionCode="20200220" android:versionName="2.2.4">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ahm.tv.show.media" android:installLocation="auto" android:versionCode="20200504" android:versionName="2.2.5">
 	<uses-sdk android:minSdkVersion="19" android:targetSdkVersion="29" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
-  <application
-    android:allowBackup="true"
-		android:label="@string/app_name"
-		android:roundIcon="@drawable/icon"
-		android:supportsRtl="true"
-		android:theme="@style/AppTheme"
-		android:icon="@drawable/icon"/>
+	<application android:allowBackup="true" android:label="@string/app_name" android:roundIcon="@drawable/icon" android:supportsRtl="true" android:theme="@style/AppTheme" android:icon="@drawable/icon" />
 </manifest>
