@@ -32,9 +32,6 @@ namespace com.aa.tvshows
         RecyclerView dataRV;
         ContentLoadingProgressBar loadingView;
 
-        JavaValueCallback callBack;
-        WebView webView;
-
         Android.Widget.LinearLayout titleContainer;
 
         ShowEpisodeDetails epData;
@@ -64,47 +61,10 @@ namespace com.aa.tvshows
 
             AppView.SetActionBarForActivity(toolbar, this);
             appBarLayout.OffsetChanged += AppLayout_OffsetChanged;
-            callBack = new JavaValueCallback();
-            callBack.ValueReceived += JavaCallBack_ValueReceived;
 
             canGoBackToSeriesHome = Intent.GetBooleanExtra("canGoBackToSeriesHome", false);
             var link = Intent.GetStringExtra("itemLink");
             LoadEpisodeData(link);
-        }
-
-        private async void JavaCallBack_ValueReceived(object sender, string e)
-        {
-            // checking wheter we did receive a proper link from WebView
-            if (Uri.IsWellFormedUriString(e, UriKind.Absolute))
-            {
-                bool streamableLinkFound = false;
-                if (await WebData.GetStreamingUrlFromDecodedLink(e) is List<StreamingUri> links)
-                {
-                    foreach (var uri in links)
-                    {
-                        if (uri.StreamingUrl != null)
-                        {
-                            streamableLinkFound = true;
-                            break;
-                        }
-                    }
-                    if (streamableLinkFound)
-                    {
-                        var intent = new Intent(this, typeof(PlayerActivity));
-                        intent.PutExtra("mediaStreams", JsonConvert.SerializeObject(links));
-                        StartActivity(intent);
-                    }
-                }
-                if (!streamableLinkFound)
-                {
-                    Error.Instance.ShowErrorSnack("Error: Video not found on the given link. Please select another one.", appBarLayout);
-                }
-            }
-            else
-            {
-                Error.Instance.ShowErrorSnack("Error: Deciphering the video link failed.", appBarLayout);
-            }
-            LoadingViewDialog.Instance.Hide();
         }
 
         private async void LoadEpisodeData(string link)
@@ -138,6 +98,7 @@ namespace com.aa.tvshows
                     {
                         // handle watch episode here
                         // first get the decoded link from WebView and JavaValueCallback
+                        //LoadEncodedLinkFromWebViewInBackground(adapter.GetItem(e));
                         LoadEncodedLinkFromWebView(adapter.GetItem(e));
                     };
                 }
@@ -261,17 +222,8 @@ namespace com.aa.tvshows
 
         private void LoadEncodedLinkFromWebView(EpisodeStreamLink encodedLink)
         {
-            Error.Instance.ShowErrorTip("Url clicked", this);
-            LoadingViewDialog.Instance.Show(this);
-            if (webView == null)
-            {
-                webView = new WebView(this);
-                webView.Settings.DomStorageEnabled = true;
-                webView.Settings.JavaScriptEnabled = true;
-                webView.Settings.SetPluginState(WebSettings.PluginState.On);
-            }
-            webView.SetWebViewClient(new CustomWebClient(callBack, encodedLink.HostName));
-            webView.LoadUrl(encodedLink.HostUrl);
+            LoadingViewDialogForWebView.Instance.ShowDialog(this);
+            LoadingViewDialogForWebView.Instance.LoadUrl(encodedLink.HostUrl, encodedLink.HostName);
         }
     }
 }

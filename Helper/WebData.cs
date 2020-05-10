@@ -23,7 +23,7 @@ namespace com.aa.tvshows.Helper
 {
     public static class WebData
     {
-        const string BaseUrl = "https://www1.swatchseries.to";
+        public const string BaseUrl = "https://www1.swatchseries.to";
         static readonly string TVScheduleUrl = BaseUrl + "/tvschedule";
         static readonly string TVGenresUrl = BaseUrl + "/genres/";
         static readonly string TVShowDetailUrl = BaseUrl + "/serie/";
@@ -32,18 +32,26 @@ namespace com.aa.tvshows.Helper
 
         const string ABCVideoSourcePattern = @"(http?s:.*?mp4)";
         const string ABCVideoPosterPattern = @"image:\s.*?(http?s:.*?jpg)";
-        const string ClipWatchingSourcePattern = @"(http?s:.*?mp4)";
+        const string ClipWatchingSourcePattern = @"(http?s:.*?(mp4|m3u8))";
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"src:\s?.*?(http?.*?mp4)";
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
-        const string UpstreamSourcePattern = @"(http.*?mp4).*?\s{0,10}?image.*?(http.*?jpg)";
-        const string VideobinSourcePattern = @"sources.*?(http.*?m3u8).*?(http.*?mp4).*?(http.*?mp4).*?\s{0,}poster.*?(http.*?jpg)";
+        const string UpstreamSourcePattern = @"(http.*?mp4).*(\d{3,4}p).*\s*?image.*?(http.*?jpg)";
+        const string VideobinSourcePattern = @"(http.*?m3u8)|(http.*?mp4)|(http.*?jpg)";
+        const string VidiaSourcePattern = @"(https.*?(\.m3u8|\.mp4)).*?(https.*?\.jpg)";
 
         const int CurrentYear = 2020;
         const int MinimumYear = 1990;
         public const double CancellationTokenDelayInSeconds = 15;
+
+        public static string GetBaseLinkScript(string hostName)
+        {
+            return "javascript:(function() { var nodeList = document.getElementsByTagName('a'); for (var i = 0; i < nodeList.length; i++) { var hrefValue = nodeList[i].getAttribute('href'); if (hrefValue.indexOf('" + hostName.Trim() + "') > -1) { return hrefValue; } } return 'nothing found'; }) ()";
+        }
+
+        public const string GetPageHtmlScript = "javascript:(function() { return document.documentElement.innerHTML; }) ()";
 
         public static async Task<string> GetHtmlStringFromUrl(Uri url, CancellationTokenSource cts = default)
         {
@@ -88,7 +96,7 @@ namespace com.aa.tvshows.Helper
                     doc.LoadHtml(await GetHtmlStringFromUrl(url, cts));
                     return doc;
                 }
-                catch(ArgumentNullException)
+                catch (ArgumentNullException)
                 {
                 }
                 catch (Exception e)
@@ -96,7 +104,7 @@ namespace com.aa.tvshows.Helper
                     Error.Instance.ShowErrorTip(e.Message, Application.Context);
                 }
             }
-            return null;
+            return new HtmlDocument();
         }
 
         public static async Task<JArray> GetJsonFromUrl(Uri url)
@@ -682,7 +690,7 @@ namespace com.aa.tvshows.Helper
                 "gounlimited.to" => await GetGoUnlimitedStreamUrl(decodedLink),
                 "onlystream.tv" => await GetOnlyStreamStreamUrl(decodedLink),
                 "streamplay.to" => await GetStreamplayStreamUrl(decodedLink),
-                //"mixdrop.co" => await GetMixdropStreamUrl(decodedLink),   // not working yet -- requires more work
+                "mixdrop.co" => await GetMixdropStreamUrl(decodedLink),   // not working yet -- requires more work
                 //"powvideo.net" => await GetPowvideoStreamUrl(decodedLink),    // not working yet -- requires re-captcha
                 "prostream.to" => await GetProstreamStreamUrl(decodedLink),
                 "upstream.to" => await GetUpstreamStreamUrl(decodedLink),
@@ -694,90 +702,95 @@ namespace com.aa.tvshows.Helper
             };
         }
 
-        private static async Task<List<StreamingUri>> GetABCVideoStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetABCVideoStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc == null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Trim().Contains("jwplayer(\"vplayer\")", StringComparison.InvariantCulture))
-                    .FirstOrDefault() is HtmlNode script)
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Trim().Contains("jwplayer(\"vplayer\")", StringComparison.InvariantCulture))
+                .FirstOrDefault() is HtmlNode script)
+            {
+                var sourceScript = script.InnerText.Trim().Replace("eval", string.Empty);
+                var linkList = new List<StreamingUri>();
+                foreach (Match match in Regex.Matches(sourceScript, ABCVideoSourcePattern))
                 {
-                    var sourceScript = script.InnerText.Trim().Replace("eval", string.Empty);
-                    var linkList = new List<StreamingUri>();
-                    foreach (Match match in Regex.Matches(sourceScript, ABCVideoSourcePattern))
+                    var uri = new StreamingUri()
                     {
-                        var uri = new StreamingUri()
-                        {
-                            StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
-                            StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
-                        };
-                        if (Regex.Match(sourceScript, ABCVideoPosterPattern) is Match posterMatch)
-                        {
-                            uri.PosterUrl = posterMatch.Groups[1].Value;
-                        }
-                        linkList.Add(uri);
+                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
+                        StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
+                    };
+                    if (Regex.Match(sourceScript, ABCVideoPosterPattern) is Match posterMatch)
+                    {
+                        uri.PosterUrl = posterMatch.Groups[1].Value;
                     }
-                    return linkList;
+                    linkList.Add(uri);
                 }
+                return linkList;
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetClipWatchingStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetClipWatchingStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc == null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("sources:", StringComparison.InvariantCulture))
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("sources:", StringComparison.InvariantCulture))
                     .FirstOrDefault() is HtmlNode script)
+            {
+                var linkList = new List<StreamingUri>();
+                foreach (Match match in Regex.Matches(script.InnerText.Trim(), ClipWatchingSourcePattern))
                 {
-                    var linkList = new List<StreamingUri>();
-                    foreach (Match match in Regex.Matches(script.InnerText.Trim(), ClipWatchingSourcePattern))
+                    var uri = new StreamingUri()
                     {
-                        var uri = new StreamingUri()
-                        {
-                            StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
-                            StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
-                        };
-                        if (Regex.Match(script.InnerText.Trim(), ClipWatchingPosterPattern) is Match posterMatch)
-                        {
-                            uri.PosterUrl = posterMatch.Groups[1].Value;
-                        }
-                        linkList.Add(uri);
+                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
+                        StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
+                    };
+                    if (Regex.Match(script.InnerText.Trim(), ClipWatchingPosterPattern) is Match posterMatch)
+                    {
+                        uri.PosterUrl = posterMatch.Groups[1].Value;
                     }
-                    return linkList;
+                    linkList.Add(uri);
                 }
+                return linkList;
             }
 
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetCloudVideoStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetCloudVideoStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc == null)
             {
-                Dictionary<string, string> webCollection = null;
-                string linkToPost = string.Empty;
-                if (doc.DocumentNode.Descendants("Form").FirstOrDefault() is HtmlNode form)
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            Dictionary<string, string> webCollection = null;
+            string linkToPost = string.Empty;
+            if (doc.DocumentNode.Descendants("Form").FirstOrDefault() is HtmlNode form)
+            {
+                linkToPost = form.GetAttributeValue("action", string.Empty);
+                webCollection = GetFormInputNodes(form);
+            }
+            if (webCollection != null)
+            {
+                if (await PostHtmlContentToUrl(new Uri(linkToPost), webCollection) is HtmlDocument responseDoc)
                 {
-                    linkToPost = form.GetAttributeValue("action", string.Empty);
-                    webCollection = GetFormInputNodes(form);
-                }
-                if (webCollection != null)
-                {
-                    if (await PostHtmlContentToUrl(new Uri(linkToPost), webCollection) is HtmlDocument responseDoc)
+                    if (responseDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
                     {
-                        if (responseDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
-                        {
-                            var items = new List<StreamingUri>
+                        var videoLink = video.Descendants("source").FirstOrDefault()?.GetAttributeValue("src", string.Empty)
+                            .Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1");
+                        var items = new List<StreamingUri>
                             {
                                 new StreamingUri()
                                 {
                                     PosterUrl = video.GetAttributeValue("poster", string.Empty),
                                     StreamingQuality = video.Attributes[1].Value,//("height", string.Empty),
-                                    StreamingUrl = new Uri(video.Descendants("source").FirstOrDefault()?.GetAttributeValue("src", string.Empty))
+                                    StreamingUrl = new Uri(videoLink)
                                 }
                             };
-                            return items;
-                        }
+                        return items;
                     }
                 }
             }
@@ -785,35 +798,37 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetGamoVideoStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetGamoVideoStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
-                {
-                    var inner = script.InnerText.Replace("eval", string.Empty);
-
-                    var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue();
-                }
+            {
+                var inner = script.InnerText.Replace("eval", string.Empty);
+                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue();
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetGoUnlimitedStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetGoUnlimitedStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
-                {
-                    var inner = script.InnerText.Replace("eval", string.Empty);
+            {
+                var inner = script.InnerText.Replace("eval", string.Empty);
 
-                    var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
-                    var match = Regex.Match(javaEvalute, GoUnlimitedSourcePattern);
-                    if (match.Success && match.Groups.Count > 0)
-                    {
-                        return new List<StreamingUri>()
+                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
+                var match = Regex.Match(javaEvalute, GoUnlimitedSourcePattern);
+                if (match.Success && match.Groups.Count > 0)
+                {
+                    return new List<StreamingUri>()
                         {
                             new StreamingUri()
                             {
@@ -823,22 +838,23 @@ namespace com.aa.tvshows.Helper
                                 StreamingUrl = new Uri(match.Groups[1].Value)
                             }
                         };
-                    }
                 }
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetOnlyStreamStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetOnlyStreamStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("var player")).FirstOrDefault() is HtmlNode script)
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("var player")).FirstOrDefault() is HtmlNode script)
+            {
+                var matches = Regex.Match(script.InnerText.Trim(), OnlyStreamSourcePattern);
+                if (matches.Success && matches.Groups.Count > 1)
                 {
-                    var matches = Regex.Match(script.InnerText.Trim(), OnlyStreamSourcePattern);
-                    if (matches.Success && matches.Groups.Count > 1)
-                    {
-                        return new List<StreamingUri>()
+                    return new List<StreamingUri>()
                         {
                             new StreamingUri()
                             {
@@ -846,100 +862,133 @@ namespace com.aa.tvshows.Helper
                                 StreamingUrl = new Uri(matches.Groups[1].Value)
                             }
                         };
-                    }
                 }
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetMixdropStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetMyStreamStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(new Uri(decodedLink.OriginalString.Replace("/f/", "/e/"))) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("MDCore.ref", StringComparison.InvariantCulture))
-                    .FirstOrDefault() is HtmlNode script)
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            // convert mystream.to/watch => embed.mystream.to
+            // load full page and then get all string and find mp4 link
+            return null;
+        }
+
+        private static async Task<List<StreamingUri>> GetMixdropStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
+        {
+            if (doc is null)
+            {
+                decodedLink = new Uri(decodedLink.OriginalString.Replace("/f/", "/e/"));
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("MDCore.ref", StringComparison.InvariantCulture))
+                .FirstOrDefault() is HtmlNode script)
+            {
+                var playerScript = new Jint.Engine().Execute(script.InnerText.Replace("eval", string.Empty).Replace("MDCore.", "var ")).GetCompletionValue().ToString();
+                var scriptEntries = playerScript.Split(";", StringSplitOptions.RemoveEmptyEntries);
+                if (scriptEntries.Where(s => s.Contains("jpg")).FirstOrDefault() is string poster
+                    && scriptEntries.Where(s => s.Contains("mp4?")).FirstOrDefault() is string file)
                 {
-                    var playerScript = new Jint.Engine().Execute(script.InnerText.Replace("eval", string.Empty).Replace("MDCore.", "var ")).GetCompletionValue().ToString();
+                    var matchPattern = ".*?(//.*)";
+                    poster = Regex.Match(poster.Replace("\"", string.Empty), matchPattern).Groups[1].Value;
+                    file = Regex.Match(file.Replace("\"", string.Empty), matchPattern).Groups[1].Value;
+                    return new List<StreamingUri>() 
+                    {
+                        new StreamingUri()
+                        {
+                            PosterUrl = "http:" + poster,
+                            StreamingUrl = new Uri("http:" + file)
+                        }
+                    };
                 }
             }
 
             return null;
         }
 
-        private static Task<List<StreamingUri>> GetPowvideoStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetPowvideoStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
+            if (doc is null)
+            {
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
             // requires recaptcha
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetStreamplayStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetStreamplayStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("form").FirstOrDefault() is HtmlNode form)
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("form").FirstOrDefault() is HtmlNode form)
+            {
+                var webCollection = GetFormInputNodes(form);
+                var streamplayPostUrl = string.Empty;
+                if (doc.DocumentNode.Descendants("script").Where(a => a.GetAttributeValue("type", string.Empty) == "text/javascript" &&
+                    a.InnerText.Contains(".ready(function()")).FirstOrDefault() is HtmlNode postUrlScript)
                 {
-                    var webCollection = GetFormInputNodes(form);
-                    var streamplayPostUrl = string.Empty;
-                    if (doc.DocumentNode.Descendants("script").Where(a => a.GetAttributeValue("type", string.Empty) == "text/javascript" &&
-                        a.InnerText.Contains(".ready(function()")).FirstOrDefault() is HtmlNode postUrlScript)
+                    if (Regex.Match(postUrlScript.InnerText, @"\'action\'\,\s\'(https.*?)\'") is Match postUrlMatch)
                     {
-                        if (Regex.Match(postUrlScript.InnerText, @"\'action\'\,\s\'(https.*?)\'") is Match postUrlMatch)
+                        if (postUrlMatch.Success && postUrlMatch.Groups.Count > 0)
                         {
-                            if (postUrlMatch.Success && postUrlMatch.Groups.Count > 0)
-                            {
-                                streamplayPostUrl = postUrlMatch.Groups[1].Value + "/";
-                            }
+                            streamplayPostUrl = postUrlMatch.Groups[1].Value + "/";
                         }
                     }
-                    if (webCollection != null && !string.IsNullOrEmpty(streamplayPostUrl))
+                }
+                if (webCollection != null && !string.IsNullOrEmpty(streamplayPostUrl))
+                {
+                    if (await PostHtmlContentToUrl(new Uri(streamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseDoc)
                     {
-                        if (await PostHtmlContentToUrl(new Uri(streamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseDoc)
+                        string playerDataScript = string.Empty;
+                        webCollection = GetFormInputNodes(responseDoc.DocumentNode.Descendants("form").FirstOrDefault());
+                        if (webCollection == null)
                         {
-                            string playerDataScript = string.Empty;
-                            webCollection = GetFormInputNodes(responseDoc.DocumentNode.Descendants("form").FirstOrDefault());
-                            if (webCollection == null)
+                            if (responseDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault()
+                                is HtmlNode script)
                             {
-                                if (responseDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault()
-                                    is HtmlNode script)
-                                {
-                                    playerDataScript = new Jint.Engine().Execute(script.InnerText.Replace("eval", string.Empty)).GetCompletionValue().ToString();
-                                }
+                                playerDataScript = new Jint.Engine().Execute(script.InnerText.Replace("eval", string.Empty)).GetCompletionValue().ToString();
                             }
-                            else
+                        }
+                        else
+                        {
+                            if (await PostHtmlContentToUrl(new Uri(streamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseVideoDoc)
                             {
-                                if (await PostHtmlContentToUrl(new Uri(streamplayPostUrl + webCollection["id"]), webCollection) is HtmlDocument responseVideoDoc)
+                                if (responseVideoDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
                                 {
-                                    if (responseVideoDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
+                                    if (responseVideoDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault()
+                                        is HtmlNode script)
                                     {
-                                        if (responseVideoDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault()
-                                            is HtmlNode script)
-                                        {
-                                            playerDataScript = new Jint.Engine().Execute(script.InnerText.Trim().Replace("eval", string.Empty)).ToString();
-                                        }
+                                        playerDataScript = new Jint.Engine().Execute(script.InnerText.Trim().Replace("eval", string.Empty)).ToString();
                                     }
                                 }
                             }
-                            if (!string.IsNullOrEmpty(playerDataScript))
+                        }
+                        if (!string.IsNullOrEmpty(playerDataScript))
+                        {
+                            var match = Regex.Match(playerDataScript, StreamplaySourcePattern);
+                            if (match.Success)
                             {
-                                var match = Regex.Match(playerDataScript, StreamplaySourcePattern);
-                                if (match.Success)
+                                var items = new List<StreamingUri>();
+                                for (int i = 1; i < match.Groups.Count; i++)
                                 {
-                                    var items = new List<StreamingUri>();
-                                    for (int i = 1; i < match.Groups.Count; i++)
+                                    if (match.Groups[i].Value.Contains("jpg"))
                                     {
-                                        if (match.Groups[i].Value.Contains("jpg"))
-                                        {
-                                            break;
-                                        }
-                                        items.Add(new StreamingUri()
-                                        {
-                                            PosterUrl = match.Groups.LastOrDefault().Value,
-                                            StreamingQuality = "HD",
-                                            StreamingUrl = new Uri(match.Groups[i].Value)
-                                        });
+                                        break;
                                     }
-                                    return items;
+                                    items.Add(new StreamingUri()
+                                    {
+                                        PosterUrl = match.Groups.LastOrDefault().Value,
+                                        StreamingQuality = "HD",
+                                        StreamingUrl = new Uri(match.Groups[i].Value)
+                                    });
                                 }
+                                return items;
                             }
                         }
                     }
@@ -948,19 +997,21 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetProstreamStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetProstreamStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
+            {
+                var inner = script.InnerText.Replace("eval", string.Empty);
+                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
+                var match = Regex.Match(javaEvalute, ProstreamSourcePattern);
+                if (match.Success && match.Groups.Count > 1)
                 {
-                    var inner = script.InnerText.Replace("eval", string.Empty);
-                    var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
-                    var match = Regex.Match(javaEvalute, ProstreamSourcePattern);
-                    if (match.Success && match.Groups.Count > 1)
-                    {
-                        return new List<StreamingUri>()
+                    return new List<StreamingUri>()
                         {
                             new StreamingUri()
                             {
@@ -969,90 +1020,89 @@ namespace com.aa.tvshows.Helper
                                 StreamingUrl = new Uri(match.Groups[1].Value)
                             }
                         };
-                    }
                 }
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetUpstreamStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetUpstreamStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("jwplayer(\"vplayer\")")
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("jwplayer(\"vplayer\")")
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
+            {
+                var inner = script.InnerText.Trim();
+                var match = Regex.Match(inner, UpstreamSourcePattern);
+                if (match.Success)
                 {
-                    var inner = script.InnerText.Trim();
-                    var match = Regex.Match(inner, UpstreamSourcePattern);
-                    if (match.Success && match.Groups.Count > 1)
-                    {
-                        return new List<StreamingUri>()
+                    return new List<StreamingUri>()
                         {
                             new StreamingUri()
                             {
-                                PosterUrl = match.Groups[2].Value,
-                                StreamingQuality = "HD",
+                                PosterUrl = match.Groups[3].Value,
+                                StreamingQuality = match.Groups[2].Value,
                                 StreamingUrl = new Uri(match.Groups[1].Value)
                             }
                         };
-                    }
                 }
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetVideobinStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetVideobinStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("var player")
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("var player")
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
+            {
+                var inner = script.InnerText.Trim();
+                var match = Regex.Match(inner, VideobinSourcePattern);
+                if (match.Success)
                 {
-                    var inner = script.InnerText.Trim();
-                    var match = Regex.Match(inner, VideobinSourcePattern);
-                    if (match.Success)
+                    var items = new List<StreamingUri>();
+                    for (int x = 1; x < 2; x++)
                     {
-                        var items = new List<StreamingUri>();
-                        for (int x = 1; x < match.Groups.Count - 1; x++)
+                        items.Add(new StreamingUri()
                         {
-                            items.Add(new StreamingUri()
-                            {
-                                PosterUrl = match.Groups.LastOrDefault()?.Value,
-                                StreamingQuality = match.Groups[x].Value.Contains("m3u8") ? "HLS" : "HD/SD",
-                                StreamingUrl = new Uri(match.Groups[x].Value)
-                            });
-                        }
-                        return items;
+                            PosterUrl = match.Groups.LastOrDefault()?.Value,
+                            StreamingQuality = match.Groups[x].Value.Contains("m3u8") ? "HLS" : "HD",
+                            StreamingUrl = new Uri(match.Groups[x].Value)
+                        });
                     }
+                    return items;
                 }
             }
             return null;
         }
 
-        private static async Task<List<StreamingUri>> GetVidiaStreamUrl(Uri decodedLink)
+        private static async Task<List<StreamingUri>> GetVidiaStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
-            if (await GetHtmlDocumentFromUrl(decodedLink) is HtmlDocument doc)
+            if (doc is null)
             {
-                if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")
-                && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script")
+                .Where(a => a.InnerText.Contains("function(p,a,c,k,e,d)")).FirstOrDefault() is HtmlNode script)
+            {
+                var inner = script.InnerText.Replace("eval", string.Empty);
+                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
+                var match = Regex.Match(javaEvalute, VidiaSourcePattern);
+                if (match.Success)
                 {
-                    var inner = script.InnerText.Replace("eval", string.Empty);
-                    var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
-                    var match = Regex.Match(javaEvalute, ProstreamSourcePattern);
-                    if (match.Success)
+                    var items = new List<StreamingUri>();
+                    items.Add(new StreamingUri()
                     {
-                        var items = new List<StreamingUri>();
-                        for (int x = 1; x < match.Groups.Count - 1; x++)
-                        {
-                            items.Add(new StreamingUri()
-                            {
-                                PosterUrl = match.Groups.LastOrDefault()?.Value,
-                                StreamingQuality = match.Groups[x].Value.Contains("m3u8") ? "HLS" : match.Groups[x].Value.Contains("mpd") ? "Dash" : "HD",
-                                StreamingUrl = new Uri(match.Groups[x].Value)
-                            });
-                        }
-                        return items;
-                    }
+                        PosterUrl = match.Groups[3].Value,
+                        StreamingQuality = "HD",
+                        StreamingUrl = new Uri(match.Groups[1].Value)
+                    });
+                    return items;
                 }
             }
             return null;
@@ -1073,38 +1123,6 @@ namespace com.aa.tvshows.Helper
             return webCollection;
         }
 
-    }
-
-    public class CustomWebClient : WebViewClient
-    {
-        readonly JavaValueCallback javaCallback;
-        WebView webView;
-        readonly string host;
-
-        public CustomWebClient(JavaValueCallback javaCallback, string host)
-        {
-            this.javaCallback = javaCallback;
-            this.host = host;
-        }
-
-        private void Dialog_DismissEvent(object sender, EventArgs e)
-        {
-            if (webView.Progress < 100) webView.StopLoading();
-        }
-
-        public override void OnPageStarted(WebView view, string url, Bitmap favicon)
-        {
-            // show loading indicator
-            base.OnPageStarted(view, url, favicon);
-            webView = view;
-        }
-
-        public override void OnPageFinished(WebView view, string url)
-        {
-            base.OnPageFinished(view, url);
-            var javaFunc = "javascript:(function() { var nodeList = document.getElementsByTagName('a'); for (var i = 0; i < nodeList.length; i++) { var hrefValue = nodeList[i].getAttribute('href'); if (hrefValue.indexOf('" + host.Trim() + "') > -1) { return hrefValue; } } return 'nothing found'; }) ()";
-            view.EvaluateJavascript(javaFunc, javaCallback);
-        }
     }
 
     public class JavaValueCallback : Java.Lang.Object, IValueCallback
