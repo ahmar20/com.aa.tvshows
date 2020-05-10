@@ -155,7 +155,6 @@ namespace com.aa.tvshows.Helper
                         }
                         if (streamableLinkFound)
                         {
-                            HideDialog();
                             var intent = new Intent(parentActivity, typeof(PlayerActivity));
                             intent.PutExtra("mediaStreams", JsonConvert.SerializeObject(links));
                             parentActivity.StartActivity(intent);
@@ -163,17 +162,21 @@ namespace com.aa.tvshows.Helper
                     }
                     if (!streamableLinkFound)
                     {
-                        Error.Instance.ShowErrorTip("Error: Video not found on the given link. Please select another one.", parentActivity);
+                        Error.Instance.ShowErrorTip("Error: Video not found on the given link. Please select another one.", parentActivity, ToastLength.Long);
                     }
+                    HideDialog();
                 }
                 else
                 {
                     // find mp4 link through captcha
+                    Error.Instance.ShowErrorTip("Not Supported: This video hosting server is not yet supported.", parentActivity, ToastLength.Long);
+                    HideDialog();
                 }
             }
             else
             {
-                Error.Instance.ShowErrorTip("Error: Deciphering the video link failed.", parentActivity);
+                Error.Instance.ShowErrorTip("Error: Deciphering the video link failed.", parentActivity, ToastLength.Long);
+                HideDialog();
             }
         }
     }
