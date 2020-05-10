@@ -18,9 +18,9 @@ namespace com.aa.tvshows.Helper
     {
         public static Error Instance { get; } = new Error();
 
-        public void ShowErrorTip(string message, Context c)
+        public void ShowErrorTip(string message, Context c, ToastLength length = ToastLength.Short)
         {
-            Toast.MakeText(c, message, ToastLength.Short).Show();
+            Toast.MakeText(c, message, length).Show();
         }
 
         public void ShowErrorSnack(string message, View v, Action actionCallback = default, string actionName = default, int duration = Snackbar.LengthLong)
