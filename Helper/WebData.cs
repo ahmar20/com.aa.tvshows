@@ -717,7 +717,7 @@ namespace com.aa.tvshows.Helper
                 {
                     var uri = new StreamingUri()
                     {
-                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
+                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : "Unknown",
                         StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
                     };
                     if (Regex.Match(sourceScript, ABCVideoPosterPattern) is Match posterMatch)
@@ -745,7 +745,7 @@ namespace com.aa.tvshows.Helper
                 {
                     var uri = new StreamingUri()
                     {
-                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : string.Empty,
+                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : "Unknown",
                         StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
                     };
                     if (Regex.Match(script.InnerText.Trim(), ClipWatchingPosterPattern) is Match posterMatch)
@@ -786,7 +786,7 @@ namespace com.aa.tvshows.Helper
                                 new StreamingUri()
                                 {
                                     PosterUrl = video.GetAttributeValue("poster", string.Empty),
-                                    StreamingQuality = video.Attributes[1].Value,//("height", string.Empty),
+                                    StreamingQuality = string.IsNullOrEmpty(video.Attributes[1].Value) ? "Unknown" : video.Attributes[1].Value,//("height", string.Empty),
                                     StreamingUrl = new Uri(videoLink)
                                 }
                             };
@@ -858,7 +858,7 @@ namespace com.aa.tvshows.Helper
                         {
                             new StreamingUri()
                             {
-                                StreamingQuality = matches.Groups[2].Value,
+                                StreamingQuality = string.IsNullOrEmpty(matches.Groups[2].Value) ? matches.Groups[2].Value : "Unknown",
                                 StreamingUrl = new Uri(matches.Groups[1].Value)
                             }
                         };
@@ -901,6 +901,7 @@ namespace com.aa.tvshows.Helper
                         new StreamingUri()
                         {
                             PosterUrl = "http:" + poster,
+                            StreamingQuality = "HD",
                             StreamingUrl = new Uri("http:" + file)
                         }
                     };
@@ -1043,7 +1044,7 @@ namespace com.aa.tvshows.Helper
                             new StreamingUri()
                             {
                                 PosterUrl = match.Groups[3].Value,
-                                StreamingQuality = match.Groups[2].Value,
+                                StreamingQuality = string.IsNullOrEmpty(match.Groups[2].Value) ? match.Groups[2].Value : "Unknown",
                                 StreamingUrl = new Uri(match.Groups[1].Value)
                             }
                         };
