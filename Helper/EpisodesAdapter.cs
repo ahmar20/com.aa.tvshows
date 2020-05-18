@@ -115,7 +115,7 @@ namespace com.aa.tvshows.Helper
                         Picasso.With(epHolder.ItemView.Context).Load(favItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = favItem.Title;
                         var episodesCount = 0;
-                        favItem.Seasons.ForEach(a => episodesCount += a.Episodes.Count);
+                        if (favItem.Seasons != null) favItem.Seasons?.ForEach(a => episodesCount += (int)a.Episodes?.Count);
                         epHolder.EpisodeDetail.Text = string.Format("Total Seasons: {0} - Total Episodes: {1}",
                             favItem.Seasons.Count, episodesCount);
                         epHolder.LastEpisode.Text = favItem.LastEpisode is null ? "Last Episode: Unknown" :
