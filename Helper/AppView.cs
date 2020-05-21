@@ -97,7 +97,7 @@ namespace com.aa.tvshows.Helper
                     .SetIcon(Resource.Drawable.baseline_movie_24)
                     .SetShowAsAction(ShowAsAction.Always);
 
-                //menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
+                menu.Add(appItemsGroupId, SettingsId, itemsOrder++, "Settings").SetShowAsAction(ShowAsAction.Never);
                 menu.Add(appItemsGroupId, AboutId, itemsOrder++, "About").SetShowAsAction(ShowAsAction.Never);
             }
             else if (activity.LocalClassName.ToUpperInvariant().Contains("TVSCHEDULE"))
@@ -136,7 +136,7 @@ namespace com.aa.tvshows.Helper
                     break;
 
                 case SettingsId:
-                    //activity.StartActivity(typeof(SettingsActivity));
+                    activity.StartActivity(typeof(SettingsActivity));
                     break;
 
                 default:
