@@ -92,7 +92,17 @@ namespace com.aa.tvshows
                 
                 if (epData.IsEpisodeWatchable)
                 {
-                    var adapter = new EpisodesAdapter<EpisodeStreamLink>(DataEnum.DataType.EpisodeStreamLinks, epData.EpisodeStreamLinks);
+                    EpisodesAdapter<EpisodeStreamLink> adapter = null;
+                    if (int.TryParse(StorageData.GetNumberOfVideoLinksSetting(), out int numberOfLinks) && numberOfLinks > 0)
+                    {
+                        var links = epData.EpisodeStreamLinks.Take(numberOfLinks).ToList();
+                        adapter = new EpisodesAdapter<EpisodeStreamLink>(DataEnum.DataType.EpisodeStreamLinks, links);
+                    }
+                    else
+                    {
+                        adapter = new EpisodesAdapter<EpisodeStreamLink>(DataEnum.DataType.EpisodeStreamLinks, epData.EpisodeStreamLinks);
+                    }
+                        
                     dataRV.SetAdapter(adapter);
                     adapter.ItemClick += (s, e) =>
                     {
