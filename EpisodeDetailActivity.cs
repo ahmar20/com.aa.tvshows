@@ -88,7 +88,7 @@ namespace com.aa.tvshows
                 releaseView.Text = epData.EpisodeAirDate;
                 genreView.Text = epData.EpisodeFullNameNumber;
                 SupportActionBar.Subtitle = epData.EpisodeNumber;
-                Picasso.With(this).Load(epData.EpisodeImage).Into(imageView);
+                Picasso.Get().Load(epData.EpisodeImage).Into(imageView);
                 
                 if (epData.IsEpisodeWatchable)
                 {
