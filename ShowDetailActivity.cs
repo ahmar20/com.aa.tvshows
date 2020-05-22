@@ -107,7 +107,7 @@ namespace com.aa.tvshows
 				InvalidateOptionsMenu();
 				collapseToolbar.TitleEnabled = false;
 				SupportActionBar.SetDisplayShowTitleEnabled(false);
-				Picasso.With(this).Load(ShowData.ImageLink).Into(detailImage);
+				Picasso.Get().Load(ShowData.ImageLink).Into(detailImage);
 				collapseToolbar.Title = titleText.Text = ShowData.Title;
 				descriptionText.Text = "Description: " + ShowData.Description;
 				releaseText.Text = "Released: " + ShowData.ReleaseDate;
