@@ -10,6 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Preference;
 using Newtonsoft.Json;
 
 namespace com.aa.tvshows.Helper
@@ -22,6 +23,12 @@ namespace com.aa.tvshows.Helper
         private const string FavoritesFileName = "UserFavorites.json";
         private static readonly string FavoritesFilePath = GetAppDataPath + "/" + FavoritesFileName;
         private static readonly string InternalStoragePath = DataContext.FilesDir.AbsolutePath + "/" + DataContext.Resources.GetString(Resource.String.app_name);
+
+        const string UserSettingsFileName = "user_settings";
+        public static ISharedPreferences localPrefs = PreferenceManager.GetDefaultSharedPreferences(DataContext);
+        public const string ShowNumberOfLinksPref = "show_all_links_setting";
+        public const string ShowLatestEpisodesOrderPref = "seasons_episodes_order_setting";
+        public const string UseExternalMediaPlayerPref = "use_external_player_setting";
 
         public static async Task<bool> IsMarkedFavorite(SeriesDetails series)
         {
@@ -70,7 +77,7 @@ namespace com.aa.tvshows.Helper
             }
             if (seriesList.Remove(seriesList.Where(a => a.SeriesLink == series.SeriesLink).FirstOrDefault()))
             {
-                if (await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList), FavoritesFilePath))
+                if (await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
                 {
                     return true;
                 }
@@ -88,7 +95,12 @@ namespace com.aa.tvshows.Helper
                     {
                         Directory.CreateDirectory(InternalStoragePath);
                     }
-                    return await SaveFavoritesFileData(favoritesFile, InternalStoragePath + "/" + FavoritesFileName);
+                    if (await SaveFavoritesFileData(favoritesFile, InternalStoragePath + "/" + FavoritesFileName))
+                    {
+                        Error.Instance.ShowErrorTip("Favorites were successfully saved in " + InternalStoragePath + ".", DataContext, ToastLength.Long);
+                        return true;
+                    }
+                    return false;
                 }
                 catch(Exception e)
                 {
@@ -159,7 +171,7 @@ namespace com.aa.tvshows.Helper
             {
                 seriesList.Add(series);
             }
-            if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList), FavoritesFilePath))
+            if (!await SaveFavoritesFileData(JsonConvert.SerializeObject(seriesList)))
             {
                 return false;
             }
@@ -190,5 +202,21 @@ namespace com.aa.tvshows.Helper
 
             return false;
         }
+
+        public static bool GetShowLatestEpisodesFirstSetting()
+        {
+            return localPrefs.GetBoolean(ShowLatestEpisodesOrderPref, true);
+        }
+
+        public static string GetNumberOfVideoLinksSetting()
+        {
+            return localPrefs.GetString(ShowNumberOfLinksPref, "all");
+        }
+
+        public static bool GetUseExternalMediaPlayerSetting()
+        {
+            return localPrefs.GetBoolean(UseExternalMediaPlayerPref, false);
+        }
+
     }
 }
