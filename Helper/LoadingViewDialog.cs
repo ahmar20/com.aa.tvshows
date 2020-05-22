@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using Android.Content;
-using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -11,27 +8,28 @@ using Android.Webkit;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using Newtonsoft.Json;
+using Google.Android.Material.Button;
 
 namespace com.aa.tvshows.Helper
 {
-    public class LoadingViewDialogForWebView : WebViewClient
+    public class LoadingViewDialogForWebView
     {
         public static LoadingViewDialogForWebView Instance { get; } = new LoadingViewDialogForWebView();
 
         AlertDialog Dialog { get; set; }
         AlertDialog.Builder Builder { get; set; }
+        
         WebView webView;
         Button hostContinueBtn;
-        string host;
-        JavaValueCallback javaCallback;
-        AppCompatActivity parentActivity;
-        public event EventHandler OnCancelled = delegate { };
 
         public const int WebViewID = Resource.Id.host_view;
         public const int LoadingViewID = Resource.Id.loading_parent;
-        public const int LoadingBtnID = Resource.Id.host_continue_btn;
+        public const int HostContinueBtnID = Resource.Id.host_continue_btn;
         public const int HostPanelID = Resource.Id.host_panel;
+
+        JavaValueCallback javaCallback;
+        AppCompatActivity parentActivity;
+        public event EventHandler OnCancelled = delegate { };
 
         public LoadingViewDialogForWebView()
         {
@@ -42,33 +40,33 @@ namespace com.aa.tvshows.Helper
             if (Dialog != null && Dialog.IsShowing) return;
 
             parentActivity = context;
-            Builder = new AlertDialog.Builder(context).SetView(LayoutInflater.From(context).Inflate(Resource.Layout.loading_webview_dialog, null, false));
+            var parentView = LayoutInflater.From(context).Inflate(Resource.Layout.loading_webview_dialog, null, false);
+            Builder = new AlertDialog.Builder(context).SetView(parentView);
             Dialog = Builder.Create();
             Dialog.SetCancelable(true);
             Dialog.SetCanceledOnTouchOutside(false);
             Dialog.DismissEvent += Dialog_DismissEvent;
             Dialog.CancelEvent += Dialog_DismissEvent;
             Dialog.Show();
-            if (webView == null)
-            {
-                webView = Dialog.FindViewById<WebView>(WebViewID);
-                webView.Settings.DomStorageEnabled = true;
-                webView.Settings.JavaScriptEnabled = true;
-                webView.Settings.SetPluginState(WebSettings.PluginState.On);
-                webView.SetWebViewClient(this);
-            }
-            if (hostContinueBtn == null)
-            {
-                hostContinueBtn = Dialog.FindViewById<Button>(LoadingBtnID);
-                hostContinueBtn.Click += delegate
-                {
-                    //webView.EvaluateJavascript();
-                };
-            }
+
             if (javaCallback == null)
             {
                 javaCallback = new JavaValueCallback();
                 javaCallback.ValueReceived += JavaCallback_ValueReceived;
+            }
+
+            if (webView == null)
+            {
+                webView = parentView.FindViewById<WebView>(WebViewID);
+            }
+
+            if (hostContinueBtn == null)
+            {
+                hostContinueBtn = parentView.FindViewById<Button>(HostContinueBtnID);
+                hostContinueBtn.Click += delegate
+                {
+                    //webView.EvaluateJavascript();
+                };
             }
             if (continueSilent)
             {
@@ -110,28 +108,9 @@ namespace com.aa.tvshows.Helper
 
         public void LoadUrl(string url, string hostName = default)
         {
+            new LoadingWebView(webView, host: hostName, javaCallback: javaCallback,
+                    startAction: () => ShowView(LoadingViewID), stopAction: () => HideView(LoadingViewID));
             webView.LoadUrl(url);
-            host = hostName;
-        }
-
-        public override void OnPageStarted(WebView view, string url, Bitmap favicon)
-        {
-            base.OnPageStarted(view, url, favicon);
-            ShowView(LoadingViewID);
-        }
-
-        public override void OnPageFinished(WebView view, string url)
-        {
-            base.OnPageFinished(view, url);
-            if (url.Contains(WebData.BaseUrl))
-            {
-                view.EvaluateJavascript(WebData.GetBaseLinkScript(host), javaCallback);
-            }
-            else
-            {
-
-            }
-            HideView(LoadingViewID);
         }
 
         private async void JavaCallback_ValueReceived(object sender, string e)
@@ -155,9 +134,7 @@ namespace com.aa.tvshows.Helper
                         }
                         if (streamableLinkFound)
                         {
-                            var intent = new Intent(parentActivity, typeof(PlayerActivity));
-                            intent.PutExtra("mediaStreams", JsonConvert.SerializeObject(links));
-                            parentActivity.StartActivity(intent);
+                            ContextMenuDialog.Instance.ShowContextDialog(parentActivity, links);
                         }
                     }
                     if (!streamableLinkFound)

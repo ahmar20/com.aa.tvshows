@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="@dimen/margin_10dp"
+    android:id="@+id/host_context_panel">
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/link_copy_btn"
+        android:layout_margin="@dimen/margin_8dp"
+        android:text="Copy link"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/watch_video_btn"
+        android:layout_margin="@dimen/margin_8dp"
+        android:text="Watch video"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/download_video_btn"
+        android:layout_margin="@dimen/margin_8dp"
+        android:text="Save offline"/>
+</LinearLayout>
