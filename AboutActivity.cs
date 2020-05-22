@@ -60,7 +60,7 @@ namespace com.aa.tvshows
             try
             {
                 var packageInfo = PackageManager.GetPackageInfo(PackageName, 0);
-                return "v" + packageInfo.VersionName + " - " + packageInfo.VersionCode;
+                return "v" + packageInfo.VersionName;
             }
             catch
             {
