@@ -47,13 +47,14 @@
     <EnableLLVM>false</EnableLLVM>
     <BundleAssemblies>false</BundleAssemblies>
     <LangVersion>8.0</LangVersion>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
     <MandroidI18n />
     <AndroidDexTool>d8</AndroidDexTool>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidSupportedAbis />
     <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
     <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
+    <AndroidLinkTool>r8</AndroidLinkTool>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -98,11 +99,13 @@
     <Compile Include="Fragments\MainTabs.cs" />
     <Compile Include="GenresActivity.cs" />
     <Compile Include="Helper\AnimHelper.cs" />
+    <Compile Include="Helper\ContextMenuDialog.cs" />
     <Compile Include="Helper\DataEnum.cs" />
     <Compile Include="Helper\EndlessScroll.cs" />
     <Compile Include="Helper\EpisodesAdapter.cs" />
     <Compile Include="Helper\Error.cs" />
     <Compile Include="Helper\LoadingViewDialog.cs" />
+    <Compile Include="Helper\LoadingWebView.cs" />
     <Compile Include="Helper\ShowsNotificationService.cs" />
     <Compile Include="Helper\SearchSuggestions.cs" />
     <Compile Include="Helper\StorageData.cs" />
@@ -144,7 +147,7 @@
       <Version>3.0.0-beta-1778</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp">
-      <Version>3.6.0-4.final</Version>
+      <Version>3.7.0-1.final</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
@@ -456,7 +459,7 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\loading_dialog.xml">
+    <AndroidResource Include="Resources\layout\context_dialog.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
