@@ -144,5 +144,6 @@ namespace com.aa.tvshows.Helper
         public Uri StreamingUrl { get; set; }
         public string StreamingQuality { get; set; }
         public string PosterUrl { get; set; }
+        public double StreamingFileSize { get; set; }
     }
 }
