@@ -17,6 +17,7 @@ using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using HtmlAgilityPack;
+using Java.Net;
 using Newtonsoft.Json.Linq;
 
 namespace com.aa.tvshows.Helper
@@ -577,7 +578,7 @@ namespace com.aa.tvshows.Helper
                                             EpisodeAirDate = epDate,
                                             EpisodeLink = epLink,
                                             EpisodeFullNameNumber = epNumber,
-                                            IsEpisodeWatchable = epLinks == "(0 links)" ? false : true
+                                            IsEpisodeWatchable = epLinks != "(0 links)"
                                         });
                                     }
                                 }
@@ -681,7 +682,8 @@ namespace com.aa.tvshows.Helper
         public static async Task<List<StreamingUri>> GetStreamingUrlFromDecodedLink(string link)
         {
             var decodedLink = new Uri(link);
-            return decodedLink.Host switch
+            List<StreamingUri> linkList; 
+            linkList = decodedLink.Host switch
             {
                 "abcvideo.cc" => await GetABCVideoStreamUrl(decodedLink),
                 "clipwatching.com" => await GetClipWatchingStreamUrl(decodedLink),
@@ -690,7 +692,7 @@ namespace com.aa.tvshows.Helper
                 "gounlimited.to" => await GetGoUnlimitedStreamUrl(decodedLink),
                 "onlystream.tv" => await GetOnlyStreamStreamUrl(decodedLink),
                 "streamplay.to" => await GetStreamplayStreamUrl(decodedLink),
-                "mixdrop.co" => await GetMixdropStreamUrl(decodedLink),   // not working yet -- requires more work
+                "mixdrop.co" => await GetMixdropStreamUrl(decodedLink),
                 //"powvideo.net" => await GetPowvideoStreamUrl(decodedLink),    // not working yet -- requires re-captcha
                 "prostream.to" => await GetProstreamStreamUrl(decodedLink),
                 "upstream.to" => await GetUpstreamStreamUrl(decodedLink),
@@ -700,6 +702,13 @@ namespace com.aa.tvshows.Helper
 
                 _ => null
             };
+
+            foreach (var sLink in linkList)
+            {
+                var url = new URL(sLink.StreamingUrl.OriginalString);
+                sLink.StreamingFileSize = url.OpenConnection().ContentLengthLong;
+            }
+            return linkList;
         }
 
         private static async Task<List<StreamingUri>> GetABCVideoStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
@@ -867,6 +876,7 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
+        /*
         private static async Task<List<StreamingUri>> GetMyStreamStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
             if (doc is null)
@@ -877,6 +887,7 @@ namespace com.aa.tvshows.Helper
             // load full page and then get all string and find mp4 link
             return null;
         }
+        */
 
         private static async Task<List<StreamingUri>> GetMixdropStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
@@ -911,6 +922,7 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
+        /*
         private static async Task<List<StreamingUri>> GetPowvideoStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
             if (doc is null)
@@ -920,6 +932,7 @@ namespace com.aa.tvshows.Helper
             // requires recaptcha
             return null;
         }
+        */
 
         private static async Task<List<StreamingUri>> GetStreamplayStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
         {
@@ -1096,13 +1109,15 @@ namespace com.aa.tvshows.Helper
                 var match = Regex.Match(javaEvalute, VidiaSourcePattern);
                 if (match.Success)
                 {
-                    var items = new List<StreamingUri>();
-                    items.Add(new StreamingUri()
+                    var items = new List<StreamingUri>
                     {
-                        PosterUrl = match.Groups[3].Value,
-                        StreamingQuality = "HD",
-                        StreamingUrl = new Uri(match.Groups[1].Value)
-                    });
+                        new StreamingUri()
+                        {
+                            PosterUrl = match.Groups[3].Value,
+                            StreamingQuality = "HD",
+                            StreamingUrl = new Uri(match.Groups[1].Value)
+                        }
+                    };
                     return items;
                 }
             }
@@ -1123,7 +1138,6 @@ namespace com.aa.tvshows.Helper
             }
             return webCollection;
         }
-
     }
 
     public class JavaValueCallback : Java.Lang.Object, IValueCallback
