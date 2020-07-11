@@ -717,11 +717,11 @@ namespace com.aa.tvshows.Helper
             {
                 doc = await GetHtmlDocumentFromUrl(decodedLink);
             }
-            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Trim().Contains("jwplayer(\"vplayer\")", StringComparison.InvariantCulture))
+            var linkList = new List<StreamingUri>();
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Trim().Contains("eval(function(p,a,c,k,e,d)", StringComparison.InvariantCulture))
                 .FirstOrDefault() is HtmlNode script)
             {
-                var sourceScript = script.InnerText.Trim().Replace("eval", string.Empty);
-                var linkList = new List<StreamingUri>();
+                var sourceScript = new Jint.Engine().Execute(script.InnerText.Trim().Replace("eval", string.Empty)).GetCompletionValue().ToString();
                 foreach (Match match in Regex.Matches(sourceScript, ABCVideoSourcePattern))
                 {
                     var uri = new StreamingUri()
@@ -735,7 +735,26 @@ namespace com.aa.tvshows.Helper
                     }
                     linkList.Add(uri);
                 }
-                return linkList;
+                if (linkList.Count > 0)
+                    return linkList;
+            }
+            // otherwise try direct download
+            if (doc.DocumentNode.Descendants("table").Where(a => a.GetAttributeValue("class", string.Empty) == "tbl1").FirstOrDefault() is HtmlNode downloadOP)
+            {
+                if (downloadOP.Descendants("a").Where(a => a.GetAttributeValue("onclick", string.Empty).StartsWith("download_video")).FirstOrDefault() is HtmlNode downloadLinkNode)
+                {
+                    var nodeValue = downloadLinkNode.GetAttributeValue("onclick", string.Empty).Replace("download_video", string.Empty).Replace(")", string.Empty).Replace("(", string.Empty).Replace("'", string.Empty).Split(",");
+                    var nodeValueLink = "https://" + decodedLink.Host + $"/dl?op=download_orig&id={nodeValue[0]}&mode={nodeValue[1]}&hash={nodeValue[2]}";
+                    doc = await GetHtmlDocumentFromUrl(new Uri(nodeValueLink));
+                    if (doc != null)
+                    {
+                        if (doc.DocumentNode.Descendants("a").Where(a => a.GetAttributeValue("href", string.Empty).Contains(".mp4")).FirstOrDefault() is HtmlNode mp4Link)
+                        {
+                            linkList.Add(new StreamingUri() { StreamingUrl = new Uri(mp4Link.GetAttributeValue("href", string.Empty)), StreamingQuality = "HD" });
+                            return linkList;
+                        }
+                    }
+                }
             }
             return null;
         }
