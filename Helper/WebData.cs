@@ -59,7 +59,7 @@ namespace com.aa.tvshows.Helper
             if (url != null)
             {
                 try
-                {
+                {                    
                     using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = true };
                     using HttpClient client = new HttpClient(handler);
                     client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");

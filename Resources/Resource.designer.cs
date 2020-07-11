@@ -2277,52 +2277,55 @@ namespace com.aa.tvshows
 			public const int use_controller = 2130903726;
 			
 			// aapt resource value: 0x7F0302AF
-			public const int viewInflaterClass = 2130903727;
+			public const int use_sensor_rotation = 2130903727;
 			
 			// aapt resource value: 0x7F0302B0
-			public const int voiceIcon = 2130903728;
+			public const int viewInflaterClass = 2130903728;
 			
 			// aapt resource value: 0x7F0302B1
-			public const int widgetLayout = 2130903729;
+			public const int voiceIcon = 2130903729;
 			
 			// aapt resource value: 0x7F0302B2
-			public const int windowActionBar = 2130903730;
+			public const int widgetLayout = 2130903730;
 			
 			// aapt resource value: 0x7F0302B3
-			public const int windowActionBarOverlay = 2130903731;
+			public const int windowActionBar = 2130903731;
 			
 			// aapt resource value: 0x7F0302B4
-			public const int windowActionModeOverlay = 2130903732;
+			public const int windowActionBarOverlay = 2130903732;
 			
 			// aapt resource value: 0x7F0302B5
-			public const int windowFixedHeightMajor = 2130903733;
+			public const int windowActionModeOverlay = 2130903733;
 			
 			// aapt resource value: 0x7F0302B6
-			public const int windowFixedHeightMinor = 2130903734;
+			public const int windowFixedHeightMajor = 2130903734;
 			
 			// aapt resource value: 0x7F0302B7
-			public const int windowFixedWidthMajor = 2130903735;
+			public const int windowFixedHeightMinor = 2130903735;
 			
 			// aapt resource value: 0x7F0302B8
-			public const int windowFixedWidthMinor = 2130903736;
+			public const int windowFixedWidthMajor = 2130903736;
 			
 			// aapt resource value: 0x7F0302B9
-			public const int windowMinWidthMajor = 2130903737;
+			public const int windowFixedWidthMinor = 2130903737;
 			
 			// aapt resource value: 0x7F0302BA
-			public const int windowMinWidthMinor = 2130903738;
+			public const int windowMinWidthMajor = 2130903738;
 			
 			// aapt resource value: 0x7F0302BB
-			public const int windowNoTitle = 2130903739;
+			public const int windowMinWidthMinor = 2130903739;
 			
 			// aapt resource value: 0x7F0302BC
-			public const int yearSelectedStyle = 2130903740;
+			public const int windowNoTitle = 2130903740;
 			
 			// aapt resource value: 0x7F0302BD
-			public const int yearStyle = 2130903741;
+			public const int yearSelectedStyle = 2130903741;
 			
 			// aapt resource value: 0x7F0302BE
-			public const int yearTodayStyle = 2130903742;
+			public const int yearStyle = 2130903742;
+			
+			// aapt resource value: 0x7F0302BF
+			public const int yearTodayStyle = 2130903743;
 			
 			static Attribute()
 			{
@@ -9619,7 +9622,7 @@ namespace com.aa.tvshows
 			// aapt resource value: 20
 			public const int AppCompatTextView_textLocale = 20;
 			
-			// aapt resource value: { 0x1010057,0x10100AE,0x7F030000,0x7F030001,0x7F030002,0x7F030003,0x7F030004,0x7F030005,0x7F030006,0x7F030007,0x7F030008,0x7F030009,0x7F03000A,0x7F03000B,0x7F03000C,0x7F03000E,0x7F03000F,0x7F030010,0x7F030011,0x7F030012,0x7F030013,0x7F030014,0x7F030015,0x7F030016,0x7F030017,0x7F030018,0x7F030019,0x7F03001A,0x7F03001B,0x7F03001C,0x7F03001D,0x7F03001E,0x7F030022,0x7F030026,0x7F030027,0x7F030028,0x7F030029,0x7F030034,0x7F030056,0x7F030066,0x7F030067,0x7F030068,0x7F030069,0x7F03006A,0x7F03006F,0x7F030070,0x7F03007C,0x7F030083,0x7F0300A5,0x7F0300A6,0x7F0300A7,0x7F0300A8,0x7F0300A9,0x7F0300AA,0x7F0300AB,0x7F0300B2,0x7F0300B3,0x7F0300B9,0x7F0300C8,0x7F0300E5,0x7F0300EA,0x7F0300EB,0x7F0300F0,0x7F0300F2,0x7F0300FD,0x7F0300FE,0x7F030100,0x7F030101,0x7F030103,0x7F030152,0x7F03015F,0x7F030194,0x7F030195,0x7F030196,0x7F030197,0x7F03019A,0x7F03019B,0x7F03019C,0x7F03019D,0x7F03019E,0x7F03019F,0x7F0301A0,0x7F0301A1,0x7F0301A2,0x7F0301D2,0x7F0301D3,0x7F0301D4,0x7F0301DF,0x7F0301E1,0x7F0301F2,0x7F0301F4,0x7F0301F5,0x7F0301F6,0x7F030207,0x7F03020A,0x7F03020C,0x7F03020D,0x7F030227,0x7F030228,0x7F03024B,0x7F030274,0x7F030276,0x7F030277,0x7F030278,0x7F03027A,0x7F03027B,0x7F03027C,0x7F03027D,0x7F030280,0x7F030281,0x7F03029E,0x7F03029F,0x7F0302A0,0x7F0302A1,0x7F0302AF,0x7F0302B2,0x7F0302B3,0x7F0302B4,0x7F0302B5,0x7F0302B6,0x7F0302B7,0x7F0302B8,0x7F0302B9,0x7F0302BA,0x7F0302BB }
+			// aapt resource value: { 0x1010057,0x10100AE,0x7F030000,0x7F030001,0x7F030002,0x7F030003,0x7F030004,0x7F030005,0x7F030006,0x7F030007,0x7F030008,0x7F030009,0x7F03000A,0x7F03000B,0x7F03000C,0x7F03000E,0x7F03000F,0x7F030010,0x7F030011,0x7F030012,0x7F030013,0x7F030014,0x7F030015,0x7F030016,0x7F030017,0x7F030018,0x7F030019,0x7F03001A,0x7F03001B,0x7F03001C,0x7F03001D,0x7F03001E,0x7F030022,0x7F030026,0x7F030027,0x7F030028,0x7F030029,0x7F030034,0x7F030056,0x7F030066,0x7F030067,0x7F030068,0x7F030069,0x7F03006A,0x7F03006F,0x7F030070,0x7F03007C,0x7F030083,0x7F0300A5,0x7F0300A6,0x7F0300A7,0x7F0300A8,0x7F0300A9,0x7F0300AA,0x7F0300AB,0x7F0300B2,0x7F0300B3,0x7F0300B9,0x7F0300C8,0x7F0300E5,0x7F0300EA,0x7F0300EB,0x7F0300F0,0x7F0300F2,0x7F0300FD,0x7F0300FE,0x7F030100,0x7F030101,0x7F030103,0x7F030152,0x7F03015F,0x7F030194,0x7F030195,0x7F030196,0x7F030197,0x7F03019A,0x7F03019B,0x7F03019C,0x7F03019D,0x7F03019E,0x7F03019F,0x7F0301A0,0x7F0301A1,0x7F0301A2,0x7F0301D2,0x7F0301D3,0x7F0301D4,0x7F0301DF,0x7F0301E1,0x7F0301F2,0x7F0301F4,0x7F0301F5,0x7F0301F6,0x7F030207,0x7F03020A,0x7F03020C,0x7F03020D,0x7F030227,0x7F030228,0x7F03024B,0x7F030274,0x7F030276,0x7F030277,0x7F030278,0x7F03027A,0x7F03027B,0x7F03027C,0x7F03027D,0x7F030280,0x7F030281,0x7F03029E,0x7F03029F,0x7F0302A0,0x7F0302A1,0x7F0302B0,0x7F0302B3,0x7F0302B4,0x7F0302B5,0x7F0302B6,0x7F0302B7,0x7F0302B8,0x7F0302B9,0x7F0302BA,0x7F0302BB,0x7F0302BC }
 			public static int[] AppCompatTheme = new int[] {
 					16842839,
 					16842926,
@@ -9735,8 +9738,7 @@ namespace com.aa.tvshows
 					2130903711,
 					2130903712,
 					2130903713,
-					2130903727,
-					2130903730,
+					2130903728,
 					2130903731,
 					2130903732,
 					2130903733,
@@ -9745,7 +9747,8 @@ namespace com.aa.tvshows
 					2130903736,
 					2130903737,
 					2130903738,
-					2130903739};
+					2130903739,
+					2130903740};
 			
 			// aapt resource value: 2
 			public const int AppCompatTheme_actionBarDivider = 2;
@@ -11397,7 +11400,7 @@ namespace com.aa.tvshows
 			// aapt resource value: 19
 			public const int MaterialButton_strokeWidth = 19;
 			
-			// aapt resource value: { 0x101020D,0x7F0300DD,0x7F0300DE,0x7F0300DF,0x7F0300E0,0x7F0301F3,0x7F0302BC,0x7F0302BD,0x7F0302BE }
+			// aapt resource value: { 0x101020D,0x7F0300DD,0x7F0300DE,0x7F0300DF,0x7F0300E0,0x7F0301F3,0x7F0302BD,0x7F0302BE,0x7F0302BF }
 			public static int[] MaterialCalendar = new int[] {
 					16843277,
 					2130903261,
@@ -11405,9 +11408,9 @@ namespace com.aa.tvshows
 					2130903263,
 					2130903264,
 					2130903539,
-					2130903740,
 					2130903741,
-					2130903742};
+					2130903742,
+					2130903743};
 			
 			// aapt resource value: { 0x10101B7,0x10101B8,0x10101B9,0x10101BA,0x7F030168,0x7F030171,0x7F030172,0x7F030179,0x7F03017A,0x7F03017E }
 			public static int[] MaterialCalendarItem = new int[] {
@@ -11927,7 +11930,7 @@ namespace com.aa.tvshows
 			// aapt resource value: 19
 			public const int PlayerControlView_unplayed_color = 19;
 			
-			// aapt resource value: { 0x7F030023,0x7F030024,0x7F03003A,0x7F03004A,0x7F030065,0x7F0300C9,0x7F0300E3,0x7F030131,0x7F03014C,0x7F03014D,0x7F03017F,0x7F0301DB,0x7F0301DC,0x7F0301DD,0x7F0301F8,0x7F0301F9,0x7F0301FB,0x7F030200,0x7F030201,0x7F030202,0x7F030203,0x7F030204,0x7F03021A,0x7F03021B,0x7F03021C,0x7F03021E,0x7F030246,0x7F03028F,0x7F0302A3,0x7F0302A8,0x7F0302AD,0x7F0302AE }
+			// aapt resource value: { 0x7F030023,0x7F030024,0x7F03003A,0x7F03004A,0x7F030065,0x7F0300C9,0x7F0300E3,0x7F030131,0x7F03014C,0x7F03014D,0x7F03017F,0x7F0301DB,0x7F0301DC,0x7F0301DD,0x7F0301F8,0x7F0301F9,0x7F0301FB,0x7F030200,0x7F030201,0x7F030202,0x7F030203,0x7F030204,0x7F03021A,0x7F03021B,0x7F03021C,0x7F03021E,0x7F030246,0x7F03028F,0x7F0302A3,0x7F0302A8,0x7F0302AD,0x7F0302AE,0x7F0302AF }
 			public static int[] PlayerView = new int[] {
 					2130903075,
 					2130903076,
@@ -11960,7 +11963,8 @@ namespace com.aa.tvshows
 					2130903715,
 					2130903720,
 					2130903725,
-					2130903726};
+					2130903726,
+					2130903727};
 			
 			// aapt resource value: 0
 			public const int PlayerView_ad_marker_color = 0;
@@ -12058,6 +12062,9 @@ namespace com.aa.tvshows
 			// aapt resource value: 31
 			public const int PlayerView_use_controller = 31;
 			
+			// aapt resource value: 32
+			public const int PlayerView_use_sensor_rotation = 32;
+			
 			// aapt resource value: { 0x1010176,0x10102C9,0x7F0301CD }
 			public static int[] PopupWindow = new int[] {
 					16843126,
@@ -12080,7 +12087,7 @@ namespace com.aa.tvshows
 			// aapt resource value: 2
 			public const int PopupWindow_overlapAnchor = 2;
 			
-			// aapt resource value: { 0x1010002,0x101000D,0x101000E,0x10100F2,0x10101E1,0x10101E6,0x10101E8,0x10101E9,0x10101EA,0x10101EB,0x10101EC,0x10101ED,0x10101EE,0x10102E3,0x101055C,0x1010561,0x7F03002A,0x7F03002C,0x7F0300E2,0x7F0300E4,0x7F030107,0x7F030108,0x7F030140,0x7F030155,0x7F03015A,0x7F030166,0x7F030180,0x7F030184,0x7F0301CB,0x7F0301DA,0x7F03020B,0x7F030213,0x7F030221,0x7F030243,0x7F030292,0x7F0302B1 }
+			// aapt resource value: { 0x1010002,0x101000D,0x101000E,0x10100F2,0x10101E1,0x10101E6,0x10101E8,0x10101E9,0x10101EA,0x10101EB,0x10101EC,0x10101ED,0x10101EE,0x10102E3,0x101055C,0x1010561,0x7F03002A,0x7F03002C,0x7F0300E2,0x7F0300E4,0x7F030107,0x7F030108,0x7F030140,0x7F030155,0x7F03015A,0x7F030166,0x7F030180,0x7F030184,0x7F0301CB,0x7F0301DA,0x7F03020B,0x7F030213,0x7F030221,0x7F030243,0x7F030292,0x7F0302B2 }
 			public static int[] Preference = new int[] {
 					16842754,
 					16842765,
@@ -12117,7 +12124,7 @@ namespace com.aa.tvshows
 					2130903585,
 					2130903619,
 					2130903698,
-					2130903729};
+					2130903730};
 			
 			// aapt resource value: { 0x10100F2,0x1010129,0x101012A,0x7F03002B }
 			public static int[] PreferenceFragment = new int[] {
@@ -12442,7 +12449,7 @@ namespace com.aa.tvshows
 			// aapt resource value: 0
 			public const int ScrollingViewBehavior_Layout_behavior_overlapTop = 0;
 			
-			// aapt resource value: { 0x10100DA,0x101011F,0x1010220,0x1010264,0x7F030098,0x7F0300BA,0x7F0300E1,0x7F030142,0x7F03015E,0x7F030184,0x7F0301F0,0x7F0301F1,0x7F030205,0x7F030206,0x7F03023D,0x7F030242,0x7F0302B0 }
+			// aapt resource value: { 0x10100DA,0x101011F,0x1010220,0x1010264,0x7F030098,0x7F0300BA,0x7F0300E1,0x7F030142,0x7F03015E,0x7F030184,0x7F0301F0,0x7F0301F1,0x7F030205,0x7F030206,0x7F03023D,0x7F030242,0x7F0302B1 }
 			public static int[] SearchView = new int[] {
 					16842970,
 					16843039,
@@ -12460,7 +12467,7 @@ namespace com.aa.tvshows
 					2130903558,
 					2130903613,
 					2130903618,
-					2130903728};
+					2130903729};
 			
 			// aapt resource value: 0
 			public const int SearchView_android_focusable = 0;
