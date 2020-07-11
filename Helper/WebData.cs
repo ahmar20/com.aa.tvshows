@@ -702,12 +702,6 @@ namespace com.aa.tvshows.Helper
 
                 _ => null
             };
-
-            foreach (var sLink in linkList)
-            {
-                var url = new URL(sLink.StreamingUrl.OriginalString);
-                sLink.StreamingFileSize = url.OpenConnection().ContentLengthLong;
-            }
             return linkList;
         }
 
