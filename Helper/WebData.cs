@@ -39,6 +39,7 @@ namespace com.aa.tvshows.Helper
         const string CloudVideoPosterPattern = @"poster\(\'(https.*?jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"src:\s?.*?(http?.*?mp4)";
+        const string JetLoadSourcePattern = @"source.*(https.*)\'";
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
         const string UpstreamSourcePattern = @"(http.*?mp4).*(\d{3,4}p).*\s*?image.*?(http.*?jpg)";
@@ -692,6 +693,7 @@ namespace com.aa.tvshows.Helper
                 "cloudvideo.tv" => await GetCloudVideoStreamUrl(decodedLink),
                 "gamovideo.com" => await GetGamoVideoStreamUrl(decodedLink),
                 "gounlimited.to" => await GetGoUnlimitedStreamUrl(decodedLink),
+                "jetload.net" => await GetJetLoadStreamUrl(decodedLink),
                 "onlystream.tv" => await GetOnlyStreamStreamUrl(decodedLink),
                 "streamplay.to" => await GetStreamplayStreamUrl(decodedLink),
                 "mixdrop.co" => await GetMixdropStreamUrl(decodedLink),
@@ -906,6 +908,24 @@ namespace com.aa.tvshows.Helper
                     }
                 }
             }
+            return null;
+        }
+
+        private static async Task<List<StreamingUri>> GetJetLoadStreamUrl(Uri decodedLink = default, HtmlDocument doc = default)
+        {
+            if (doc is null)
+            {
+                doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("var player")).FirstOrDefault() is HtmlNode script)
+            {
+                if (Regex.Match(script.InnerText, JetLoadSourcePattern) is Match vidMatch)
+                {
+                    return new List<StreamingUri>() { new StreamingUri() { StreamingQuality = "HD", StreamingUrl = new Uri(vidMatch.Groups[1].Value) } };
+                }
+            }
+
             return null;
         }
 
