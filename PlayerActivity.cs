@@ -81,8 +81,15 @@ namespace com.aa.tvshows
             }
             if (itemToPlay != null)
             {
-                player.Prepare(CreateMediaSource(itemToPlay));
-                playerView.KeepScreenOn = true;
+                try
+                {
+                    player.Prepare(CreateMediaSource(itemToPlay));
+                    playerView.KeepScreenOn = true;
+                }
+                catch (Exception ex)
+                {
+                    Error.Instance.ShowErrorTip("There is something wrong with ExoPlayer. Please try any external player from settings.", this, ToastLength.Long);
+                }
             }
         }
 
