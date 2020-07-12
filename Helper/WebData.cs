@@ -873,15 +873,37 @@ namespace com.aa.tvshows.Helper
                 if (match.Success && match.Groups.Count > 0)
                 {
                     return new List<StreamingUri>()
+                    {
+                        new StreamingUri()
                         {
-                            new StreamingUri()
+                            // Poster not available
+                            //PosterUrl = match.Groups[2].Value,
+                            StreamingQuality = "HD",
+                            StreamingUrl = new Uri(match.Groups[1].Value)
+                        }
+                    };
+                }
+            }
+            else
+            {
+                // direct download
+                if (doc.DocumentNode.Descendants("div").Where(a => a.Id == "dl").FirstOrDefault() is HtmlNode dlDiv)
+                {
+                    if (dlDiv.Descendants("a").Where(a => a.GetAttributeValue("onclick", string.Empty).StartsWith("download_video")).FirstOrDefault() is HtmlNode dlNode)
+                    {
+                        var dlData = dlNode.GetAttributeValue("onclick", string.Empty).Replace("download_video", string.Empty)
+                            .Replace(")", string.Empty).Replace("(", string.Empty).Replace("'", string.Empty).Split(",");
+                        var nodeValueLink = "https://" + decodedLink.Host + $"/dl?op=download_orig&id={dlData[0]}&mode={dlData[1]}&hash={dlData[2]}";
+                        doc = await GetHtmlDocumentFromUrl(new Uri(nodeValueLink));
+                        if (doc != null)
+                        {
+                            if (doc.DocumentNode.Descendants("a").Where(a => a.GetAttributeValue("href", string.Empty).Contains("." + decodedLink.Host))
+                                .FirstOrDefault() is HtmlNode mp4Link)
                             {
-                                // Poster not available
-                                //PosterUrl = match.Groups[2].Value,
-                                StreamingQuality = "HD",
-                                StreamingUrl = new Uri(match.Groups[1].Value)
+                                return new List<StreamingUri>() { new StreamingUri() { StreamingUrl = new Uri(mp4Link.GetAttributeValue("href", string.Empty)), StreamingQuality = "HD" } };
                             }
-                        };
+                        }
+                    }
                 }
             }
             return null;
