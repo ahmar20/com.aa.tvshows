@@ -988,9 +988,9 @@ namespace com.aa.tvshows.Helper
                     {
                         new StreamingUri()
                         {
-                            PosterUrl = "http:" + poster,
+                            PosterUrl = "https:" + poster,
                             StreamingQuality = "HD",
-                            StreamingUrl = new Uri("http:" + file)
+                            StreamingUrl = new Uri("https:" + file)
                         }
                     };
                 }
