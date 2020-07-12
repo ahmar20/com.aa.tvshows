@@ -43,7 +43,8 @@ namespace com.aa.tvshows.Helper
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
         const string ProstreamSourcePattern = @"sources:\s?.*?\s?(http?.*?mp4).*?poster:.*?(http.*?jpg)";
         const string UpstreamSourcePattern = @"(http.*?mp4).*(\d{3,4}p).*\s*?image.*?(http.*?jpg)";
-        const string VideobinSourcePattern = @"(http.*?m3u8)|(http.*?mp4)|(http.*?jpg)";
+        const string VideobinSourcePattern = @"(http.*?m3u8)|(http.*?mp4)";
+        const string VideobinPosterPattern = "(http.*?jpg)";
         const string VidiaSourcePattern = @"(https.*?(\.m3u8|\.mp4)).*?(https.*?\.jpg)";
 
         const int CurrentYear = 2020;
@@ -1153,21 +1154,22 @@ namespace com.aa.tvshows.Helper
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
             {
                 var inner = script.InnerText.Trim();
-                var match = Regex.Match(inner, VideobinSourcePattern);
-                if (match.Success)
+                var items = new List<StreamingUri>();
+                var vMatch = Regex.Matches(inner, VideobinSourcePattern);
+                var pMatch = Regex.Match(inner, VideobinPosterPattern);
+                foreach (Match match in vMatch)
                 {
-                    var items = new List<StreamingUri>();
-                    for (int x = 1; x < 2; x++)
+                    if (match.Success)
                     {
                         items.Add(new StreamingUri()
                         {
-                            PosterUrl = match.Groups.LastOrDefault()?.Value,
-                            StreamingQuality = match.Groups[x].Value.Contains("m3u8") ? "HLS" : "HD",
-                            StreamingUrl = new Uri(match.Groups[x].Value)
+                            PosterUrl = pMatch.Success ? pMatch.Value : string.Empty,
+                            StreamingQuality = match.Value.Contains("m3u8") ? "HLS" : "HD",
+                            StreamingUrl = new Uri(match.Value.Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1"))
                         });
                     }
-                    return items;
                 }
+                return items;
             }
             return null;
         }
