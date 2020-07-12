@@ -35,6 +35,8 @@ namespace com.aa.tvshows.Helper
         const string ABCVideoPosterPattern = @"image:\s.*?(http?s:.*?jpg)";
         const string ClipWatchingSourcePattern = @"(http?s:.*?(mp4|m3u8))";
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
+        const string CloudVideoSourcePattern = @"https.*?m3u8";
+        const string CloudVideoPosterPattern = @"poster\(\'(https.*?jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"src:\s?.*?(http?.*?mp4)";
         const string StreamplaySourcePattern = @"sources.*?(http.*?mpd).*?(http.*?m3u8).*?(http.*?mp4).*?\s?poster.*?(http.*?jpg)";
@@ -799,20 +801,40 @@ namespace com.aa.tvshows.Helper
             {
                 if (await PostHtmlContentToUrl(new Uri(linkToPost), webCollection) is HtmlDocument responseDoc)
                 {
-                    if (responseDoc.DocumentNode.Descendants("video").FirstOrDefault() is HtmlNode video)
+                    if (responseDoc.DocumentNode.Descendants("video").Where(a => a.GetAttributeValue("source", string.Empty) != string.Empty).FirstOrDefault() is HtmlNode video)
                     {
                         var videoLink = video.Descendants("source").FirstOrDefault()?.GetAttributeValue("src", string.Empty)
                             .Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1");
-                        var items = new List<StreamingUri>
+                        return new List<StreamingUri>
+                        {
+                            new StreamingUri()
                             {
-                                new StreamingUri()
+                                PosterUrl = video.GetAttributeValue("poster", string.Empty),
+                                StreamingQuality = string.IsNullOrEmpty(video.Attributes[1].Value) ? "Unknown" : video.Attributes[1].Value,
+                                StreamingUrl = new Uri(videoLink)
+                            }
+                        };
+                    }
+                    else
+                    {
+                        if (responseDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("eval(function(p,a,c,k,e,d)")).FirstOrDefault() is HtmlNode videoScript)
+                        {
+                            var scriptStr = new Jint.Engine().Execute(videoScript.InnerText.Replace("eval", string.Empty)).GetCompletionValue().ToString();
+                            if (Regex.Match(scriptStr, CloudVideoSourcePattern) is Match vidUrlMatch)
+                            {
+                                var videoUrl = vidUrlMatch.Value.Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1");
+                                var posterUrl = Regex.Match(scriptStr, CloudVideoPosterPattern).Groups[1].Value;
+                                return new List<StreamingUri>
                                 {
-                                    PosterUrl = video.GetAttributeValue("poster", string.Empty),
-                                    StreamingQuality = string.IsNullOrEmpty(video.Attributes[1].Value) ? "Unknown" : video.Attributes[1].Value,//("height", string.Empty),
-                                    StreamingUrl = new Uri(videoLink)
-                                }
-                            };
-                        return items;
+                                    new StreamingUri()
+                                    {
+                                        PosterUrl = posterUrl,
+                                        StreamingQuality = "HD",
+                                        StreamingUrl = new Uri(videoUrl)
+                                    }
+                                };
+                            }
+                        }
                     }
                 }
             }
