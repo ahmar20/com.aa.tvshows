@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ahm.tv.show.media" android:installLocation="auto" android:versionCode="20200712" android:versionName="2.3.3">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ahm.tv.show.media" android:installLocation="auto" android:versionCode="20200713" android:versionName="2.3.4">
 	<uses-sdk android:minSdkVersion="19" android:targetSdkVersion="29" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
