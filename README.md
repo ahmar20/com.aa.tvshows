@@ -4,6 +4,8 @@ Free and Open Source Android App
 This is a hobby-app made for learning purposes. There is no affiliation to any person or business in any case.
 The app is freely available to download at [XDA Labs](https://www.xda-developers.com/xda-labs/). The XDA Forum for the app is [here](https://forum.xda-developers.com/android/apps-games/app-street-media-tv-streaming-app-t3937429/).
 
+[![Build status](https://build.appcenter.ms/v0.1/apps/0bcf4bd8-a538-439d-ac75-d62167a00cde/branches/master/badge)](https://appcenter.ms)
+
 # App Details
 The app does not ask for any permissions because no special permission is needed. The only permissions that are required are for WiFi/Network State and Internet. The app currently stores data within the app cache/directory which is available to every app as permanent storage. 
 
