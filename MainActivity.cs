@@ -12,6 +12,9 @@ using AndroidX.CursorAdapter.Widget;
 using Android.Database;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 
 namespace com.aa.tvshows
 {
@@ -43,6 +46,7 @@ namespace com.aa.tvshows
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             SetupTabs();
             //SetupSearchView();
+            AppCenter.Start("94d2c36e-82e2-4561-91d6-85544e9cbdb8", typeof(Analytics), typeof(Crashes));
         }
 
         /*protected override void OnSaveInstanceState(Bundle outState)
