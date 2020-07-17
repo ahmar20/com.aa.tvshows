@@ -7,6 +7,17 @@
     android:gravity="center"
     android:padding="@dimen/margin_10dp"
     android:id="@+id/host_context_panel">
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:choiceMode="singleChoice"
+        android:id="@+id/stream_links_list"
+        android:layout_margin="@dimen/margin_8dp"/>
+    <View
+        android:layout_width="match_parent"
+        android:background="@color/colorAccent"
+        android:layout_height="1dp"
+        android:layout_margin="@dimen/margin_8dp"/>
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,4 +36,15 @@
         android:id="@+id/download_video_btn"
         android:layout_margin="@dimen/margin_8dp"
         android:text="Save offline"/>
+    <View
+        android:layout_width="match_parent"
+        android:background="@color/colorAccent"
+        android:layout_height="1dp"
+        android:layout_margin="@dimen/margin_8dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cancel_dialog_btn"
+        android:layout_margin="@dimen/margin_8dp"
+        android:text="Cancel"/>
 </LinearLayout>

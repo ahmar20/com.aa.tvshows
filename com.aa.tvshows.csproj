@@ -31,16 +31,19 @@
     <DebugType>portable</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidUseSharedRuntime>true</AndroidUseSharedRuntime>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
     <AndroidKeyStore>false</AndroidKeyStore>
-    <AndroidSigningKeyStore>C:\Users\pakah\AppData\Local\Xamarin\Mono for Android\Keystore\ahmar16\ahmar16.keystore</AndroidSigningKeyStore>
-    <AndroidSigningStorePass>.&lt;IamAhmar&gt;.</AndroidSigningStorePass>
-    <AndroidSigningKeyAlias>ahmar</AndroidSigningKeyAlias>
+    <AndroidSigningKeyStore>
+    </AndroidSigningKeyStore>
+    <AndroidSigningStorePass>
+    </AndroidSigningStorePass>
+    <AndroidSigningKeyAlias>
+    </AndroidSigningKeyAlias>
     <AndroidSigningKeyPass>
     </AndroidSigningKeyPass>
     <AotAssemblies>false</AotAssemblies>
@@ -110,6 +113,7 @@
     <Compile Include="Helper\ShowsNotificationService.cs" />
     <Compile Include="Helper\SearchSuggestions.cs" />
     <Compile Include="Helper\StorageData.cs" />
+    <Compile Include="Helper\StreamableLinksAdapter.cs" />
     <Compile Include="Helper\TemplateData.cs" />
     <Compile Include="Helper\PageTabsAdapter.cs" />
     <Compile Include="Helper\AppView.cs" />

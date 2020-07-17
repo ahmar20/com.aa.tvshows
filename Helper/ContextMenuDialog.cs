@@ -15,6 +15,7 @@ namespace com.aa.tvshows.Helper
 
         AlertDialog Dialog { get; set; }
         AlertDialog.Builder Builder { get; set; }
+        StreamingUri CurrentSelectedLink { get; set; }
 
         public ContextMenuDialog()
         {
@@ -33,11 +34,19 @@ namespace com.aa.tvshows.Helper
             Dialog.DismissEvent += Dialog_DismissEvent;
             Dialog.CancelEvent += Dialog_DismissEvent;
 
+            var linksSpinner = parent.FindViewById<Spinner>(Resource.Id.stream_links_list);
+            linksSpinner.ItemSelected += (s, e) =>
+            {
+                CurrentSelectedLink = links[e.Position];
+            };
+            linksSpinner.Adapter = new StreamableLinksAdapter(links);
+            linksSpinner.SetSelection(0);
+
             var copyBtn = parent.FindViewById<Button>(Resource.Id.link_copy_btn);
             copyBtn.Click += delegate
             {
                 var clipBoard = (ClipboardManager)context.GetSystemService(Android.App.Service.ClipboardService);
-                var clip = ClipData.NewPlainText("video link", links.FirstOrDefault()?.StreamingUrl.OriginalString);
+                var clip = ClipData.NewPlainText("video link", CurrentSelectedLink.StreamingUrl.OriginalString);
                 clipBoard.PrimaryClip = clip;
                 Error.Instance.ShowErrorTip("Link successfully copied to clipboard", context);
             };
@@ -47,7 +56,7 @@ namespace com.aa.tvshows.Helper
                 if (StorageData.GetUseExternalMediaPlayerSetting())
                 {
                     Intent intent = new Intent(Intent.ActionView);
-                    intent.SetDataAndType(Android.Net.Uri.Parse(links.FirstOrDefault()?.StreamingUrl.OriginalString), "video/*");
+                    intent.SetDataAndType(Android.Net.Uri.Parse(CurrentSelectedLink.StreamingUrl.OriginalString), "video/*");
                     context.StartActivity(Intent.CreateChooser(intent, "Open video using"));
                 }
                 else
@@ -63,13 +72,17 @@ namespace com.aa.tvshows.Helper
                 // implement
                 Error.Instance.ShowErrorTip("This feature is not implemented yet.", context);
             };
+            var cancelBtn = parent.FindViewById<Button>(Resource.Id.cancel_dialog_btn);
+            cancelBtn.Click += delegate
+            {
+                Dialog.Dismiss();
+            };
 
             Dialog.Show();
         }
 
         private void Dialog_DismissEvent(object sender, EventArgs e)
         {
-            
         }
     }
 }
