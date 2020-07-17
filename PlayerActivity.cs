@@ -55,7 +55,7 @@ namespace com.aa.tvshows
         private void InitializePlayback(StreamingUri itemToPlay)
         {
             if (mediaStreams == null)
-                mediaStreams = JsonConvert.DeserializeObject<List<StreamingUri>>(Intent.GetStringExtra("mediaStreams")).ToList();
+                mediaStreams = JsonConvert.DeserializeObject<List<StreamingUri>>(Intent.GetStringExtra("mediaStreams"));
             
             if (player is null)
             {
