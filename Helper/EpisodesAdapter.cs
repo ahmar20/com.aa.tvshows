@@ -96,7 +96,7 @@ namespace com.aa.tvshows.Helper
                     case DataEnum.DataType.NewPopularEpisodes:
                     case DataEnum.DataType.NewEpisodes:
                         var epItem = Items[position] as EpisodeList;
-                        Picasso.With(epHolder.ItemView.Context).Load(epItem.ImageLink).Into(epHolder.Image);
+                        Picasso.Get().Load(epItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = epItem.Title;
                         epHolder.EpisodeDetail.Text = epItem.EpisodeNo;
                         //epHolder.Info.Text = newEpItem.ShowDetail;    // not implemented
@@ -104,7 +104,7 @@ namespace com.aa.tvshows.Helper
 
                     case DataEnum.DataType.PopularShows:
                         var showItem = Items[position] as ShowList;
-                        Picasso.With(epHolder.ItemView.Context).Load(showItem.ImageLink).Into(epHolder.Image);
+                        Picasso.Get().Load(showItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = showItem.Title;
                         epHolder.EpisodeDetail.Text = showItem.EpisodeNo;
                         epHolder.Description.Text = showItem.EpisodeDetail;
@@ -112,7 +112,7 @@ namespace com.aa.tvshows.Helper
 
                     case DataEnum.DataType.UserFavorites:
                         var favItem = Items[position] as SeriesDetails;
-                        Picasso.With(epHolder.ItemView.Context).Load(favItem.ImageLink).Into(epHolder.Image);
+                        Picasso.Get().Load(favItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = favItem.Title;
                         var seasonsCount = favItem.Seasons is null ? 0 : favItem.Seasons.Count;
                         var episodesCount = 0;
@@ -128,7 +128,7 @@ namespace com.aa.tvshows.Helper
 
                     case DataEnum.DataType.TVSchedule:
                         var scheduleItem = Items[position] as CalenderScheduleList;
-                        Picasso.With(epHolder.ItemView.Context).Load(scheduleItem.ImageLink).Into(epHolder.Image);
+                        Picasso.Get().Load(scheduleItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = scheduleItem.Title;
                         epHolder.EpisodeDetail.Text = scheduleItem.EpisodeNo;
                         epHolder.Description.Text = scheduleItem.EpisodeName;
@@ -148,7 +148,7 @@ namespace com.aa.tvshows.Helper
                     case DataEnum.DataType.Search:
                         var searchItem = Items[position] as SearchList;
                         epHolder.EpisodeDetail.Text = searchItem.EpisodeNo;
-                        Picasso.With(epHolder.ItemView.Context).Load(searchItem.ImageLink).Into(epHolder.Image);
+                        Picasso.Get().Load(searchItem.ImageLink).Into(epHolder.Image);
                         epHolder.Description.Text = searchItem.EpisodeDetail;
                         epHolder.Title.Text = searchItem.Title;
                         break;
@@ -162,7 +162,7 @@ namespace com.aa.tvshows.Helper
                     case DataEnum.DataType.EpisodeStreamLinks:
                         var streamLink = Items[position] as EpisodeStreamLink;
                         epHolder.Title.Text = streamLink.HostName;
-                        Picasso.With(epHolder.ItemView.Context).Load(streamLink.HostImage).Into(epHolder.Image);
+                        Picasso.Get().Load(streamLink.HostImage).Into(epHolder.Image);
                         break;
 
                     default: break;
