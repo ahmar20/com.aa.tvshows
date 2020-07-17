@@ -772,8 +772,9 @@ namespace com.aa.tvshows.Helper
                 {
                     var uri = new StreamingUri()
                     {
-                        StreamingQuality = match.Groups.ElementAtOrDefault(2) != null ? match.Groups[2].Value : "Unknown",
-                        StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value) : null
+                        StreamingQuality = "HD",
+                        StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value
+                        .Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1")) : null
                     };
                     if (Regex.Match(script.InnerText.Trim(), ClipWatchingPosterPattern) is Match posterMatch)
                     {
