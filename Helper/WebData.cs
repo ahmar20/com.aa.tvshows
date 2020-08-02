@@ -35,7 +35,7 @@ namespace com.aa.tvshows.Helper
         const string ABCVideoPosterPattern = @"image:\s.*?(http?s:.*?jpg)";
         const string ClipWatchingSourcePattern = @"(http?s:.*?(mp4|m3u8))";
         const string ClipWatchingPosterPattern = @"url\=(http?s.*?.jpg)";
-        const string CloudVideoSourcePattern = @"https.*?m3u8";
+        const string CloudVideoSourcePattern = @"(https.*?m3u8)|(https.*?mp4)";
         const string CloudVideoPosterPattern = @"poster\(\'(https.*?jpg)";
         const string OnlyStreamSourcePattern = @"(http?s.*?mp4).*?res\:\s?([0-9]{3,4})";
         const string GoUnlimitedSourcePattern = @"src:\s?.*?(http?.*?mp4)";
@@ -50,10 +50,11 @@ namespace com.aa.tvshows.Helper
         const int CurrentYear = 2020;
         const int MinimumYear = 1990;
         public const double CancellationTokenDelayInSeconds = 15;
+        public const string NothingFoundStr = "nothing found";
 
         public static string GetBaseLinkScript(string hostName)
         {
-            return "javascript:(function() { var nodeList = document.getElementsByTagName('a'); for (var i = 0; i < nodeList.length; i++) { var hrefValue = nodeList[i].getAttribute('href'); if (hrefValue.indexOf('" + hostName.Trim() + "') > -1) { return hrefValue; } } return 'nothing found'; }) ()";
+            return "javascript:(function() { var nodeList = document.getElementsByTagName('a'); for (var i = 0; i < nodeList.length; i++) { var hrefValue = nodeList[i].getAttribute('href'); if (hrefValue.indexOf('" + hostName.Trim() + "') > -1) { return hrefValue; } } return '"+ NothingFoundStr + "'; }) ()";
         }
 
         public const string GetPageHtmlScript = "javascript:(function() { return document.documentElement.innerHTML; }) ()";
