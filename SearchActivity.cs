@@ -58,6 +58,7 @@ namespace com.aa.tvshows
             list.ClearOnScrollListeners();
             var layoutManager = new CachingLayoutManager(this);
             list.SetLayoutManager(layoutManager);
+            editText.RequestFocus();
             editText.QueryTextChange += async (s, e) =>
             {
                 // get data from suggestions
