@@ -66,19 +66,19 @@ namespace com.aa.tvshows.Helper
             int lastVisibleItemPosition = 0;
             int totalItemCount = mLayoutManager.ItemCount;
 
-            if (mLayoutManager is StaggeredGridLayoutManager)
+            if (mLayoutManager is StaggeredGridLayoutManager staggeredLayout)
             {
-                int[] lastVisibleItemPositions = ((StaggeredGridLayoutManager)mLayoutManager).FindLastVisibleItemPositions(null);
+                int[] lastVisibleItemPositions = staggeredLayout.FindLastVisibleItemPositions(null);
                 // get maximum element within the list
                 lastVisibleItemPosition = GetLastVisibleItem(lastVisibleItemPositions);
             }
-            else if (mLayoutManager is GridLayoutManager)
+            else if (mLayoutManager is GridLayoutManager gridLayout)
             {
-                lastVisibleItemPosition = ((GridLayoutManager)mLayoutManager).FindLastVisibleItemPosition();
+                lastVisibleItemPosition = gridLayout.FindLastVisibleItemPosition();
             }
-            else if (mLayoutManager is LinearLayoutManager)
+            else if (mLayoutManager is LinearLayoutManager linearLayout)
             {
-                lastVisibleItemPosition = ((LinearLayoutManager)mLayoutManager).FindLastVisibleItemPosition();
+                lastVisibleItemPosition = linearLayout.FindLastVisibleItemPosition();
             }
 
             // If the total item count is zero and the previous isn't, assume the
