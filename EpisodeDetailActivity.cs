@@ -96,11 +96,11 @@ namespace com.aa.tvshows
                     if (int.TryParse(StorageData.GetNumberOfVideoLinksSetting(), out int numberOfLinks) && numberOfLinks > 0)
                     {
                         var links = epData.EpisodeStreamLinks.Take(numberOfLinks).ToList();
-                        adapter = new EpisodesAdapter<EpisodeStreamLink>(DataEnum.DataType.EpisodeStreamLinks, links);
+                        adapter = new EpisodesAdapter<EpisodeStreamLink>(links);
                     }
                     else
                     {
-                        adapter = new EpisodesAdapter<EpisodeStreamLink>(DataEnum.DataType.EpisodeStreamLinks, epData.EpisodeStreamLinks);
+                        adapter = new EpisodesAdapter<EpisodeStreamLink>(epData.EpisodeStreamLinks);
                     }
                         
                     dataRV.SetAdapter(adapter);

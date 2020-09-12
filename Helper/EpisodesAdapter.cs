@@ -16,7 +16,6 @@ namespace com.aa.tvshows.Helper
         List<T> Items { get; set; }
         View EmptyView { get; set; }
 
-        private readonly DataEnum.DataType dataType = DataEnum.DataType.None;
         private bool isFavoritesMenuShowing = false;
 
         public event EventHandler<int> ItemClick = delegate { };
@@ -24,16 +23,11 @@ namespace com.aa.tvshows.Helper
 
         public EpisodesAdapter() : base()
         {
-        }
-
-        #region DataType CTOR
-        public EpisodesAdapter(DataEnum.DataType dataType) : this()
-        {
-            this.dataType = dataType;
             Items = new List<T>();
         }
 
-        public EpisodesAdapter(DataEnum.DataType dataType, View emptyView) : this(dataType)
+        #region DataType CTOR
+        public EpisodesAdapter(View emptyView) : this()
         {
             EmptyView = emptyView;
         }
@@ -46,12 +40,7 @@ namespace com.aa.tvshows.Helper
             Items = items;
         }
 
-        public EpisodesAdapter(DataEnum.DataType dataType, List<T> items) : this(items)
-        {
-            this.dataType = dataType;
-        }
-
-        public EpisodesAdapter(DataEnum.DataType dataType, List<T> items, View emptyView) : this(dataType, items)
+        public EpisodesAdapter(List<T> items, View emptyView) : this(items)
         {
             EmptyView = emptyView;
         }

@@ -114,7 +114,7 @@ namespace com.aa.tvshows.Fragments
                         if (await WebData.GetPopularShowsForMainView().ConfigureAwait(true) is List<ShowList> newShows)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
-                            var adapter = new EpisodesAdapter<ShowList>(tabType, newShows, emptyView);
+                            var adapter = new EpisodesAdapter<ShowList>(newShows, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
                                 AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
@@ -162,7 +162,7 @@ namespace com.aa.tvshows.Fragments
                         if (await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
-                            var adapter = new EpisodesAdapter<EpisodeList>(tabType, popularEpisodes, emptyView);
+                            var adapter = new EpisodesAdapter<EpisodeList>(popularEpisodes, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
                                 AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
@@ -188,7 +188,7 @@ namespace com.aa.tvshows.Fragments
                         if (await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> newEpisodes)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
-                            var adapter = new EpisodesAdapter<EpisodeList>(tabType, newEpisodes, emptyView);
+                            var adapter = new EpisodesAdapter<EpisodeList>(newEpisodes, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
                                 AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
@@ -209,7 +209,7 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.SeasonsEpisodes:
-                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisodeDetails>(tabType, new List<ShowEpisodeDetails>(items.Cast<ShowEpisodeDetails>()));
+                    var seasonsEpisodesAdapter = new EpisodesAdapter<ShowEpisodeDetails>(new List<ShowEpisodeDetails>(items.Cast<ShowEpisodeDetails>()));
                     recyclerView.SetAdapter(seasonsEpisodesAdapter);
                     seasonsEpisodesAdapter.ItemClick += (s, e) =>
                     {
@@ -218,7 +218,7 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.TVSchedule:
-                    var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(tabType, new List<CalenderScheduleList>(items.Cast<CalenderScheduleList>()));
+                    var scheduleAdapter = new EpisodesAdapter<CalenderScheduleList>(new List<CalenderScheduleList>(items.Cast<CalenderScheduleList>()));
                     recyclerView.SetAdapter(scheduleAdapter);
                     scheduleAdapter.ItemClick += (s, e) =>
                     {
@@ -245,7 +245,7 @@ namespace com.aa.tvshows.Fragments
                         if (await WebData.GetGenresShows(genre, genrePage++, year).ConfigureAwait(true) is List<GenresShow> genresShows)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
-                            genresAdapter = new EpisodesAdapter<GenresShow>(tabType, genresShows);
+                            genresAdapter = new EpisodesAdapter<GenresShow>(genresShows);
                             var scrollListener = new EndlessScroll(layoutManager);
                             scrollListener.LoadMoreTask += async delegate
                             {
@@ -277,7 +277,7 @@ namespace com.aa.tvshows.Fragments
                         if (await StorageData.GetSeriesListFromFavoritesFile().ConfigureAwait(true) is List<SeriesDetails> userFavorites)
                         {
                             AppView.SetEmptyView(emptyView, false, true, delegate { ReloadCurrentData(); });
-                            var adapter = new EpisodesAdapter<SeriesDetails>(tabType, userFavorites, emptyView);
+                            var adapter = new EpisodesAdapter<SeriesDetails>(userFavorites, emptyView);
                             adapter.ItemClick += (s, e) =>
                             {
                                 AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
