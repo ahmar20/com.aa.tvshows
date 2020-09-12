@@ -30,6 +30,7 @@ namespace com.aa.tvshows.Helper
         static readonly string TVShowDetailUrl = BaseUrl + "/serie/";
         static readonly string TVSearchUrl = BaseUrl + "/search/";
         static readonly string TVSearchSuggestionsUrl = BaseUrl + "/show/search-shows-json/";
+        static readonly string TVPopularShows = BaseUrl + "/series/";
 
         const string ABCVideoSourcePattern = @"(http?s:.*?mp4)";
         const string ABCVideoPosterPattern = @"image:\s.*?(http?s:.*?jpg)";
@@ -251,34 +252,48 @@ namespace com.aa.tvshows.Helper
             return null;
         }
 
-        public static async Task<List<ShowList>> GetPopularShowsForMainView()
+        public static async Task<List<ShowList>> GetPopularShowsForMainView(int page = 1)
         {
-            if (await GetHtmlDocumentFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
+            if (page < 1) page = 1;
+            if (await GetHtmlDocumentFromUrl(new Uri(TVPopularShows + page)).ConfigureAwait(false) is HtmlDocument doc)
             {
+                if (doc.DocumentNode.Descendants("ul").Where(a => a.HasClass("pagination")).FirstOrDefault() is HtmlNode paginationNode)
+                {
+                    foreach(var pageNode in paginationNode.ChildNodes)
+                    {
+                        if (pageNode.Name == "li")
+                        {
+                            if (pageNode.ChildNodes.Where(a => a.Name == "a").FirstOrDefault() is HtmlNode pageLinkNode)
+                            {
+                                if (pageLinkNode.GetAttributeValue("href", string.Empty) == TVPopularShows + (page + 1))
+                                {
+                                    page++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
                 // generate main episodes data
-                if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("block-right-home")).FirstOrDefault() is HtmlNode popularEpisodes)
+                if (doc.DocumentNode.Descendants("ul").Where(a => a.HasClass("listings")).FirstOrDefault() is HtmlNode popularEpisodes)
                 {
                     var collection = new List<ShowList>();
-                    foreach (HtmlNode itemDiv in popularEpisodes.ChildNodes.Where(a => a.Name == "div" && a.HasClass("block-right-home-inside")))
+                    foreach (HtmlNode itemDiv in popularEpisodes.ChildNodes.Where(a => a.Name == "li" && a.HasClass("category-item")))
                     {
-                        if (itemDiv.ChildNodes.Where(a => a.HasClass("block-right-home-inside-text")).FirstOrDefault() is HtmlNode dataDiv)
+                        if (itemDiv.ChildNodes.Where(a => a.HasClass("title-series")).FirstOrDefault() is HtmlNode dataHref)
                         {
-                            var listItem = new ShowList() { ItemType = DataEnum.DataType.PopularShows };
+                            ShowList listItem = new ShowList() { ItemType = DataEnum.DataType.PopularShows };
                             // link
-                            if (dataDiv.Descendants("a").ElementAtOrDefault(0) is HtmlNode aNode)
-                            {
-                                var link = aNode.GetAttributeValue("href", null);
-                                listItem.PageLink = link;
-                                var title = aNode.Descendants("b").ElementAtOrDefault(0)?.InnerText?.Trim();
-                                listItem.Title = WebUtility.HtmlDecode(title).FixDuplicateYear();
-                            }
-                            var episodeDetail = dataDiv.Descendants("span").Where(a => a.HasClass("p11")).FirstOrDefault()?.InnerText?.Trim();
-                            var image = itemDiv.Descendants("img").FirstOrDefault()?.GetAttributeValue("src", "tvshows.aa.com");
-                            var showDetail = dataDiv.ChildNodes.Where(a => a.Name == "#text" && !string.IsNullOrEmpty(a.InnerText.Trim())).FirstOrDefault()?.InnerText.Trim();
+                            string link = dataHref.GetAttributeValue("href", null);
+                            listItem.PageLink = link;
+                            string title = WebUtility.HtmlDecode(dataHref.GetAttributeValue("title", "-"));
+                            listItem.Title = title.FixDuplicateYear();
 
-                            listItem.EpisodeNo = WebUtility.HtmlDecode(episodeDetail);
+                            string image = itemDiv.Descendants("img").FirstOrDefault()?.GetAttributeValue("src", "tvshows.aa.com");
                             listItem.ImageLink = image;
+                            string showDetail = itemDiv.Descendants("div").Where(a => a.HasClass("description")).FirstOrDefault()?.InnerText.Trim();
                             listItem.EpisodeDetail = "Description: " + WebUtility.HtmlDecode(showDetail);
+                            listItem.NextPageNumber = page;
                             // add data
                             collection.Add(listItem);
                         }

@@ -106,7 +106,6 @@ namespace com.aa.tvshows.Helper
                         var showItem = Items[position] as ShowList;
                         Picasso.Get().Load(showItem.ImageLink).Into(epHolder.Image);
                         epHolder.Title.Text = showItem.Title;
-                        epHolder.EpisodeDetail.Text = showItem.EpisodeNo;
                         epHolder.Description.Text = showItem.EpisodeDetail;
                         break;
 
@@ -421,7 +420,6 @@ namespace com.aa.tvshows.Helper
             {
                 Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.shows_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_title);
-                EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_episode_detail);
                 Description = itemView.FindViewById<AppCompatTextView>(Resource.Id.shows_list_info_detail);
             }
             else if (ItemType == DataEnum.DataType.Genres || ItemType == DataEnum.DataType.SeasonsEpisodes)

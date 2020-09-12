@@ -37,19 +37,10 @@
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/shows_list_episode_detail"
+            android:id="@+id/shows_list_info_detail"
             android:layout_below="@id/shows_list_title"
             android:layout_toRightOf="@id/shows_list_imageView"
-            android:maxLines="@integer/episodes_list_detail_max_lines"
-            android:layout_marginStart="5dp"
-            android:ellipsize="end" />
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/shows_list_info_detail"
-            android:layout_below="@id/shows_list_episode_detail"
-            android:layout_toRightOf="@id/shows_list_imageView"
-            android:maxLines="@integer/episodes_list_detail_max_lines"
+            android:maxLines="@integer/main_shows_list_title_max_lines"
             android:layout_marginStart="5dp"
             android:ellipsize="end" />
     </RelativeLayout>

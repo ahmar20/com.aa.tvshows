@@ -13,6 +13,7 @@
   <string name="loading_view_captcha">Please solve any captcha above and continue to load the video player. When the video player has loaded completely, press Continue below to watch the video.</string>
 
   <integer name="episodes_list_detail_max_lines">2</integer>
+  <integer name="main_shows_list_title_max_lines">4</integer>
   <dimen name="episodes_list_padding">5dp</dimen>
   <dimen name="toolbar_elevation">7dp</dimen>
   <dimen name="tabs_elevation">6dp</dimen>

@@ -41,6 +41,7 @@ namespace com.aa.tvshows.Helper
     public class ShowList : EpisodeList
     {
         public string EpisodeDetail { get; set; }
+        public int NextPageNumber { get; set; }
     }
 
     /// <summary>
