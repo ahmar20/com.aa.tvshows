@@ -168,6 +168,28 @@ namespace com.aa.tvshows.Fragments
                                 AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
                             };
                             recyclerView.SetAdapter(adapter);
+                            recyclerView.ClearOnScrollListeners();
+                            var endlessScroll = new EndlessScroll(layoutManager);
+                            endlessScroll.LoadMoreTask += async (s, e) =>
+                            {
+                                AppView.ShowLoadingView(refreshView, true);
+                                EpisodeList lastItem = adapter.GetItem(adapter.ItemCount - 1);
+                                int nextPageNumber = lastItem.NextPageNumber;
+                                var newItems = await WebData.GetPopularShowsForMainView(nextPageNumber);
+                                if (newItems != null)
+                                {
+                                    AppView.ShowLoadingView(refreshView, false);
+                                    if (newItems.Where(a => a.PageLink == lastItem.PageLink) is ShowList duplicate)
+                                    {
+#if DEBUG
+                                        Error.Instance.ShowErrorTip("End of shows reached", this.Context);
+#endif
+                                        return;
+                                    }
+                                    adapter.AddItem(newItems.ToArray());
+                                }
+                            };
+                            recyclerView.AddOnScrollListener(endlessScroll);
                         }
                         else
                         {
@@ -194,6 +216,28 @@ namespace com.aa.tvshows.Fragments
                                 AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
                             };
                             recyclerView.SetAdapter(adapter);
+                            recyclerView.ClearOnScrollListeners();
+                            var endlessScroll = new EndlessScroll(layoutManager);
+                            endlessScroll.LoadMoreTask += async (s, e) =>
+                            {
+                                AppView.ShowLoadingView(refreshView, true);
+                                EpisodeList lastItem = adapter.GetItem(adapter.ItemCount - 1);
+                                int nextPageNumber = lastItem.NextPageNumber;
+                                var newItems = await WebData.GetPopularShowsForMainView(nextPageNumber);
+                                if (newItems != null)
+                                {
+                                    AppView.ShowLoadingView(refreshView, false);
+                                    if (newItems.Where(a => a.PageLink == lastItem.PageLink) is ShowList duplicate)
+                                    {
+#if DEBUG
+                                        Error.Instance.ShowErrorTip("End of shows reached", this.Context);
+#endif
+                                        return;
+                                    }
+                                    adapter.AddItem(newItems.ToArray());
+                                }
+                            };
+                            recyclerView.AddOnScrollListener(endlessScroll);
                         }
                         else
                         {

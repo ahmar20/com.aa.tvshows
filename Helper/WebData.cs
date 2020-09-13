@@ -31,6 +31,7 @@ namespace com.aa.tvshows.Helper
         static readonly string TVSearchUrl = BaseUrl + "/search/";
         static readonly string TVSearchSuggestionsUrl = BaseUrl + "/show/search-shows-json/";
         static readonly string TVPopularShows = BaseUrl + "/series/";
+        static readonly string TVNewEpisodes = BaseUrl + "/new/";
 
         const string ABCVideoSourcePattern = @"(http?s:.*?mp4)";
         const string ABCVideoPosterPattern = @"image:\s.*?(http?s:.*?jpg)";
@@ -168,46 +169,65 @@ namespace com.aa.tvshows.Helper
             return regexReplacement;
         }
 
-        public static async Task<List<EpisodeList>> GetPopularEpisodesForMainView()
+        public static async Task<List<EpisodeList>> GetPopularEpisodesForMainView(int page = 1)
         {
-            if (await GetHtmlDocumentFromUrl(new Uri(BaseUrl)).ConfigureAwait(false) is HtmlDocument doc)
+            if (page < 1) page = 1;
+            if (await GetHtmlDocumentFromUrl(new Uri(TVNewEpisodes + page)).ConfigureAwait(false) is HtmlDocument doc)
             {
-                // generate main episodes data
-                if (doc.DocumentNode.Descendants("div").Where(a => a.HasClass("block-left-home")).FirstOrDefault() is HtmlNode popularEpisodes)
+                if (doc.DocumentNode.Descendants("ul").Where(a => a.HasClass("pagination")).FirstOrDefault() is HtmlNode paginationNode)
                 {
-                    var collection = new List<EpisodeList>();
-                    foreach (HtmlNode itemDiv in popularEpisodes.ChildNodes.Where(a => a.Name == "div" && a.HasClass("block-left-home-inside")))
+                    foreach (var pageNode in paginationNode.ChildNodes)
                     {
-                        if (itemDiv.ChildNodes.Where(a => a.HasClass("block-left-home-inside-text")).FirstOrDefault() is HtmlNode dataDiv)
+                        if (pageNode.Name == "li")
+                        {
+                            if (pageNode.ChildNodes.Where(a => a.Name == "a").FirstOrDefault() is HtmlNode pageLinkNode)
+                            {
+                                if (pageLinkNode.GetAttributeValue("href", string.Empty) == TVNewEpisodes + (page + 1))
+                                {
+                                    page++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                // generate main episodes data
+                var collection = new List<EpisodeList>();
+                foreach (HtmlNode listing in doc.DocumentNode.Descendants("ul").Where(a => a.HasClass("listings")))
+                {
+                    foreach (HtmlNode listingNode in listing.ChildNodes.Where(a => a.Name == "li"))
+                    {
+                        if (listingNode.Descendants("a").FirstOrDefault() is HtmlNode dataHref)
                         {
                             var listItem = new EpisodeList() { ItemType = DataEnum.DataType.NewPopularEpisodes };
                             // link
-                            if (dataDiv.Descendants("a").ElementAtOrDefault(0) is HtmlNode aNode)
-                            {
-                                var link = aNode.GetAttributeValue("href", null);
-                                listItem.PageLink = link;
-                                var title = aNode.ChildNodes.Where(a => a.Name == "b").ElementAtOrDefault(0)?.InnerText?.Trim();
-                                listItem.Title = WebUtility.HtmlDecode(title).FixDuplicateYear();
-                            }
-                            if (dataDiv.Descendants("a").ElementAtOrDefault(1) is HtmlNode eNode)
-                            {
-                                var episodeDetail = eNode.ChildNodes.Where(a => a.Name == "span" && a.HasClass("p11")).ElementAtOrDefault(0)?.InnerText?.Trim();
-                                listItem.EpisodeNo = WebUtility.HtmlDecode(episodeDetail);
-                            }
-                            var image = itemDiv.Descendants("img").ElementAtOrDefault(0)?.GetAttributeValue("src", "tvshows.aa.com");
-                            listItem.ImageLink = image;
+                            listItem.PageLink = dataHref.GetAttributeValue("href", string.Empty);
+                            var titleArray = dataHref.GetAttributeValue("title", string.Empty).Split("-", StringSplitOptions.RemoveEmptyEntries);
+                            // 0 is title, 1 is Season+Episode, 2 is Episode name
+                            listItem.Title = WebUtility.HtmlDecode(titleArray?.ElementAtOrDefault(0)).FixDuplicateYear();
+                            listItem.EpisodeNo = WebUtility.HtmlDecode(titleArray?.ElementAtOrDefault(1) + "--" + titleArray?.ElementAtOrDefault(2));
+                            listItem.NextPageNumber = page;
                             // add data
                             collection.Add(listItem);
                         }
                     }
-                    return collection;
                 }
-            }
-            else
-            {
-                //Error.ErrorInstance.ShowErrorTip("");
+                return collection;
             }
             return null;
+        }
+
+        public static async Task<string> GetTVShowCoverImageUrl(string link)
+        {
+            if (await GetHtmlDocumentFromUrl(new Uri(link)) is HtmlDocument doc)
+            {
+                if (doc.DocumentNode.Descendants("img").Where(a => a.GetAttributeValue("itemprop", string.Empty) == "image").FirstOrDefault() is HtmlNode imgNode)
+                {
+                    return imgNode.GetAttributeValue("src", string.Empty);
+                }
+            }
+
+            return string.Empty;
         }
 
         public static async Task<List<EpisodeList>> GetNewestEpisodesForMainView()

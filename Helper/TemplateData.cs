@@ -33,6 +33,7 @@ namespace com.aa.tvshows.Helper
         public string ImageLink { get; set; }
         public string PageLink { get; set; }
         public DataEnum.DataType ItemType { get; set; }
+        public int NextPageNumber { get; set; }
     }
 
     /// <summary>
@@ -41,7 +42,6 @@ namespace com.aa.tvshows.Helper
     public class ShowList : EpisodeList
     {
         public string EpisodeDetail { get; set; }
-        public int NextPageNumber { get; set; }
     }
 
     /// <summary>
