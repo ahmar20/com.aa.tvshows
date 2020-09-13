@@ -897,7 +897,7 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\drawable\no-image.png" />
+    <AndroidResource Include="Resources\drawable\no_image.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\loading.gif" />
