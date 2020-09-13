@@ -9,6 +9,7 @@ using AndroidX.Core.Content;
 using AndroidX.Core.Graphics.Drawable;
 using AndroidX.Core.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Square.Picasso;
 using System;
 using System.Threading.Tasks;
 
@@ -217,7 +218,7 @@ namespace com.aa.tvshows.Helper
         private static Bitmap CaptureView(View view)
         {
             //Create a Bitmap with the same dimensions as the View
-            Bitmap image = Bitmap.CreateBitmap(view.MeasuredWidth, view.MeasuredHeight, Bitmap.Config.Argb4444); 
+            Bitmap image = Bitmap.CreateBitmap(view.MeasuredWidth, view.MeasuredHeight, Bitmap.Config.Argb8888);
             Canvas canvas = new Canvas(image);
             view.Draw(canvas);
 
@@ -308,6 +309,15 @@ namespace com.aa.tvshows.Helper
                 prog.Indeterminate = true;
                 prog.Visibility = show ? ViewStates.Visible : ViewStates.Gone;
             }
+        }
+
+        public static void LoadImageIntoView(string imageLink, AppCompatImageView imageView)
+        {
+            Picasso.Get()
+                .Load(imageLink)
+                .Error(Resource.Drawable.no_image)
+                .Placeholder(Resource.Drawable.loading)
+                .Into(imageView);
         }
     }
 }
