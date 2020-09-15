@@ -116,8 +116,7 @@ namespace com.aa.tvshows.Helper
                     case DataEnum.DataType.TVSchedule:
                         var scheduleItem = Items[position] as CalenderScheduleList;
                         epHolder.Title.Text = scheduleItem.Title;
-                        epHolder.EpisodeDetail.Text = scheduleItem.EpisodeNo;
-                        epHolder.Description.Text = scheduleItem.EpisodeName;
+                        epHolder.Description.Text = scheduleItem.EpisodeNo + "\n" + scheduleItem.EpisodeName;
                         AppView.LoadImageIntoView(string.IsNullOrEmpty(scheduleItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(scheduleItem.PageLink) : scheduleItem.ImageLink, epHolder.Image);
                         break;
 
@@ -134,8 +133,7 @@ namespace com.aa.tvshows.Helper
 
                     case DataEnum.DataType.Search:
                         var searchItem = Items[position] as SearchList;
-                        epHolder.EpisodeDetail.Text = searchItem.EpisodeNo;
-                        epHolder.Description.Text = searchItem.EpisodeDetail;
+                        epHolder.Description.Text = searchItem.EpisodeDetail + "\n" + searchItem.EpisodeNo;
                         epHolder.Title.Text = searchItem.Title;
                         AppView.LoadImageIntoView(string.IsNullOrEmpty(searchItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(searchItem.PageLink) : searchItem.ImageLink, epHolder.Image);
                         break;
