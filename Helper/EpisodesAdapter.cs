@@ -147,7 +147,7 @@ namespace com.aa.tvshows.Helper
                     case DataEnum.DataType.EpisodeStreamLinks:
                         var streamLink = Items[position] as EpisodeStreamLink;
                         epHolder.Title.Text = streamLink.HostName;
-                        AppView.LoadImageIntoView(streamLink.HostUrl, epHolder.Image);
+                        AppView.LoadImageIntoView(streamLink.HostImage, epHolder.Image);
                         break;
 
                     default: break;
