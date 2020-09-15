@@ -87,7 +87,6 @@ namespace com.aa.tvshows.Helper
                         var epItem = Items[position] as EpisodeList;
                         epHolder.Title.Text = epItem.Title;
                         epHolder.EpisodeDetail.Text = epItem.EpisodeNo;
-                        AppView.LoadImageIntoView(string.IsNullOrEmpty(epItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(epItem.PageLink) : epItem.ImageLink, epHolder.Image);
                         //epHolder.Info.Text = newEpItem.ShowDetail;    // not implemented
                         break;
 
@@ -401,7 +400,7 @@ namespace com.aa.tvshows.Helper
             ItemType = type;
             if (ItemType == DataEnum.DataType.NewPopularEpisodes || ItemType == DataEnum.DataType.NewEpisodes)
             {
-                Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.episodes_list_imageView);
+                //Image = itemView.FindViewById<AppCompatImageView>(Resource.Id.episodes_list_imageView);
                 Title = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_title);
                 EpisodeDetail = itemView.FindViewById<AppCompatTextView>(Resource.Id.episodes_list_detail);
             }
@@ -436,7 +435,7 @@ namespace com.aa.tvshows.Helper
                 FavoritesBtn = itemView.FindViewById<AppCompatImageButton>(Resource.Id.favorites_list_remove_btn);
                 ProgressBar = itemView.FindViewById<ContentLoadingProgressBar>(Resource.Id.favorites_list_loading);
             }
-
+            
             itemView.Click += (s, e) => itemClick?.Invoke(AdapterPosition);
             itemView.LongClick += (s, e) => itemLongClick?.Invoke(AdapterPosition);
         }

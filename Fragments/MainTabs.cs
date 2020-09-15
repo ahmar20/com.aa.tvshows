@@ -157,9 +157,10 @@ namespace com.aa.tvshows.Fragments
                     break;
 
                 case DataEnum.DataType.NewPopularEpisodes:
+                case DataEnum.DataType.NewEpisodes:
                     if (recyclerView.GetAdapter() is null)
                     {
-                        if (await WebData.GetPopularEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
+                        if (await WebData.GetEpisodesForMainView(tabType).ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<EpisodeList>(popularEpisodes, emptyView);
@@ -175,55 +176,7 @@ namespace com.aa.tvshows.Fragments
                                 AppView.ShowLoadingView(refreshView, true);
                                 EpisodeList lastItem = adapter.GetItem(adapter.ItemCount - 1);
                                 int nextPageNumber = lastItem.NextPageNumber;
-                                var newItems = await WebData.GetPopularShowsForMainView(nextPageNumber);
-                                if (newItems != null)
-                                {
-                                    AppView.ShowLoadingView(refreshView, false);
-                                    if (newItems.Where(a => a.PageLink == lastItem.PageLink) is ShowList duplicate)
-                                    {
-#if DEBUG
-                                        Error.Instance.ShowErrorTip("End of shows reached", this.Context);
-#endif
-                                        return;
-                                    }
-                                    adapter.AddItem(newItems.ToArray());
-                                }
-                            };
-                            recyclerView.AddOnScrollListener(endlessScroll);
-                        }
-                        else
-                        {
-                            AppView.SetEmptyView(emptyView, true, false, delegate { ReloadCurrentData(); });
-                        }
-                    }
-                    else
-                    {
-                        recyclerView.SetAdapter(null);
-                        LoadDataForType();
-                        return;
-                    }
-                    break;
-
-                case DataEnum.DataType.NewEpisodes:
-                    if (recyclerView.GetAdapter() is null)
-                    {
-                        if (await WebData.GetNewestEpisodesForMainView().ConfigureAwait(true) is List<EpisodeList> newEpisodes)
-                        {
-                            AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
-                            var adapter = new EpisodesAdapter<EpisodeList>(newEpisodes, emptyView);
-                            adapter.ItemClick += (s, e) =>
-                            {
-                                AppView.HandleItemShowEpisodeClick(adapter.GetItem(e), Activity);
-                            };
-                            recyclerView.SetAdapter(adapter);
-                            recyclerView.ClearOnScrollListeners();
-                            var endlessScroll = new EndlessScroll(layoutManager);
-                            endlessScroll.LoadMoreTask += async (s, e) =>
-                            {
-                                AppView.ShowLoadingView(refreshView, true);
-                                EpisodeList lastItem = adapter.GetItem(adapter.ItemCount - 1);
-                                int nextPageNumber = lastItem.NextPageNumber;
-                                var newItems = await WebData.GetPopularShowsForMainView(nextPageNumber);
+                                var newItems = await WebData.GetEpisodesForMainView(tabType, nextPageNumber);
                                 if (newItems != null)
                                 {
                                     AppView.ShowLoadingView(refreshView, false);

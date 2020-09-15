@@ -218,7 +218,7 @@ namespace com.aa.tvshows.Helper
         private static Bitmap CaptureView(View view)
         {
             //Create a Bitmap with the same dimensions as the View
-            Bitmap image = Bitmap.CreateBitmap(view.MeasuredWidth, view.MeasuredHeight, Bitmap.Config.Argb8888);
+            Bitmap image = Bitmap.CreateBitmap(view.MeasuredWidth, view.MeasuredHeight, Bitmap.Config.Argb4444);
             Canvas canvas = new Canvas(image);
             view.Draw(canvas);
 
@@ -311,11 +311,24 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public static void LoadImageIntoView(string imageLink, AppCompatImageView imageView)
+        public static async void LoadImageIntoView<T>(T imageLink, AppCompatImageView imageView)
         {
-            Picasso.Get()
-                .Load(imageLink)
-                .Error(Resource.Drawable.no_image)
+            Picasso picassoContext = Picasso.Get();
+            RequestCreator picassoRequest = null;
+            if (imageLink is string link)
+            {
+                picassoRequest = picassoContext.Load(link);
+            }
+            else if (imageLink is Task<string> linkTask)
+            {
+                string imageUri = await linkTask;
+                picassoRequest = picassoContext.Load(string.IsNullOrEmpty(imageUri) ? "com.aa.tvshows" : imageUri);
+            }
+            else
+            {
+                throw new Exception("invalid image link");
+            }
+            picassoRequest.Error(Resource.Drawable.no_image)
                 .Placeholder(Resource.Drawable.loading)
                 .Into(imageView);
         }
