@@ -17,6 +17,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <!--
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/episodes_list_imageView"
             android:layout_width="80dp"
@@ -24,6 +25,7 @@
             android:layout_margin="5dp"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"/>
+        -->
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,7 +33,6 @@
             style="@style/TextAppearance.AppCompat.Title"
             android:layout_marginStart="5dp"
             android:layout_alignParentTop="true"
-            android:layout_toRightOf="@id/episodes_list_imageView"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:ellipsize="end" />
         <androidx.appcompat.widget.AppCompatTextView
@@ -39,7 +40,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/episodes_list_detail"
             android:layout_below="@id/episodes_list_title"
-            android:layout_toRightOf="@id/episodes_list_imageView"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:layout_marginStart="5dp"
             android:ellipsize="end" />
