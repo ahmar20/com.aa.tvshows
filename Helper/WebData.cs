@@ -204,10 +204,10 @@ namespace com.aa.tvshows.Helper
                             var listItem = new EpisodeList() { ItemType = DataEnum.DataType.NewPopularEpisodes };
                             // link
                             listItem.PageLink = dataHref.GetAttributeValue("href", string.Empty);
-                            var titleArray = dataHref.GetAttributeValue("title", string.Empty).Split("-", StringSplitOptions.RemoveEmptyEntries);
+                            var titleArray = dataHref.GetAttributeValue("title", string.Empty).Split("-", StringSplitOptions.RemoveEmptyEntries).ToList();
                             // 0 is title, 1 is Season+Episode, 2 is Episode name
-                            listItem.Title = WebUtility.HtmlDecode(titleArray?.ElementAtOrDefault(0)).FixDuplicateYear();
-                            listItem.EpisodeNo = WebUtility.HtmlDecode(titleArray?.ElementAtOrDefault(1) + "--" + titleArray?.ElementAtOrDefault(2));
+                            listItem.Title = WebUtility.HtmlDecode(titleArray?.ElementAtOrDefault(0)).FixDuplicateYear().Trim();
+                            listItem.EpisodeNo = WebUtility.HtmlDecode(titleArray?.ElementAtOrDefault(1).Trim() + "--" + titleArray?.ElementAtOrDefault(2).Trim());
                             listItem.NextPageNumber = page;
                             //listItem.ImageLink = "com.aa.tvshows";
                             //listItem.ImageLinkTask = GetTVShowCoverImageUrl(listItem.PageLink);
