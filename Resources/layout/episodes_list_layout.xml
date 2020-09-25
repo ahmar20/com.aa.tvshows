@@ -16,7 +16,8 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/margin_8dp">
         <!--
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/episodes_list_imageView"
@@ -31,7 +32,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/episodes_list_title"
             style="@style/TextAppearance.AppCompat.Title"
-            android:layout_marginStart="5dp"
             android:layout_alignParentTop="true"
             android:maxLines="@integer/episodes_list_detail_max_lines"
             android:ellipsize="end" />
@@ -41,7 +41,6 @@
             android:id="@+id/episodes_list_detail"
             android:layout_below="@id/episodes_list_title"
             android:maxLines="@integer/episodes_list_detail_max_lines"
-            android:layout_marginStart="5dp"
             android:ellipsize="end" />
     </RelativeLayout>
 </androidx.cardview.widget.CardView>
