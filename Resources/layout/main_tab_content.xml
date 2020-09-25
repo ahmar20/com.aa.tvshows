@@ -12,7 +12,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/main_tab_rv"
-            android:clipToPadding="false" />
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:fadeScrollbars="false"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -21,16 +23,4 @@
         android:textAlignment="center"
         android:visibility="gone"
         android:layout_centerInParent="true"/>
-    <!--
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/empty_data_view"
-        android:id="@+id/main_tab_emptytext"
-        style="@style/TextAppearance.AppCompat.Medium"
-        android:textAlignment="center"
-        android:visibility="gone"
-        android:layout_centerInParent="true"/>
-    -->
 </RelativeLayout>
-
