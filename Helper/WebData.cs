@@ -718,21 +718,42 @@ namespace com.aa.tvshows.Helper
             {
                 doc = await GetHtmlDocumentFromUrl(decodedLink);
             }
-            var linkList = new List<StreamingUri>();
             // try direct download
             if (doc.DocumentNode.Descendants("table").Where(a => a.GetAttributeValue("class", string.Empty) == "tbl1").FirstOrDefault() is HtmlNode downloadOP)
             {
+                var linkList = new List<StreamingUri>();
                 foreach (HtmlNode downloadLinkNode in downloadOP.Descendants("a").Where(a => a.GetAttributeValue("onclick", string.Empty).StartsWith("download_video")))
                 {
                     var nodeValue = downloadLinkNode.GetAttributeValue("onclick", string.Empty).Replace("download_video", string.Empty).Replace(")", string.Empty).Replace("(", string.Empty).Replace("'", string.Empty).Split(",");
                     var nodeValueLink = "https://" + decodedLink.Host + $"/dl?op=download_orig&id={nodeValue[0]}&mode={nodeValue[1]}&hash={nodeValue[2]}";
-                    doc = await GetHtmlDocumentFromUrl(new Uri(nodeValueLink));
-                    if (doc != null)
+                    var dlDoc = await GetHtmlDocumentFromUrl(new Uri(nodeValueLink));
+                    if (dlDoc != null)
                     {
-                        if (doc.DocumentNode.Descendants("a").Where(a => a.GetAttributeValue("href", string.Empty).Contains(".mp4")).FirstOrDefault() is HtmlNode mp4Link)
+                        if (dlDoc.DocumentNode.Descendants("Form").Where(a => a.GetAttributeValue("method", string.Empty) == "POST").FirstOrDefault() is HtmlNode dlForm)
                         {
-                            linkList.Add(new StreamingUri() { StreamingUrl = new Uri(mp4Link.GetAttributeValue("href", string.Empty)), 
-                                StreamingQuality = nodeValueLink.Contains("mode=h") ? "HD" : "SD" });
+                            Dictionary<string, string> webCollection = GetFormInputNodes(dlForm);
+                            if (await PostHtmlContentToUrl(new Uri(nodeValueLink), webCollection) is HtmlDocument postDoc)
+                            {
+                                if (postDoc.DocumentNode.Descendants("a").Where(a => a.GetAttributeValue("href", string.Empty).Contains(".mp4")).FirstOrDefault() is HtmlNode mp4Link)
+                                {
+                                    linkList.Add(new StreamingUri()
+                                    {
+                                        StreamingUrl = new Uri(mp4Link.GetAttributeValue("href", string.Empty)),
+                                        StreamingQuality = nodeValueLink.Contains("mode=h") ? "HD" : "SD"
+                                    });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (dlDoc.DocumentNode.Descendants("a").Where(a => a.GetAttributeValue("href", string.Empty).Contains(".mp4")).FirstOrDefault() is HtmlNode mp4Link)
+                            {
+                                linkList.Add(new StreamingUri()
+                                {
+                                    StreamingUrl = new Uri(mp4Link.GetAttributeValue("href", string.Empty)),
+                                    StreamingQuality = nodeValueLink.Contains("mode=h") ? "HD" : "SD"
+                                });
+                            }
                         }
                     }
                 }
