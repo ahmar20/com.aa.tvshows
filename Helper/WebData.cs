@@ -766,10 +766,11 @@ namespace com.aa.tvshows.Helper
         {
             if (doc == null)
             {
+                decodedLink = new Uri(decodedLink.OriginalString.Remove(decodedLink.OriginalString.LastIndexOf("/")));
+                decodedLink = new Uri(decodedLink.OriginalString.Insert(decodedLink.OriginalString.LastIndexOf("/") + 1, "embed-") + ".html");
                 doc = await GetHtmlDocumentFromUrl(decodedLink);
             }
-            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("sources:", StringComparison.InvariantCulture))
-                    .FirstOrDefault() is HtmlNode script)
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("sources:", StringComparison.InvariantCulture)).FirstOrDefault() is HtmlNode script)
             {
                 var linkList = new List<StreamingUri>();
                 foreach (Match match in Regex.Matches(script.InnerText.Trim(), ClipWatchingSourcePattern))
