@@ -70,7 +70,7 @@ namespace com.aa.tvshows.Helper
                 {                    
                     using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = true };
                     using HttpClient client = new HttpClient(handler);
-                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.63");
                     client.DefaultRequestHeaders.Add("Accept", "text/html");
                     client.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
                     cts ??= new CancellationTokenSource(TimeSpan.FromSeconds(CancellationTokenDelayInSeconds));
