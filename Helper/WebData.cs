@@ -55,27 +55,32 @@ namespace com.aa.tvshows.Helper
         public const double CancellationTokenDelayInSeconds = 15;
         public const string NothingFoundStr = "nothing found";
 
+        public static CookieContainer Cookies { get; private set; }
+        public static HttpClientHandler GlobalClientHandler { get; private set; }
+        public static HttpClient GlobalClient { get; private set; }
+
         public static string GetBaseLinkScript(string hostName)
         {
             return "javascript:(function() { var nodeList = document.getElementsByTagName('a'); for (var i = 0; i < nodeList.length; i++) { var hrefValue = nodeList[i].getAttribute('href'); if (hrefValue.indexOf('" + hostName.Trim() + "') > -1) { return hrefValue; } } return '"+ NothingFoundStr + "'; }) ()";
         }
 
-        public const string GetPageHtmlScript = "javascript:(function() { return document.documentElement.innerHTML; }) ()";
+        public const string GetPageHtmlScript = "javascript:(function() { var htmlStr = document.documentElement.innerHTML; return htmlStr; }) ()";
 
         public static async Task<string> GetHtmlStringFromUrl(Uri url, CancellationTokenSource cts = default)
         {
             if (url != null)
             {
+                Cookies ??= new CookieContainer();
+                GlobalClientHandler ??= new HttpClientHandler() { AllowAutoRedirect = true, UseCookies = true, CookieContainer = Cookies };
+                GlobalClient ??= new HttpClient(GlobalClientHandler);
                 try
-                {                    
-                    using HttpClientHandler handler = new HttpClientHandler() { AllowAutoRedirect = true };
-                    using HttpClient client = new HttpClient(handler);
-                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.63");
-                    client.DefaultRequestHeaders.Add("Accept", "text/html");
-                    client.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
+                {
+                    GlobalClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.63");
+                    GlobalClient.DefaultRequestHeaders.Add("Accept", "text/html");
+                    GlobalClient.DefaultRequestHeaders.Referrer = new Uri(BaseUrl);
                     cts ??= new CancellationTokenSource(TimeSpan.FromSeconds(CancellationTokenDelayInSeconds));
 
-                    var response = await client.GetAsync(url, cts.Token).ConfigureAwait(true);
+                    var response = await GlobalClient.GetAsync(url, cts.Token).ConfigureAwait(true);
                     response.EnsureSuccessStatusCode();
 
                     var htmlString = await response.Content.ReadAsStringAsync().ConfigureAwait(true);
@@ -691,14 +696,14 @@ namespace com.aa.tvshows.Helper
             List<StreamingUri> linkList; 
             linkList = decodedLink.Host switch
             {
-                "abcvideo.cc" => await GetABCVideoStreamUrl(decodedLink),
+                //"abcvideo.cc" => await GetABCVideoStreamUrl(decodedLink),
                 "clipwatching.com" => await GetClipWatchingStreamUrl(decodedLink),
                 "cloudvideo.tv" => await GetCloudVideoStreamUrl(decodedLink),
                 "gamovideo.com" => await GetGamoVideoStreamUrl(decodedLink),
                 "gounlimited.to" => await GetGoUnlimitedStreamUrl(decodedLink),
                 "jetload.net" => await GetJetLoadStreamUrl(decodedLink),
                 "onlystream.tv" => await GetOnlyStreamStreamUrl(decodedLink),
-                "streamplay.to" => await GetStreamplayStreamUrl(decodedLink),
+                //"streamplay.to" => await GetStreamplayStreamUrl(decodedLink),
                 "mixdrop.co" => await GetMixdropStreamUrl(decodedLink),
                 //"powvideo.net" => await GetPowvideoStreamUrl(decodedLink),    // not working yet -- requires re-captcha
                 "prostream.to" => await GetProstreamStreamUrl(decodedLink),
@@ -716,7 +721,14 @@ namespace com.aa.tvshows.Helper
         {
             if (doc == null)
             {
+                decodedLink = new Uri(decodedLink.OriginalString.Insert(decodedLink.OriginalString.LastIndexOf("/") + 1, "embed-"));
                 doc = await GetHtmlDocumentFromUrl(decodedLink);
+            }
+            if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault() is HtmlNode scriptNode)
+            {
+                var script = scriptNode.InnerText.Replace("eval", string.Empty);
+                var value = new Jint.Engine().Execute(script).GetCompletionValue().ToString();
+
             }
             // try direct download
             if (doc.DocumentNode.Descendants("table").Where(a => a.GetAttributeValue("class", string.Empty) == "tbl1").FirstOrDefault() is HtmlNode downloadOP)
@@ -1225,17 +1237,29 @@ namespace com.aa.tvshows.Helper
         }
     }
 
-    public class JavaValueCallback : Java.Lang.Object, IValueCallback
+    public class JavaValueCallbackForStreamLink : Java.Lang.Object, IValueCallback
     {
         public event EventHandler<string> ValueReceived = delegate { };
 
-        /// <summary>
-        /// Gets called when a value returns from the JavaScript function
-        /// </summary>
-        /// <param name="value"></param>
         public void OnReceiveValue(Java.Lang.Object value)
         {
-            ValueReceived?.Invoke(this, value.ToString()?.Replace("\"", string.Empty));
+            var javaStr = value.ToString();
+            javaStr = javaStr.Replace("\"", string.Empty);
+            javaStr = WebUtility.HtmlDecode(javaStr);
+            ValueReceived?.Invoke(this, javaStr);
+        }
+    }
+
+    public class JavaValueCallbackForPageHtml : Java.Lang.Object, IValueCallback
+    {
+        public event EventHandler<string> ValueReceived = delegate { };
+
+        public void OnReceiveValue(Java.Lang.Object value)
+        {
+            var javaStr = value.ToString();
+            //javaStr = javaStr.Replace("\"", string.Empty);
+            javaStr = WebUtility.HtmlDecode(javaStr);
+            ValueReceived?.Invoke(this, javaStr);
         }
     }
 }

@@ -21,14 +21,16 @@ namespace com.aa.tvshows.Helper
         
         WebView webView;
         Button hostContinueBtn;
+        LoadingWebView loadingWebView;
 
         public const int WebViewID = Resource.Id.host_view;
         public const int LoadingViewID = Resource.Id.loading_parent;
         public const int HostContinueBtnID = Resource.Id.host_continue_btn;
         public const int HostPanelID = Resource.Id.host_panel;
 
-        JavaValueCallback javaCallback;
-        AppCompatActivity parentActivity;
+        JavaValueCallbackForStreamLink javaCallbackForStream;
+        JavaValueCallbackForPageHtml javaCallbackForHtml;
+        AppCompatActivity context;
         public event EventHandler OnCancelled = delegate { };
 
         public LoadingViewDialogForWebView()
@@ -38,8 +40,7 @@ namespace com.aa.tvshows.Helper
         public void ShowDialog(AppCompatActivity context, bool continueSilent = true)
         {
             if (Dialog != null && Dialog.IsShowing) return;
-
-            parentActivity = context;
+            this.context = context;
             var parentView = LayoutInflater.From(context).Inflate(Resource.Layout.loading_webview_dialog, null, false);
             Builder = new AlertDialog.Builder(context).SetView(parentView);
             Dialog = Builder.Create();
@@ -49,10 +50,10 @@ namespace com.aa.tvshows.Helper
             Dialog.CancelEvent += Dialog_DismissEvent;
             Dialog.Show();
 
-            if (javaCallback == null)
+            if (javaCallbackForStream == null)
             {
-                javaCallback = new JavaValueCallback();
-                javaCallback.ValueReceived += JavaCallback_ValueReceived;
+                javaCallbackForStream = new JavaValueCallbackForStreamLink();
+                javaCallbackForStream.ValueReceived += JavaCallback_ValueReceived;
             }
 
             if (webView == null)
@@ -65,7 +66,18 @@ namespace com.aa.tvshows.Helper
                 hostContinueBtn = parentView.FindViewById<Button>(HostContinueBtnID);
                 hostContinueBtn.Click += delegate
                 {
-                    //webView.EvaluateJavascript();
+                    if (javaCallbackForHtml == null)
+                    {
+                        javaCallbackForHtml = new JavaValueCallbackForPageHtml();
+                        javaCallbackForHtml.ValueReceived += (s, e) =>
+                        {
+                            if (string.IsNullOrEmpty(e))
+                            {
+                                throw new Exception();
+                            }
+                        };
+                    }
+                    webView.EvaluateJavascript(WebData.GetPageHtmlScript, javaCallbackForHtml);
                 };
             }
             if (continueSilent)
@@ -108,7 +120,7 @@ namespace com.aa.tvshows.Helper
 
         public void LoadUrl(string url, string hostName = default)
         {
-            new LoadingWebView(webView, host: hostName, javaCallback: javaCallback,
+            loadingWebView = new LoadingWebView(webView, host: hostName, javaCallback: javaCallbackForStream,
                     startAction: () => ShowView(LoadingViewID), stopAction: () => HideView(LoadingViewID));
             webView.LoadUrl(url);
         }
@@ -117,11 +129,12 @@ namespace com.aa.tvshows.Helper
         {
             if (Uri.TryCreate(e, UriKind.Absolute, out Uri link))
             {
-                ShowView(LoadingViewID);
                 bool streamableLinkFound = false;
-                if (link.Host.Contains("abcvideo") || link.Host.Contains("clipwatching") || link.Host.Contains("cloudvideo") || link.Host.Contains("gounlimited")
-                    || link.Host.Contains("mixdrop") || link.Host.Contains("upstream") || link.Host.Contains("videobin") || link.Host.Contains("vidia"))
+                if (link.Host.Contains("abcvideo") || link.Host.Contains("clipwatching") || link.Host.Contains("cloudvideo") 
+                    || link.Host.Contains("gounlimited") || link.Host.Contains("jetload") || link.Host.Contains("mixdrop")
+                    || link.Host.Contains("upstream") || link.Host.Contains("videobin") || link.Host.Contains("vidia"))
                 {
+                    ShowView(LoadingViewID);
                     if (await WebData.GetStreamingUrlFromDecodedLink(e) is List<StreamingUri> links)
                     {
                         foreach (var uri in links)
@@ -134,25 +147,27 @@ namespace com.aa.tvshows.Helper
                         }
                         if (streamableLinkFound)
                         {
-                            ContextMenuDialog.Instance.ShowContextDialog(parentActivity, links);
+                            ContextMenuDialog.Instance.ShowContextDialog(context, links);
                         }
                     }
                     if (!streamableLinkFound)
                     {
-                        Error.Instance.ShowErrorTip("Error: Video not found on the given link. Please select another one.", parentActivity, ToastLength.Long);
+                        Error.Instance.ShowErrorTip("Error: Video not found on the given link. Please select another one.", Android.App.Application.Context, ToastLength.Long);
                     }
                     HideDialog();
                 }
                 else
                 {
-                    // find mp4 link through captcha
-                    Error.Instance.ShowErrorTip("Not Supported: This video hosting server is not yet supported.", parentActivity, ToastLength.Long);
+                    //ShowView(HostPanelID);
+                    //ShowView(LoadingViewID);
+                    //LoadUrl(link.OriginalString, link.Host);
+                    Error.Instance.ShowErrorTip("Not Supported: This video hosting server is not yet supported.", Android.App.Application.Context, ToastLength.Long);
                     HideDialog();
                 }
             }
             else
             {
-                Error.Instance.ShowErrorTip("Error: Deciphering the video link failed.", parentActivity, ToastLength.Long);
+                Error.Instance.ShowErrorTip("Error: Deciphering the video link failed.", Android.App.Application.Context, ToastLength.Long);
                 HideDialog();
             }
         }
