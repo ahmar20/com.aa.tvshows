@@ -25,7 +25,7 @@ namespace com.aa.tvshows.Helper
         {
             if (Dialog != null && Dialog.IsShowing) return;
 
-            var parent = LayoutInflater.From(context).Inflate(Resource.Layout.context_dialog, null, false);
+            var parent = LayoutInflater.From(Android.App.Application.Context).Inflate(Resource.Layout.context_dialog, null, false);
             Builder = new AlertDialog.Builder(context).SetView(parent);
             Dialog = Builder.Create();
             Dialog.SetCancelable(true);
