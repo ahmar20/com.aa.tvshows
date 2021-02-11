@@ -24,7 +24,7 @@ namespace com.aa.tvshows.Helper
 {
     public static class WebData
     {
-        public const string BaseUrl = "https://www1.swatchseries.to";
+        public const string BaseUrl = "https://www1.watch-series.la/";
         static readonly string TVScheduleUrl = BaseUrl + "/tvschedule";
         static readonly string TVGenresUrl = BaseUrl + "/genres/";
         static readonly string TVShowDetailUrl = BaseUrl + "/serie/";
