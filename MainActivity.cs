@@ -24,7 +24,6 @@ namespace com.aa.tvshows
     {
         ViewPager2 viewPager;
         TabLayout tabLayout;
-        PageTabsAdapter tabsAdapter;
         /*
         const string PopularShowsFragmentKey = "popularShows";
         const string NewEpisodesFragmentKey = "newEpisodes";
