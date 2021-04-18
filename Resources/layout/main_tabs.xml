@@ -18,9 +18,9 @@
         app:tabMaxWidth="0dp"
         app:tabGravity="fill"
         app:tabTextAppearance="?android:attr/textAppearanceSearchResultSubtitle"/>
-    <androidx.viewpager.widget.ViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/main_tabs_viewpager"
-        android:clipToPadding="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </LinearLayout>

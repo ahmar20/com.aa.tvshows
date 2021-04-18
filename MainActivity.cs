@@ -10,11 +10,11 @@ using Android.Views;
 using System;
 using AndroidX.CursorAdapter.Widget;
 using Android.Database;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+using AndroidX.ViewPager2.Widget;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using System.Collections.Generic;
 
 namespace com.aa.tvshows
 {
@@ -22,7 +22,7 @@ namespace com.aa.tvshows
         ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class MainActivity : AppCompatActivity
     {
-        ViewPager viewPager;
+        ViewPager2 viewPager;
         TabLayout tabLayout;
         PageTabsAdapter tabsAdapter;
         /*
@@ -41,7 +41,7 @@ namespace com.aa.tvshows
             var toolbar = FindViewById<Toolbar>(Resource.Id.main_toolbar);
             AppView.SetActionBarForActivity(toolbar, this);
 
-            viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            viewPager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
             viewPager.OffscreenPageLimit = 3;
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             SetupTabs();
@@ -87,7 +87,7 @@ namespace com.aa.tvshows
 
         public void SetupTabs(List<TitleFragment> savedFragments = default)
         {
-            tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
+            PageTabsAdapter tabsAdapter = new PageTabsAdapter(this);
             /*
             // not really needed because there is not much difference between
             // popular episodes and new episodes and also new episodes are more
@@ -98,30 +98,25 @@ namespace com.aa.tvshows
                 Title = "Popular Episodes"
             });
             */
-            if (savedFragments is null || savedFragments.Count == 0)
+            tabsAdapter.AddTab(new TitleFragment()
             {
-                tabsAdapter.AddTab(new TitleFragment()
-                {
-                    Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
-                    Title = "Popular Shows"
-                });
-                tabsAdapter.AddTab(new TitleFragment()
-                {
-                    Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
-                    Title = "New Episodes"
-                });
-                tabsAdapter.AddTab(new TitleFragment()
-                {
-                    Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
-                    Title = "Your Favorites"
-                });
-            }
-            else
+                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
+                Title = "Popular Shows"
+            });
+            tabsAdapter.AddTab(new TitleFragment()
             {
-                tabsAdapter.AddTab(savedFragments.ToArray());
-            }
-            tabLayout.SetupWithViewPager(viewPager);
+                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
+                Title = "New Episodes"
+            });
+            tabsAdapter.AddTab(new TitleFragment()
+            {
+                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
+                Title = "Your Favorites"
+            });
             viewPager.Adapter = tabsAdapter;
+            TabMediatorStrategy tabStrategy = new TabMediatorStrategy(tabsAdapter.Fragments);
+            TabLayoutMediator tabMediator = new TabLayoutMediator(tabLayout, viewPager, tabStrategy);
+            tabMediator.Attach();
         }
     }
 }

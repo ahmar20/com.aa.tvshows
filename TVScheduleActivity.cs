@@ -13,6 +13,7 @@ using AndroidX.Core.Content;
 using AndroidX.Core.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using AndroidX.ViewPager.Widget;
+using AndroidX.ViewPager2.Widget;
 using com.aa.tvshows.Fragments;
 using com.aa.tvshows.Helper;
 using Google.Android.Material.Tabs;
@@ -22,7 +23,7 @@ namespace com.aa.tvshows
     [Activity(Label = "TV Schedule", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class TVScheduleActivity : AppCompatActivity
     {
-        ViewPager viewPager;
+        ViewPager2 viewPager;
         TabLayout tabLayout;
         AppCompatTextView status;
         LinearLayoutCompat emptyView;
@@ -36,11 +37,11 @@ namespace com.aa.tvshows
             var toolbar = FindViewById<Toolbar>(Resource.Id.main_toolbar);
             AppView.SetActionBarForActivity(toolbar, this);
 
-            viewPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            viewPager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
             tabLayout.Visibility = ViewStates.Invisible;
             tabLayout.TabMode = TabLayout.ModeScrollable;
-            tabLayout.SetupWithViewPager(viewPager);
+            //tabLayout.SetupWithViewPager(viewPager);
 
             status = new AppCompatTextView(this);
             TextViewCompat.SetTextAppearance(status, Resource.Style.TextAppearance_AppCompat_Body2);
@@ -73,7 +74,7 @@ namespace com.aa.tvshows
             {
                 tabLayout.Visibility = viewPager.Visibility = ViewStates.Gone;
             }
-            var tabsAdapter = new PageTabsAdapter(SupportFragmentManager);
+            var tabsAdapter = new PageTabsAdapter(this);
             if (swipeRefresh != null)swipeRefresh.Refreshing = true;
             
             emptyView.Visibility = ViewStates.Visible;
@@ -86,7 +87,10 @@ namespace com.aa.tvshows
                 tabLayout.Visibility = ViewStates.Visible;
                 viewPager.Visibility = ViewStates.Visible;
                 viewPager.Adapter = tabsAdapter;
-                
+
+                TabMediatorStrategy tabStrategy = new TabMediatorStrategy(tabsAdapter.Fragments);
+                TabLayoutMediator tabMediator = new TabLayoutMediator(tabLayout, viewPager, tabStrategy);
+                tabMediator.Attach();
                 foreach (var item in data)
                 {
                     tabsAdapter.AddTab(new TitleFragment() { Title = item.Key, Fragmnet = new MainTabs(DataEnum.DataType.TVSchedule, new List<object>(item.Value)) });

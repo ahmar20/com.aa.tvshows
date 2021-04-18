@@ -11,6 +11,7 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.ViewPager.Widget;
+using AndroidX.ViewPager2.Widget;
 using com.aa.tvshows.Fragments;
 using com.aa.tvshows.Helper;
 using Google.Android.Material.Tabs;
@@ -20,7 +21,7 @@ namespace com.aa.tvshows
     [Activity(Label = "TV Genres", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class GenresActivity : AppCompatActivity
     {
-        ViewPager pager;
+        ViewPager2 pager;
         TabLayout tabLayout;
 
         private List<string> Genres => new List<string>() 
@@ -60,15 +61,18 @@ namespace com.aa.tvshows
 
         private void SetupTabsForGenres()
         {
-            pager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
+            pager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
             pager.OffscreenPageLimit = 3;
             tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            tabLayout.SetupWithViewPager(pager);
+            //tabLayout.SetupWithViewPager(pager);
             tabLayout.TabMode = TabLayout.ModeScrollable;
 
-            var adapter = new PageTabsAdapter(SupportFragmentManager);
+            var adapter = new PageTabsAdapter(this);
             pager.Adapter = adapter;
-            foreach(var item in Genres)
+            TabMediatorStrategy tabStrategy = new TabMediatorStrategy(adapter.Fragments);
+            TabLayoutMediator tabMediator = new TabLayoutMediator(tabLayout, pager, tabStrategy);
+            tabMediator.Attach();
+            foreach (var item in Genres)
             {
                 adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.DataType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
             }

@@ -10,27 +10,21 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
+using AndroidX.ViewPager2.Adapter;
+using Google.Android.Material.Tabs;
 using Java.Lang;
 
 namespace com.aa.tvshows.Helper
 {
-    public class PageTabsAdapter : FragmentStatePagerAdapter
+    public class PageTabsAdapter : FragmentStateAdapter
     {
-        private List<TitleFragment> Fragments { get; set; }
+        public List<TitleFragment> Fragments { get; private set; }
 
-        public PageTabsAdapter(FragmentManager manager) : base(manager, BehaviorResumeOnlyCurrentFragment) => Fragments = new List<TitleFragment>();
+        public PageTabsAdapter(FragmentActivity activity) : base(activity) => Fragments = new List<TitleFragment>();
 
-        public override int Count => Fragments == null ? 0 : Fragments.Count;
+        public override int ItemCount => Fragments == null ? 0 : Fragments.Count;
 
-        public override Fragment GetItem(int position)
-        {
-            return Fragments[position].Fragmnet;
-        }
-
-        public override ICharSequence GetPageTitleFormatted(int position)
-        {
-            return new Java.Lang.String(Fragments[position].Title);
-        }
+        public override Fragment CreateFragment(int position) => Fragments[position].Fragmnet;
 
         public bool AddTab(params TitleFragment[] fragments)
         {
@@ -75,6 +69,21 @@ namespace com.aa.tvshows.Helper
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+        }
+    }
+
+    public class TabMediatorStrategy : Java.Lang.Object, TabLayoutMediator.ITabConfigurationStrategy
+    {
+        private List<TitleFragment> Fragments { get; set; }
+
+        public TabMediatorStrategy(List<TitleFragment> fragments)
+        {
+            Fragments = fragments;
+        }
+
+        public void OnConfigureTab(TabLayout.Tab tab, int position)
+        {
+            tab.SetText(Fragments[position].Title);
         }
     }
 }

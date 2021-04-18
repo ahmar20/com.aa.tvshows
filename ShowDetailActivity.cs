@@ -7,6 +7,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Widget;
 using AndroidX.ViewPager.Widget;
+using AndroidX.ViewPager2.Widget;
 using com.aa.tvshows.Fragments;
 using com.aa.tvshows.Helper;
 using Google.Android.Material.AppBar;
@@ -17,14 +18,14 @@ using System.Linq;
 
 namespace com.aa.tvshows
 {
-	[Activity(Label = "TV Show Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
-	public class ShowDetailActivity : AppCompatActivity
-	{
-		AppBarLayout appBarLayout;
-		Toolbar detailToolbar;
-		CollapsingToolbarLayout collapseToolbar;
-		ViewPager seasonEpisodesPager;
-		TabLayout seasonsHeader;
+    [Activity(Label = "TV Show Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
+    public class ShowDetailActivity : AppCompatActivity
+    {
+        AppBarLayout appBarLayout;
+        Toolbar detailToolbar;
+        CollapsingToolbarLayout collapseToolbar;
+        ViewPager2 seasonEpisodesPager;
+        TabLayout seasonsHeader;
 
 		ContentLoadingProgressBar loadingView;
 		AppCompatImageView detailImage;
@@ -56,10 +57,10 @@ namespace com.aa.tvshows
 			collapseToolbar.TitleEnabled = true;
 			detailToolbar = FindViewById<Toolbar>(Resource.Id.image_toolbar_main_toolbar);
 
-			seasonsHeader = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-			seasonEpisodesPager = FindViewById<ViewPager>(Resource.Id.main_tabs_viewpager);
-			seasonsHeader.Visibility = ViewStates.Gone;
-			seasonEpisodesPager.Visibility = ViewStates.Gone;
+            seasonsHeader = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
+            seasonEpisodesPager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
+            seasonsHeader.Visibility = ViewStates.Gone;
+            seasonEpisodesPager.Visibility = ViewStates.Gone;
 
 			detailImage = FindViewById<AppCompatImageView>(Resource.Id.image_toolbar_main_image);
 			titleText = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_title);
@@ -113,39 +114,36 @@ namespace com.aa.tvshows
 				releaseText.Text = "Released: " + ShowData.ReleaseDate;
 				genreText.Text = ShowData.Genres;
 
-				seasonsHeader.Visibility = ViewStates.Visible;
-				seasonEpisodesPager.Visibility = ViewStates.Visible;
-				if (ShowData.Seasons != null && ShowData.Seasons.Count > 0)
-				{
-					// check latest setting here
-					if (!StorageData.GetShowLatestEpisodesFirstSetting())
-					{
-						ShowData.Seasons.Reverse();
-						ShowData.Seasons.ForEach(a => a.Episodes.Reverse());
-					}
+                seasonsHeader.Visibility = ViewStates.Visible;
+                seasonEpisodesPager.Visibility = ViewStates.Visible;
+                if (ShowData.Seasons != null && ShowData.Seasons.Count > 0)
+                {
+                    var adapter = new PageTabsAdapter(this);
+                    foreach (var season in ShowData.Seasons)
+                    {
+                        adapter.AddTab(new TitleFragment() { Fragmnet = new MainTabs(DataEnum.DataType.SeasonsEpisodes, season.Episodes.Cast<object>()), Title = season.SeasonName });
+                    }
+                    seasonsHeader.TabMode = ShowData.Seasons.Count < 5 ? TabLayout.ModeFixed : TabLayout.ModeScrollable;
+                    //seasonsHeader.SetupWithViewPager(seasonEpisodesPager);
+                    seasonEpisodesPager.OffscreenPageLimit = ShowData.Seasons.Count;
+                    seasonEpisodesPager.Adapter = adapter;
 
-					var adapter = new PageTabsAdapter(SupportFragmentManager);
-					foreach (var season in ShowData.Seasons)
-					{
-						adapter.AddTab(new TitleFragment() { Fragmnet = new MainTabs(DataEnum.DataType.SeasonsEpisodes, season.Episodes.Cast<object>()), Title = season.SeasonName });
-					}
-					seasonsHeader.TabMode = ShowData.Seasons.Count < 5 ? TabLayout.ModeFixed : TabLayout.ModeScrollable;
-					seasonsHeader.SetupWithViewPager(seasonEpisodesPager);
-					seasonEpisodesPager.OffscreenPageLimit = ShowData.Seasons.Count;
-					seasonEpisodesPager.Adapter = adapter;
-				}
-				else
-				{
-					seasonEpisodesPager.Visibility = ViewStates.Gone;
-					seasonsHeader.Visibility = ViewStates.Gone;
-					Error.Instance.ShowErrorSnack($"No episodes were found for {ShowData.Title}.", titleContainer);
-				}
-			}
-			else
-			{
-				Error.Instance.ShowErrorSnack($"TV Show could not be loaded.", titleContainer);
-			}
-		}
+                    TabMediatorStrategy tabStrategy = new TabMediatorStrategy(adapter.Fragments);
+                    TabLayoutMediator tabMediator = new TabLayoutMediator(seasonsHeader, seasonEpisodesPager, tabStrategy);
+                    tabMediator.Attach();
+                }
+                else
+                {
+                    seasonEpisodesPager.Visibility = ViewStates.Gone;
+                    seasonsHeader.Visibility = ViewStates.Gone;
+                    Error.Instance.ShowErrorSnack($"No episodes were found for {ShowData.Title}.", titleContainer);
+                }
+            }
+            else
+            {
+                Error.Instance.ShowErrorSnack($"TV Show '{ShowData.Title}' could not be loaded.", titleContainer);
+            }
+        }
 
 		private void AppLayout_OffsetChanged(object sender, AppBarLayout.OffsetChangedEventArgs e)
 		{
