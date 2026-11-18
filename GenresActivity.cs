@@ -24,7 +24,7 @@ namespace com.aa.tvshows
         ViewPager2 pager;
         TabLayout tabLayout;
 
-        protected override void OnCreate(Bundle savedInstanceState)
+        protected override async Task OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
@@ -51,6 +51,26 @@ namespace com.aa.tvshows
         {
             OnBackPressed();
             return true;
+        }
+
+        // Same D-pad paging fallback as MainActivity -- see the comment there.
+        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+        {
+            if (pager != null)
+            {
+                var itemCount = pager.Adapter?.ItemCount ?? 0;
+                if (keyCode == Keycode.DpadLeft && pager.CurrentItem > 0)
+                {
+                    pager.CurrentItem -= 1;
+                    return true;
+                }
+                if (keyCode == Keycode.DpadRight && pager.CurrentItem < itemCount - 1)
+                {
+                    pager.CurrentItem += 1;
+                    return true;
+                }
+            }
+            return base.OnKeyUp(keyCode, e);
         }
 
         private async void SetupTabsForGenres()

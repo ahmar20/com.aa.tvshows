@@ -78,13 +78,18 @@ namespace com.aa.tvshows.Fragments
             emptyView = view.FindViewById<LinearLayoutCompat>(Resource.Id.main_tab_empty_view);
             refreshView = view.FindViewById<SwipeRefreshLayout>(Resource.Id.main_tab_content_refresh);
             refreshView.SetProgressBackgroundColorSchemeResource(Resource.Color.colorPrimaryDark);
+            // the pull-down gesture itself has no D-pad/remote equivalent, so a focusable
+            // button triggers the exact same refresh logic for TV users
+            var refreshButton = view.FindViewById<AppCompatImageButton>(Resource.Id.main_tab_refresh_button);
             if (tabType == DataEnum.DataType.TVSchedule)
             {
                 refreshView.Refresh += delegate { (Activity as TVScheduleActivity).SetupScheduleData(refreshView); };
+                refreshButton.Click += delegate { (Activity as TVScheduleActivity).SetupScheduleData(refreshView); };
             }
             else
             {
                 refreshView.Refresh += (s, e) => { ReloadCurrentData(); };
+                refreshButton.Click += (s, e) => { ReloadCurrentData(); };
             }
             //AnimHelper.FadeContents(view, true, false, null);
             return view;

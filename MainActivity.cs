@@ -84,6 +84,28 @@ namespace com.aa.tvshows
             return AppView.ShowOptionsMenu(menu, this);
         }
 
+        // ViewPager2's tab paging is a touch-swipe gesture with no D-pad equivalent. This only
+        // fires when nothing in the currently focused view already consumed the key (e.g. a
+        // vertical RecyclerView row ignores left/right), so it's safe alongside normal content.
+        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+        {
+            if (viewPager != null)
+            {
+                var itemCount = viewPager.Adapter?.ItemCount ?? 0;
+                if (keyCode == Keycode.DpadLeft && viewPager.CurrentItem > 0)
+                {
+                    viewPager.CurrentItem -= 1;
+                    return true;
+                }
+                if (keyCode == Keycode.DpadRight && viewPager.CurrentItem < itemCount - 1)
+                {
+                    viewPager.CurrentItem += 1;
+                    return true;
+                }
+            }
+            return base.OnKeyUp(keyCode, e);
+        }
+
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
             return AppView.OnOptionsItemSelected(item, this);

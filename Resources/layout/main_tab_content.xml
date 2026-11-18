@@ -24,4 +24,19 @@
         android:textAlignment="center"
         android:visibility="gone"
         android:layout_centerInParent="true"/>
+    <!-- SwipeRefreshLayout's pull-down gesture has no remote-control equivalent, so this
+         gives D-pad/TV users a focusable way to trigger the same refresh. -->
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/main_tab_refresh_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="8dp"
+        android:padding="8dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/refresh"
+        android:src="@drawable/baseline_refresh_24" />
 </RelativeLayout>
