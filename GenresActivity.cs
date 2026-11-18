@@ -24,12 +24,6 @@ namespace com.aa.tvshows
         ViewPager2 pager;
         TabLayout tabLayout;
 
-        private List<string> Genres => new List<string>() 
-        {
-            "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Game-Show", "History", "Horror",
-            "Human Drama", "Japanese", "Music", "Mystery", "Reality-TV", "Romance", "School", "Sci-Fi", "Sport", "Talk-Show", "Thriller", "War", "Western"
-        };
-
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -59,7 +53,7 @@ namespace com.aa.tvshows
             return true;
         }
 
-        private void SetupTabsForGenres()
+        private async void SetupTabsForGenres()
         {
             pager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
             pager.OffscreenPageLimit = 3;
@@ -72,9 +66,18 @@ namespace com.aa.tvshows
             TabMediatorStrategy tabStrategy = new TabMediatorStrategy(adapter.Fragments);
             TabLayoutMediator tabMediator = new TabLayoutMediator(tabLayout, pager, tabStrategy);
             tabMediator.Attach();
-            foreach (var item in Genres)
+
+            // genre list now comes straight from TMDB instead of a hardcoded, site-specific list
+            if (await TMDbClient.GetGenreNames() is List<string> genres && genres.Count > 0)
             {
-                adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.DataType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
+                foreach (var item in genres)
+                {
+                    adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.DataType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
+                }
+            }
+            else
+            {
+                Error.Instance.ShowErrorTip("Could not load genres from TMDB.", this);
             }
         }
     }

@@ -97,7 +97,7 @@ namespace com.aa.tvshows
 		private async void LoadData(string link, SeriesDetails _showData = default)
 		{
 			loadingView.Visibility = ViewStates.Visible;
-			ShowData = _showData is null ? await WebData.GetDetailsForTVShowSeries(link) : _showData;
+			ShowData = _showData is null ? await TMDbClient.GetDetailsForTVShowSeries(link) : _showData;
 			loadingView.Visibility = ViewStates.Gone;
 			if (ShowData != null)
 			{

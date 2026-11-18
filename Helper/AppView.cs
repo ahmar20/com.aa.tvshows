@@ -189,19 +189,19 @@ namespace com.aa.tvshows.Helper
                 Error.Instance.ShowErrorTip("Link is empty.", context);
                 return;
             }
-            if (pageLink.Contains("/serie/"))
-            {
-                // tv show detail
-                var intent = new Android.Content.Intent(context, typeof(ShowDetailActivity));
-                intent.PutExtra("itemLink", pageLink);
-                context.StartActivity(intent);
-            }
-            else
+            if (TMDbClient.IsEpisodeLink(pageLink))
             {
                 // tv episode detail
                 var intent = new Android.Content.Intent(context, typeof(EpisodeDetailActivity));
                 intent.PutExtra("itemLink", pageLink);
                 intent.PutExtra("canGoBackToSeriesHome", canGoBackToSeriesHome);
+                context.StartActivity(intent);
+            }
+            else
+            {
+                // tv show detail
+                var intent = new Android.Content.Intent(context, typeof(ShowDetailActivity));
+                intent.PutExtra("itemLink", pageLink);
                 context.StartActivity(intent);
             }
         }

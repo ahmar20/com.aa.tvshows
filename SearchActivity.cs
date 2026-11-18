@@ -68,7 +68,7 @@ namespace com.aa.tvshows
                 {
                     emptyView.Visibility = ViewStates.Gone;
                     loadingView.Visibility = ViewStates.Visible;
-                    var suggestions = await WebData.GetTVShowSearchSuggestions(query);
+                    var suggestions = await TMDbClient.GetTVShowSearchSuggestions(query);
                     loadingView.Visibility = ViewStates.Gone;
                     var adapter = new EpisodesAdapter<SearchSuggestionsData>(suggestions);
                     adapter.ItemClick += (s, e) =>
@@ -98,7 +98,7 @@ namespace com.aa.tvshows
 
                     loadingView.Visibility = ViewStates.Visible;
                     emptyView.Visibility = ViewStates.Gone;
-                    var searchResults = await WebData.GetTVShowSearchResults(query);
+                    var searchResults = await TMDbClient.GetTVShowSearchResults(query);
                     loadingView.Visibility = ViewStates.Gone;
 
                     var adapter = new EpisodesAdapter<SearchList>(searchResults);
@@ -116,7 +116,7 @@ namespace com.aa.tvshows
                             if (item.NextPage > 0)
                             {
                                 loadingView.Visibility = ViewStates.Visible;
-                                var newItems = await WebData.GetTVShowSearchResults(query, item.NextPage).ConfigureAwait(true);
+                                var newItems = await TMDbClient.GetTVShowSearchResults(query, item.NextPage).ConfigureAwait(true);
                                 if (newItems != null) adapter.AddItem(newItems.ToArray());
                                 loadingView.Visibility = ViewStates.Gone;
                             }

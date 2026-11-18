@@ -80,7 +80,7 @@ namespace com.aa.tvshows
             emptyView.Visibility = ViewStates.Visible;
             status.Text = "Loading...";
             emptyView.AddView(status);
-            var data = await WebData.GetTVSchedule().ConfigureAwait(true);
+            var data = await TMDbClient.GetTVSchedule().ConfigureAwait(true);
             if (data != null && data.Count > 0)
             {
                 AppView.SetEmptyView(emptyView, false);

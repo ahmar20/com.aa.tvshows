@@ -18,8 +18,11 @@ using System.Collections.Generic;
 
 namespace com.aa.tvshows
 {
-    [Activity(Theme = "@style/AppTheme", MainLauncher = true, 
+    [Activity(Theme = "@style/AppTheme", MainLauncher = true,
         ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
+    // Lets Android TV's Leanback home screen surface this activity as the app's entry point.
+    // MainLauncher = true above still covers the normal phone/tablet launcher icon.
+    [IntentFilter(new[] { Android.Content.Intent.ActionMain }, Categories = new[] { "android.intent.category.LEANBACK_LAUNCHER" })]
     public class MainActivity : AppCompatActivity
     {
         ViewPager2 viewPager;
@@ -46,6 +49,8 @@ namespace com.aa.tvshows
             SetupTabs();
             //SetupSearchView();
             AppCenter.Start("94d2c36e-82e2-4561-91d6-85544e9cbdb8", typeof(Analytics), typeof(Crashes));
+        
+            TMDbClient.ApiKey = Secrets.TMDB_Api_Key;
         }
 
         /*protected override void OnSaveInstanceState(Bundle outState)

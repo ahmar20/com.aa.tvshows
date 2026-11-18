@@ -111,7 +111,7 @@ namespace com.aa.tvshows.Fragments
                 case DataEnum.DataType.PopularShows:
                     if (recyclerView.GetAdapter() is null)
                     {
-                        if (await WebData.GetPopularShowsForMainView().ConfigureAwait(true) is List<ShowList> newShows)
+                        if (await TMDbClient.GetPopularShowsForMainView().ConfigureAwait(true) is List<ShowList> newShows)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<ShowList>(newShows, emptyView);
@@ -127,7 +127,7 @@ namespace com.aa.tvshows.Fragments
                                 AppView.ShowLoadingView(refreshView, true);
                                 ShowList lastItem = adapter.GetItem(adapter.ItemCount - 1);
                                 int nextPageNumber = lastItem.NextPageNumber;
-                                var newItems = await WebData.GetPopularShowsForMainView(nextPageNumber);
+                                var newItems = await TMDbClient.GetPopularShowsForMainView(nextPageNumber);
                                 if (newItems != null)
                                 {
                                     AppView.ShowLoadingView(refreshView, false);
@@ -160,7 +160,7 @@ namespace com.aa.tvshows.Fragments
                 case DataEnum.DataType.NewEpisodes:
                     if (recyclerView.GetAdapter() is null)
                     {
-                        if (await WebData.GetEpisodesForMainView(tabType).ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
+                        if (await TMDbClient.GetEpisodesForMainView(tabType).ConfigureAwait(true) is List<EpisodeList> popularEpisodes)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             var adapter = new EpisodesAdapter<EpisodeList>(popularEpisodes, emptyView);
@@ -176,7 +176,7 @@ namespace com.aa.tvshows.Fragments
                                 AppView.ShowLoadingView(refreshView, true);
                                 EpisodeList lastItem = adapter.GetItem(adapter.ItemCount - 1);
                                 int nextPageNumber = lastItem.NextPageNumber;
-                                var newItems = await WebData.GetEpisodesForMainView(tabType, nextPageNumber);
+                                var newItems = await TMDbClient.GetEpisodesForMainView(tabType, nextPageNumber);
                                 if (newItems != null)
                                 {
                                     AppView.ShowLoadingView(refreshView, false);
@@ -239,7 +239,7 @@ namespace com.aa.tvshows.Fragments
                     if (genresType == DataEnum.GenreDataType.Shows)
                     {
                         if (!(recyclerView.GetAdapter() is null)) recyclerView.SetAdapter(null);
-                        if (await WebData.GetGenresShows(genre, genrePage++, year).ConfigureAwait(true) is List<GenresShow> genresShows)
+                        if (await TMDbClient.GetGenresShows(genre, genrePage++, year).ConfigureAwait(true) is List<GenresShow> genresShows)
                         {
                             AppView.SetEmptyView(emptyView, false, false, delegate { ReloadCurrentData(); });
                             genresAdapter = new EpisodesAdapter<GenresShow>(genresShows);
@@ -247,7 +247,7 @@ namespace com.aa.tvshows.Fragments
                             scrollListener.LoadMoreTask += async delegate
                             {
                                 refreshView.Refreshing = true;
-                                var items = await WebData.GetGenresShows(genre, genrePage++, year);
+                                var items = await TMDbClient.GetGenresShows(genre, genrePage++, year);
                                 if (items != null)
                                 {
                                     genresAdapter.AddItem(items.ToArray());

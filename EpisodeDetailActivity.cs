@@ -70,7 +70,7 @@ namespace com.aa.tvshows
         private async void LoadEpisodeData(string link)
         {
             loadingView.Visibility = Android.Views.ViewStates.Visible;
-            epData = await WebData.GetDetailsForTVShowEpisode(link);
+            epData = await TMDbClient.GetDetailsForTVShowEpisode(link);
             loadingView.Visibility = Android.Views.ViewStates.Gone;
             if (epData != null)
             {

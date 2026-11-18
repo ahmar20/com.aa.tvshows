@@ -94,7 +94,7 @@ namespace com.aa.tvshows.Helper
                         var showItem = Items[position] as ShowList;
                         epHolder.Title.Text = showItem.Title;
                         epHolder.Description.Text = showItem.EpisodeDetail;
-                        AppView.LoadImageIntoView(string.IsNullOrEmpty(showItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(showItem.PageLink) : showItem.ImageLink, epHolder.Image);
+                        AppView.LoadImageIntoView(showItem.ImageLink, epHolder.Image);
                         break;
 
                     case DataEnum.DataType.UserFavorites:
@@ -110,14 +110,14 @@ namespace com.aa.tvshows.Helper
                             string.Format("Next Episode: {0} {1}", favItem.NextEpisode?.EpisodeFullNameNumber, favItem.NextEpisode.EpisodeAirDate);
                         epHolder.Description.Text = favItem.Description;
                         epHolder.FavoritesBtn.Click += delegate { ShowFavoritesMenu(epHolder, position); };
-                        AppView.LoadImageIntoView(string.IsNullOrEmpty(favItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(favItem.SeriesLink) : favItem.ImageLink, epHolder.Image);
+                        AppView.LoadImageIntoView(favItem.ImageLink, epHolder.Image);
                         break;
 
                     case DataEnum.DataType.TVSchedule:
                         var scheduleItem = Items[position] as CalenderScheduleList;
                         epHolder.Title.Text = scheduleItem.Title;
                         epHolder.Description.Text = scheduleItem.EpisodeNo + "\n" + scheduleItem.EpisodeName;
-                        AppView.LoadImageIntoView(string.IsNullOrEmpty(scheduleItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(scheduleItem.PageLink) : scheduleItem.ImageLink, epHolder.Image);
+                        AppView.LoadImageIntoView(scheduleItem.ImageLink, epHolder.Image);
                         break;
 
                     case DataEnum.DataType.Genres:
@@ -135,7 +135,7 @@ namespace com.aa.tvshows.Helper
                         var searchItem = Items[position] as SearchList;
                         epHolder.Description.Text = searchItem.EpisodeDetail + "\n" + searchItem.EpisodeNo;
                         epHolder.Title.Text = searchItem.Title;
-                        AppView.LoadImageIntoView(string.IsNullOrEmpty(searchItem.ImageLink) ? await WebData.GetTVShowCoverImageUrl(searchItem.PageLink) : searchItem.ImageLink, epHolder.Image);
+                        AppView.LoadImageIntoView(searchItem.ImageLink, epHolder.Image);
                         break;
 
                     case DataEnum.DataType.SeasonsEpisodes:
@@ -214,7 +214,7 @@ namespace com.aa.tvshows.Helper
                 if (e.Item.ItemId == 1)         // update
                 {
                     holder.ProgressBar.Visibility = ViewStates.Visible;
-                    if (await WebData.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
+                    if (await TMDbClient.GetDetailsForTVShowSeries(favItem.SeriesLink) is SeriesDetails updatedFavItem)
                     {
                         if (await StorageData.SaveSeriesToFavoritesFile(updatedFavItem))
                         {

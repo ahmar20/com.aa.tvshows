@@ -39,12 +39,14 @@ namespace com.aa.tvshows.Helper
                 {
                     if (series.NextEpisode != null)
                     {
-                        if (await WebData.GetDetailsForTVShowSeries(series.SeriesLink) is SeriesDetails updatedSeries)
+                        if (await TMDbClient.GetDetailsForTVShowSeries(series.SeriesLink) is SeriesDetails updatedSeries)
                         {
                             if (await StorageData.SaveSeriesToFavoritesFile(updatedSeries))
                             {
-                                if (updatedSeries.NextEpisode != null && updatedSeries.NextEpisode.EpisodeStreamLinks != null &&
-                                    updatedSeries.NextEpisode.EpisodeStreamLinks.Count > 0)
+                                // TMDB is a metadata source only, so "new episode" is detected by a
+                                // changed next-episode link rather than by any streaming links being present.
+                                if (updatedSeries.NextEpisode != null &&
+                                    updatedSeries.NextEpisode.EpisodeLink != series.NextEpisode.EpisodeLink)
                                 {
                                     await CreateNotificationChannel();
 
