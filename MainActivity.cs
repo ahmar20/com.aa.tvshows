@@ -20,8 +20,6 @@ namespace com.aa.tvshows
 {
     [Activity(Theme = "@style/AppTheme", MainLauncher = true,
         ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
-    // Lets Android TV's Leanback home screen surface this activity as the app's entry point.
-    // MainLauncher = true above still covers the normal phone/tablet launcher icon.
     [IntentFilter(new[] { Android.Content.Intent.ActionMain }, Categories = new[] { "android.intent.category.LEANBACK_LAUNCHER" })]
     public class MainActivity : AppCompatActivity
     {

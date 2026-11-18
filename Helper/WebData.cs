@@ -197,7 +197,7 @@ namespace com.aa.tvshows.Helper
             if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault() is HtmlNode scriptNode)
             {
                 var script = scriptNode.InnerText.Replace("eval", string.Empty);
-                var value = new Jint.Engine().Execute(script).GetCompletionValue().ToString();
+                var value = new Jint.Engine().Evaluate(script).ToString();
 
             }
             // try direct download
@@ -310,7 +310,7 @@ namespace com.aa.tvshows.Helper
                     {
                         if (responseDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("eval(function(p,a,c,k,e,d)")).FirstOrDefault() is HtmlNode videoScript)
                         {
-                            var scriptStr = new Jint.Engine().Execute(videoScript.InnerText.Replace("eval", string.Empty)).GetCompletionValue().ToString();
+                            var scriptStr = new Jint.Engine().Evaluate(videoScript.InnerText.Replace("eval", string.Empty)).ToString();
                             if (Regex.Match(scriptStr, CloudVideoSourcePattern) is Match vidUrlMatch)
                             {
                                 var videoUrl = vidUrlMatch.Value.Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1");
@@ -343,7 +343,7 @@ namespace com.aa.tvshows.Helper
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
             {
                 var inner = script.InnerText.Replace("eval", string.Empty);
-                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue();
+                var javaEvalute = new Jint.Engine().Evaluate(inner);
             }
             return null;
         }
@@ -359,7 +359,7 @@ namespace com.aa.tvshows.Helper
             {
                 var inner = script.InnerText.Replace("eval", string.Empty);
 
-                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
+                var javaEvalute = new Jint.Engine().Evaluate(inner).ToString();
                 var match = Regex.Match(javaEvalute, GoUnlimitedSourcePattern);
                 if (match.Success && match.Groups.Count > 0)
                 {
@@ -465,7 +465,7 @@ namespace com.aa.tvshows.Helper
             if (doc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("MDCore.ref", StringComparison.InvariantCulture))
                 .FirstOrDefault() is HtmlNode script)
             {
-                var playerScript = new Jint.Engine().Execute(script.InnerText.Replace("eval", string.Empty).Replace("MDCore.", "var ")).GetCompletionValue().ToString();
+                var playerScript = new Jint.Engine().Evaluate(script.InnerText.Replace("eval", string.Empty).Replace("MDCore.", "var ")).ToString();
                 var scriptEntries = playerScript.Split(";", StringSplitOptions.RemoveEmptyEntries);
                 if (scriptEntries.Where(s => s.Contains("jpg")).FirstOrDefault() is string poster
                     && scriptEntries.Where(s => s.Contains("mp4?")).FirstOrDefault() is string file)
@@ -532,7 +532,7 @@ namespace com.aa.tvshows.Helper
                             if (responseDoc.DocumentNode.Descendants("script").Where(a => a.InnerText.Contains("(p,a,c,k,e,d)")).FirstOrDefault()
                                 is HtmlNode script)
                             {
-                                playerDataScript = new Jint.Engine().Execute(script.InnerText.Replace("eval", string.Empty)).GetCompletionValue().ToString();
+                                playerDataScript = new Jint.Engine().Evaluate(script.InnerText.Replace("eval", string.Empty)).ToString();
                             }
                         }
                         else
@@ -587,7 +587,7 @@ namespace com.aa.tvshows.Helper
                 && a.GetAttributeValue("type", string.Empty) == "text/javascript").FirstOrDefault() is HtmlNode script)
             {
                 var inner = script.InnerText.Replace("eval", string.Empty);
-                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
+                var javaEvalute = new Jint.Engine().Evaluate(inner).ToString();
                 var match = Regex.Match(javaEvalute, ProstreamSourcePattern);
                 if (match.Success && match.Groups.Count > 1)
                 {
@@ -672,7 +672,7 @@ namespace com.aa.tvshows.Helper
                 .Where(a => a.InnerText.Contains("function(p,a,c,k,e,d)")).FirstOrDefault() is HtmlNode script)
             {
                 var inner = script.InnerText.Replace("eval", string.Empty);
-                var javaEvalute = new Jint.Engine().Execute(inner).GetCompletionValue().ToString();
+                var javaEvalute = new Jint.Engine().Evaluate(inner).ToString();
                 var match = Regex.Match(javaEvalute, VidiaSourcePattern);
                 if (match.Success)
                 {
