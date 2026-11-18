@@ -1,33 +1,10 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Android.App;
+﻿using Android.App;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("com.aa.tvshows")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("com.aa.tvshows")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-[assembly: ComVisible(false)]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+// SDK-style projects auto-generate AssemblyTitle/Version/etc. from the csproj
+// properties (AssemblyName, ApplicationDisplayVersion, ...), so those
+// attributes that used to live here have been removed to avoid a duplicate-
+// attribute build error. Only assembly-level attributes with no MSBuild
+// property equivalent stay in this file.
 
 // Android TV support: neither feature is required, so the app still installs
 // normally on phones/tablets, but it's no longer filtered out of the Play Store
