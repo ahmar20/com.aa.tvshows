@@ -40,7 +40,7 @@ namespace com.aa.tvshows
         List<StreamingUri> mediaStreams;
         bool isSystemUIVisible = true;
         
-        IDataSourceFactory mediaSourceFactory;
+        IDataSource.IFactory mediaSourceFactory;
         
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -131,15 +131,15 @@ namespace com.aa.tvshows
             {
                 source = new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(mediaSourceFactory), mediaSourceFactory)
                         .SetManifestParser(new FilteringManifestParser(new DashManifestParser(), new List<StreamKey>()))
-                        .CreateMediaSource(uri);
+                        .CreateMediaSource(MediaItem.FromUri(uri));
             }
             if (link.StreamingUrl.OriginalString.Contains(".m3u8"))
             {
-                source = new HlsMediaSource.Factory(mediaSourceFactory).CreateMediaSource(uri);
+                source = new HlsMediaSource.Factory(mediaSourceFactory).CreateMediaSource(MediaItem.FromUri(uri));
             }
             if (link.StreamingUrl.OriginalString.Contains(".mp4"))
             {
-                source = new ProgressiveMediaSource.Factory(mediaSourceFactory).CreateMediaSource(uri);
+                source = new ProgressiveMediaSource.Factory(mediaSourceFactory).CreateMediaSource(MediaItem.FromUri(uri));
             }
             return source;
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -261,7 +260,7 @@ namespace com.aa.tvshows.Helper
                     var uri = new StreamingUri()
                     {
                         StreamingQuality = "HD",
-                        StreamingUrl = match.Groups.ElementAtOrDefault(1) != null ? new Uri(match.Groups[1].Value
+                        StreamingUrl = match.Groups.ElementAtOrDefault<Group>(1) != null ? new Uri(match.Groups[1].Value
                         .Replace(",", string.Empty).Replace(".urlset/master", "/index-v1-a1")) : null
                     };
                     if (Regex.Match(script.InnerText.Trim(), ClipWatchingPosterPattern) is Match posterMatch)
@@ -564,7 +563,7 @@ namespace com.aa.tvshows.Helper
                                     }
                                     items.Add(new StreamingUri()
                                     {
-                                        PosterUrl = match.Groups.LastOrDefault().Value,
+                                        PosterUrl = match.Groups.LastOrDefault<Group>().Value,
                                         StreamingQuality = "HD",
                                         StreamingUrl = new Uri(match.Groups[i].Value)
                                     });
