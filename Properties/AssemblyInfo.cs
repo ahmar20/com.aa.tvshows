@@ -28,3 +28,9 @@ using Android.App;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+// Android TV support: neither feature is required, so the app still installs
+// normally on phones/tablets, but it's no longer filtered out of the Play Store
+// listing on TV devices that have no touchscreen.
+[assembly: UsesFeature("android.software.leanback", Required = false)]
+[assembly: UsesFeature("android.hardware.touchscreen", Required = false)]

@@ -118,6 +118,7 @@
     <Compile Include="Helper\PageTabsAdapter.cs" />
     <Compile Include="Helper\AppView.cs" />
     <Compile Include="Helper\WebData.cs" />
+    <Compile Include="Helper\TMDbClient.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PlayerActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
@@ -305,6 +306,7 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon.png" />
+    <AndroidResource Include="Resources\drawable\tv_banner.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable-hdpi\baseline_search_black_18.png" />

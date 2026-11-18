@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    PLACEHOLDER Android TV banner (required size: 320x180dp).
+    This is just a flat-color rectangle so the app builds and shows *something*
+    on the Leanback home screen -- replace with a real 320x180 PNG banner
+    (e.g. Resources/drawable-xhdpi/tv_banner.png) with your actual app artwork
+    before shipping.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/holo_blue_dark" />
+    <size
+        android:width="320dp"
+        android:height="180dp" />
+</shape>

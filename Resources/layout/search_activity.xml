@@ -20,6 +20,7 @@
             android:maxLines="1"
             android:padding="@dimen/genres_list_year_margin"/>
         <androidx.recyclerview.widget.RecyclerView
+            android:descendantFocusability="afterDescendants"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/search_list"
