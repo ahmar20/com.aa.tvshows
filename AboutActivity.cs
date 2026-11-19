@@ -25,6 +25,7 @@ namespace com.aa.tvshows
 
             // Create your application here
             SetContentView(Resource.Layout.about_app);
+            WindowInsetsHelper.Apply(FindViewById<View>(Resource.Id.screen_root), top: true, bottom: true, sides: true);
             AppView.SetActionBarForActivity(FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.main_toolbar), this);
             ShowAboutText();
         }

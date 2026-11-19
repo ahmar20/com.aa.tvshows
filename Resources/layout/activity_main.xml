@@ -1,15 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<!-- PHONE shell: content on top, bottom tab bar. layout-television/ swaps the bar for a side rail
+     using the very same ids, so MainActivity has one code path. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorWindow">
 
-    <include
-        layout="@layout/main_toolbar"/>
+    <FrameLayout
+        android:id="@+id/main_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-    <include
-        layout="@layout/main_tabs"/>
+    <LinearLayout
+        android:id="@+id/main_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/colorNav"
+        android:elevation="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <TextView
+            android:id="@+id/nav_home"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:minHeight="52dp"
+            android:drawablePadding="2dp"
+            android:drawableTop="@drawable/ic_home"
+            android:text="@string/nav_home" />
+        <TextView
+            android:id="@+id/nav_search"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:minHeight="52dp"
+            android:drawablePadding="2dp"
+            android:drawableTop="@drawable/baseline_search_24"
+            android:text="@string/nav_search" />
+        <TextView
+            android:id="@+id/nav_schedule"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:minHeight="52dp"
+            android:drawablePadding="2dp"
+            android:drawableTop="@drawable/baseline_date_range_24"
+            android:text="@string/nav_schedule" />
+        <TextView
+            android:id="@+id/nav_list"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:minHeight="52dp"
+            android:drawablePadding="2dp"
+            android:drawableTop="@drawable/baseline_favorite_24"
+            android:text="@string/nav_list" />
+    </LinearLayout>
+</LinearLayout>

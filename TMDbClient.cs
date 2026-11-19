@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
+using com.aa.tvshows.Models;
 using Newtonsoft.Json.Linq;
 
 namespace com.aa.tvshows.Helper
@@ -23,7 +24,10 @@ namespace com.aa.tvshows.Helper
         const string ApiBase = "https://api.themoviedb.org/3";
         const string ImageBase = "https://image.tmdb.org/t/p/";
         const string PosterSize = "w500";
-        const string StillSize = "w780";
+        // TMDB only serves stills in w92 / w185 / w300 / original
+        const string StillSize = "w300";
+        const string StillLargeSize = "original";
+        const string BackdropLargeSize = "w1280";
         const double RequestTimeoutSeconds = 15;
 
         public const string LinkScheme = "tmdb://tv/";
@@ -31,7 +35,24 @@ namespace com.aa.tvshows.Helper
         static HttpClient _client;
         static HttpClient Client => _client ??= new HttpClient();
 
-        static Dictionary<int, string> _genreCache;
+        static Task<Dictionary<int, string>> _genreTask;
+        static string _imageBase;
+
+        /// <summary>
+        /// Builds a full TMDB image URL. The base URL comes from the daily-refreshed
+        /// /configuration cache (MetadataCache) once it has been populated, and falls back
+        /// to the well-known default until then.
+        /// </summary>
+        public static string ImageUrl(string path, string size)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            if (_imageBase == null)
+            {
+                var cached = MetadataCache.GetCachedConfiguration(Application.Context)?.Images?.SecureBaseUrl;
+                _imageBase = string.IsNullOrEmpty(cached) ? ImageBase : cached;
+            }
+            return _imageBase + size + path;
+        }
 
         private static async Task<JObject> GetJsonAsync(string path, Dictionary<string, string> query = null)
         {
@@ -73,7 +94,7 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        static string Image(string path, string size) => string.IsNullOrEmpty(path) ? null : ImageBase + size + path;
+        static string Image(string path, string size) => ImageUrl(path, size);
 
         static string YearOf(string date) => string.IsNullOrEmpty(date) || date.Length < 4 ? string.Empty : date.Substring(0, 4);
 
@@ -169,13 +190,25 @@ namespace com.aa.tvshows.Helper
 
         // ---------------- genres ----------------
 
-        private static async Task<Dictionary<int, string>> GetGenreMap()
+        // One shared task so the many parallel home-screen requests don't each fetch the genre list.
+        private static Task<Dictionary<int, string>> GetGenreMap() => _genreTask ??= LoadGenreMapAsync();
+
+        private static async Task<Dictionary<int, string>> LoadGenreMapAsync()
         {
-            if (_genreCache != null) return _genreCache;
-            var json = await GetJsonAsync("/genre/tv/list");
-            if (json?["genres"] == null) return new Dictionary<int, string>();
-            _genreCache = json["genres"].ToDictionary(g => g.Value<int>("id"), g => g.Value<string>("name"));
-            return _genreCache;
+            // the daily MetadataCache refresh already keeps the genre list on disk
+            var persisted = MetadataCache.GetCachedGenres(Application.Context);
+            if (persisted != null && persisted.Count > 0)
+            {
+                return persisted.GroupBy(g => g.Id).ToDictionary(g => g.Key, g => g.First().Name);
+            }
+
+            var json = await GetJsonAsync("/genre/tv/list").ConfigureAwait(false);
+            if (json?["genres"] == null)
+            {
+                _genreTask = null; // let the next caller retry
+                return new Dictionary<int, string>();
+            }
+            return json["genres"].ToDictionary(g => g.Value<int>("id"), g => g.Value<string>("name"));
         }
 
         /// <summary>Replaces the hardcoded genre list in GenresActivity with TMDB's own TV genre list.</summary>
@@ -256,7 +289,8 @@ namespace com.aa.tvshows.Helper
 
         private static ShowEpisodeDetails MapEpisodeStub(JToken ep, int showId)
         {
-            if (ep == null) return null;
+            // TMDB sends an explicit JSON null for shows with no last/next episode (every ended show)
+            if (ep == null || ep.Type == JTokenType.Null) return null;
             var season = ep.Value<int>("season_number");
             var episode = ep.Value<int>("episode_number");
             var airDate = ep.Value<string>("air_date");
@@ -272,6 +306,8 @@ namespace com.aa.tvshows.Helper
         {
             var episode = ep.Value<int>("episode_number");
             var airDate = ep.Value<string>("air_date");
+            var runtime = ep.Value<int?>("runtime") ?? 0;
+            var stillPath = ep.Value<string>("still_path");
             return new ShowEpisodeDetails
             {
                 EpisodeShowTitle = showTitle,
@@ -279,30 +315,43 @@ namespace com.aa.tvshows.Helper
                 EpisodeLink = EpisodeLink(showId, season, episode),
                 EpisodeFullNameNumber = ep.Value<string>("name"),
                 EpisodeNumber = $"S{season:00} - E{episode:00}",
+                EpisodeIndex = episode,
                 EpisodeAirDate = string.IsNullOrEmpty(airDate) ? "Unknown" : airDate,
-                EpisodeSummary = "Summary: " + (ep.Value<string>("overview") ?? string.Empty),
-                EpisodeImage = Image(ep.Value<string>("still_path"), StillSize),
+                EpisodeSummary = ep.Value<string>("overview") ?? string.Empty,
+                EpisodeRuntime = runtime > 0 ? $"{runtime}m" : string.Empty,
+                EpisodeImage = Image(stillPath, StillSize),
+                EpisodeImageLarge = Image(stillPath, StillLargeSize),
                 // TMDB is a metadata source only -- it has no streaming links to offer here.
                 IsEpisodeWatchable = false,
                 EpisodeStreamLinks = null
             };
         }
 
-        public static async Task<SeriesDetails> GetDetailsForTVShowSeries(string link)
+        /// <summary>
+        /// Loads a show. With <paramref name="includeEpisodes"/> false only the show-level data and the
+        /// season list are fetched (one request) and each season's episodes are left null; use
+        /// <see cref="GetSeasonEpisodes"/> to fill a season in when it is opened. Saving to My List and
+        /// the favorites refresh still ask for everything (the default).
+        /// </summary>
+        public static async Task<SeriesDetails> GetDetailsForTVShowSeries(string link, bool includeEpisodes = true)
         {
             if (!TryParseShowLink(link, out int id)) return null;
             var json = await GetJsonAsync($"/tv/{id}");
             if (json == null) return null;
 
             var genreNames = json["genres"]?.Select(g => g.Value<string>("name"));
+            var rating = json.Value<double?>("vote_average") ?? 0;
             var details = new SeriesDetails
             {
                 Title = json.Value<string>("name"),
                 ImageLink = Image(json.Value<string>("poster_path"), PosterSize),
+                BackdropLink = Image(json.Value<string>("backdrop_path"), BackdropLargeSize),
                 SeriesLink = link,
                 Description = json.Value<string>("overview"),
                 ReleaseDate = json.Value<string>("first_air_date"),
                 Genres = genreNames != null ? string.Join(", ", genreNames) : string.Empty,
+                Rating = rating > 0 ? rating.ToString("0.0", CultureInfo.InvariantCulture) : string.Empty,
+                Status = json.Value<string>("status"),
                 LastEpisode = MapEpisodeStub(json["last_episode_to_air"], id),
                 NextEpisode = MapEpisodeStub(json["next_episode_to_air"], id),
                 Seasons = new List<SeasonData>()
@@ -310,38 +359,61 @@ namespace com.aa.tvshows.Helper
 
             if (json["seasons"] != null)
             {
-                foreach (var season in json["seasons"])
+                // "Specials" (season 0) goes last so Season 1 is the first thing people see
+                foreach (var season in json["seasons"].OrderBy(s => s.Value<int>("season_number") == 0 ? 1 : 0)
+                                                      .ThenBy(s => s.Value<int>("season_number")))
                 {
                     var seasonNumber = season.Value<int>("season_number");
-                    var seasonJson = await GetJsonAsync($"/tv/{id}/season/{seasonNumber}");
-                    var episodes = seasonJson?["episodes"]?
-                        .Select(e => MapEpisode(e, id, seasonNumber, details.Title))
-                        .ToList() ?? new List<ShowEpisodeDetails>();
-
                     details.Seasons.Add(new SeasonData
                     {
+                        SeasonNumber = seasonNumber,
                         SeasonName = season.Value<string>("name") ?? $"Season {seasonNumber}",
-                        Episodes = episodes
+                        EpisodeCount = season.Value<int?>("episode_count") ?? 0,
+                        Episodes = null
                     });
+                }
+
+                if (includeEpisodes)
+                {
+                    // all seasons in parallel instead of one request after the other
+                    await Task.WhenAll(details.Seasons.Select(async s =>
+                    {
+                        s.Episodes = await GetSeasonEpisodes(id, s.SeasonNumber, details.Title).ConfigureAwait(false)
+                                     ?? new List<ShowEpisodeDetails>();
+                    })).ConfigureAwait(false);
                 }
             }
 
             return details;
         }
 
+        /// <summary>The episodes of one season, or null if the request failed.</summary>
+        public static async Task<List<ShowEpisodeDetails>> GetSeasonEpisodes(int showId, int seasonNumber, string showTitle)
+        {
+            var seasonJson = await GetJsonAsync($"/tv/{showId}/season/{seasonNumber}").ConfigureAwait(false);
+            if (seasonJson?["episodes"] == null) return null;
+            return seasonJson["episodes"].Select(e => MapEpisode(e, showId, seasonNumber, showTitle)).ToList();
+        }
+
         public static async Task<ShowEpisodeDetails> GetDetailsForTVShowEpisode(string link)
         {
             if (!TryParseEpisodeLink(link, out int id, out int season, out int episode)) return null;
 
-            var showJson = await GetJsonAsync($"/tv/{id}");
-            var episodeJson = await GetJsonAsync($"/tv/{id}/season/{season}/episode/{episode}");
+            var showTask = GetJsonAsync($"/tv/{id}");
+            var episodeTask = GetJsonAsync($"/tv/{id}/season/{season}/episode/{episode}");
+            await Task.WhenAll(showTask, episodeTask);
+            var showJson = showTask.Result;
+            var episodeJson = episodeTask.Result;
             if (showJson == null || episodeJson == null) return null;
 
             var mapped = MapEpisode(episodeJson, id, season, showJson.Value<string>("name"));
-            mapped.EpisodeFullNameNumber = $"{episodeJson.Value<string>("name")} (Season {season} - Episode {episode})";
+            mapped.EpisodeFullNameNumber = episodeJson.Value<string>("name");
             if (string.IsNullOrEmpty(mapped.EpisodeImage))
             {
-                mapped.EpisodeImage = Image(showJson.Value<string>("poster_path"), PosterSize);
+                // unaired episodes have no still yet -- fall back to the show's own artwork
+                mapped.EpisodeImage = Image(showJson.Value<string>("backdrop_path"), "w780")
+                                      ?? Image(showJson.Value<string>("poster_path"), PosterSize);
+                mapped.EpisodeImageLarge = Image(showJson.Value<string>("backdrop_path"), BackdropLargeSize) ?? mapped.EpisodeImage;
             }
             return mapped;
         }
@@ -349,53 +421,176 @@ namespace com.aa.tvshows.Helper
         // ---------------- schedule ----------------
 
         /// <summary>Approximates the old site-scraped TV schedule using TMDB's "on the air" list,
-        /// grouped by each show's next episode air date. Scans a few pages of on_the_air shows;
-        /// increase pagesToScan for a fuller schedule at the cost of more requests.</summary>
-        public static async Task<Dictionary<string, List<CalenderScheduleList>>> GetTVSchedule(int pagesToScan = 2)
+        /// grouped by each show's next episode air date (soonest day first). The per-show lookups run in
+        /// parallel (a handful at a time) so the screen no longer waits for ~40 sequential requests.</summary>
+        public static async Task<Dictionary<string, List<CalenderScheduleList>>> GetTVSchedule(int pagesToScan = 3)
         {
-            var dates = new Dictionary<string, List<CalenderScheduleList>>();
-            for (int page = 1; page <= pagesToScan; page++)
+            var pageJson = await Task.WhenAll(Enumerable.Range(1, pagesToScan).Select(page =>
+                GetJsonAsync("/tv/on_the_air", new Dictionary<string, string> { ["page"] = page.ToString() })));
+
+            var shows = pageJson.Where(p => p?["results"] != null).SelectMany(p => p["results"]).ToList();
+            if (shows.Count == 0) return null;
+
+            using var gate = new SemaphoreSlim(8);
+            var lookups = await Task.WhenAll(shows.Select(async show =>
             {
-                var json = await GetJsonAsync("/tv/on_the_air", new Dictionary<string, string> { ["page"] = page.ToString() });
-                if (json?["results"] == null) break;
-
-                foreach (var s in json["results"])
+                await gate.WaitAsync().ConfigureAwait(false);
+                try
                 {
-                    var id = s.Value<int>("id");
-                    var showJson = await GetJsonAsync($"/tv/{id}");
-                    var next = showJson?["next_episode_to_air"];
-                    if (next == null) continue;
+                    var details = await GetJsonAsync($"/tv/{show.Value<int>("id")}").ConfigureAwait(false);
+                    return (Show: show, Details: details);
+                }
+                finally
+                {
+                    gate.Release();
+                }
+            }));
 
-                    var airDate = next.Value<string>("air_date");
-                    if (string.IsNullOrEmpty(airDate)) continue;
+            var byDate = new SortedDictionary<DateTime, List<CalenderScheduleList>>();
+            foreach (var (show, details) in lookups)
+            {
+                var next = details?["next_episode_to_air"];
+                if (next == null || next.Type == JTokenType.Null) continue;
 
-                    var season = next.Value<int>("season_number");
-                    var episode = next.Value<int>("episode_number");
-                    var key = DateTime.TryParse(airDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate)
-                        ? parsedDate.ToString("ddd, MMM d", CultureInfo.InvariantCulture)
-                        : airDate;
+                var airDate = next.Value<string>("air_date");
+                if (!DateTime.TryParse(airDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate)) continue;
 
-                    if (!dates.TryGetValue(key, out var list))
-                    {
-                        list = new List<CalenderScheduleList>();
-                        dates[key] = list;
-                    }
+                var id = show.Value<int>("id");
+                var season = next.Value<int>("season_number");
+                var episode = next.Value<int>("episode_number");
 
-                    list.Add(new CalenderScheduleList
-                    {
-                        ItemType = DataEnum.DataType.TVSchedule,
-                        Title = s.Value<string>("name"),
-                        ImageLink = Image(s.Value<string>("poster_path"), PosterSize),
-                        PageLink = EpisodeLink(id, season, episode),
-                        EpisodeNo = $"S{season:00}E{episode:00}",
-                        EpisodeName = next.Value<string>("name")
-                    });
+                if (!byDate.TryGetValue(parsedDate.Date, out var list))
+                {
+                    list = new List<CalenderScheduleList>();
+                    byDate[parsedDate.Date] = list;
                 }
 
-                var totalPages = json.Value<int>("total_pages");
-                if (page >= totalPages) break;
+                list.Add(new CalenderScheduleList
+                {
+                    ItemType = DataEnum.DataType.TVSchedule,
+                    Title = show.Value<string>("name"),
+                    ImageLink = Image(show.Value<string>("poster_path"), PosterSize),
+                    PageLink = EpisodeLink(id, season, episode),
+                    EpisodeNo = $"S{season:00}E{episode:00}",
+                    EpisodeName = next.Value<string>("name")
+                });
             }
-            return dates.Count > 0 ? dates : null;
+
+            if (byDate.Count == 0) return null;
+
+            var today = DateTime.Today;
+            var dates = new Dictionary<string, List<CalenderScheduleList>>();
+            foreach (var kv in byDate)
+            {
+                var label = kv.Key == today ? "Today"
+                          : kv.Key == today.AddDays(1) ? "Tomorrow"
+                          : kv.Key.ToString("dddd, MMM d", CultureInfo.InvariantCulture);
+                dates[label] = kv.Value.OrderBy(a => a.Title, StringComparer.OrdinalIgnoreCase).ToList();
+            }
+            return dates;
+        }
+
+        // ---------------- card based listings (browse UI) ----------------
+
+        // TMDB's own TV genre ids are stable; names are only a fallback for when the genre list is not cached yet.
+        static readonly (int Id, string Name)[] HomeGenres =
+        {
+            (18, "Drama"), (35, "Comedy"), (10765, "Sci-Fi & Fantasy"), (80, "Crime"),
+            (10759, "Action & Adventure"), (16, "Animation"), (9648, "Mystery"), (99, "Documentary")
+        };
+
+        private static MediaCard MapCard(JToken s, Dictionary<int, string> genres, string badge = null)
+        {
+            var id = s.Value<int>("id");
+            var names = (s["genre_ids"]?.Select(g => (int)g) ?? Enumerable.Empty<int>())
+                .Where(genres.ContainsKey).Select(g => genres[g]).Take(3);
+            var rating = s.Value<double?>("vote_average") ?? 0;
+            return new MediaCard
+            {
+                Id = id,
+                Title = s.Value<string>("name"),
+                PosterPath = s.Value<string>("poster_path"),
+                BackdropPath = s.Value<string>("backdrop_path"),
+                Overview = s.Value<string>("overview"),
+                Year = YearOf(s.Value<string>("first_air_date")),
+                Rating = rating > 0 ? rating.ToString("0.0", CultureInfo.InvariantCulture) : string.Empty,
+                Genres = string.Join(", ", names),
+                PageLink = ShowLink(id),
+                Badge = badge
+            };
+        }
+
+        private static async Task<CardPage> GetCardPageAsync(string path, int page = 1, Dictionary<string, string> query = null, string badge = null)
+        {
+            if (page < 1) page = 1;
+            var q = query == null ? new Dictionary<string, string>() : new Dictionary<string, string>(query);
+            q["page"] = page.ToString();
+
+            var jsonTask = GetJsonAsync(path, q);
+            var genresTask = GetGenreMap();
+            await Task.WhenAll(jsonTask, genresTask);
+
+            var json = jsonTask.Result;
+            if (json?["results"] == null) return null;
+            var genres = genresTask.Result;
+
+            return new CardPage
+            {
+                Page = page,
+                TotalPages = json.Value<int?>("total_pages") ?? page,
+                Items = json["results"].Select(s => MapCard(s, genres, badge)).ToList()
+            };
+        }
+
+        /// <summary>The home screen's rows. Every request is started immediately (they run in parallel);
+        /// await the tasks in order to show the rows top to bottom as they arrive.</summary>
+        public static List<HomeRowRequest> StartHomeRowRequests()
+        {
+            var rows = new List<HomeRowRequest>
+            {
+                new HomeRowRequest("Trending This Week", CardStyle.Poster, GetCardPageAsync("/trending/tv/week")),
+                new HomeRowRequest("Popular", CardStyle.Poster, GetCardPageAsync("/tv/popular")),
+                new HomeRowRequest("New Episodes Today", CardStyle.Wide, GetCardPageAsync("/tv/airing_today", badge: "NEW EPISODE")),
+                new HomeRowRequest("Currently Airing", CardStyle.Poster, GetCardPageAsync("/tv/on_the_air")),
+                new HomeRowRequest("Top Rated", CardStyle.Poster, GetCardPageAsync("/tv/top_rated"))
+            };
+            foreach (var genre in HomeGenres)
+            {
+                rows.Add(new HomeRowRequest(genre.Name, CardStyle.Poster, GetCardPageAsync("/discover/tv", 1,
+                    new Dictionary<string, string> { ["with_genres"] = genre.Id.ToString(), ["sort_by"] = "popularity.desc" })));
+            }
+            return rows;
+        }
+
+        public static async Task<List<TmdbGenre>> GetGenres()
+        {
+            var map = await GetGenreMap();
+            return map.Select(kv => new TmdbGenre { Id = kv.Key, Name = kv.Value })
+                      .OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        public static Task<CardPage> DiscoverByGenre(int genreId, int page = 1) =>
+            GetCardPageAsync("/discover/tv", page, new Dictionary<string, string>
+            {
+                ["with_genres"] = genreId.ToString(),
+                ["sort_by"] = "popularity.desc"
+            });
+
+        public static Task<CardPage> SearchShows(string query, int page = 1) =>
+            GetCardPageAsync("/search/tv", page, new Dictionary<string, string> { ["query"] = query });
+    }
+
+    public class HomeRowRequest
+    {
+        public string Title { get; }
+        public CardStyle Style { get; }
+        public Task<CardPage> Data { get; }
+
+        public HomeRowRequest(string title, CardStyle style, Task<CardPage> data)
+        {
+            Title = title;
+            Style = style;
+            Data = data;
         }
     }
 }

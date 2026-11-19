@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV shell: persistent left rail (D-pad Left from any list reaches it), content to the right -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@color/colorWindow">
+
+    <LinearLayout
+        android:id="@+id/main_nav"
+        android:layout_width="@dimen/nav_width"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:background="@color/colorNav"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/nav_home"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="4dp"
+            android:drawableTop="@drawable/ic_home"
+            android:text="@string/nav_home" />
+        <TextView
+            android:id="@+id/nav_search"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="4dp"
+            android:drawableTop="@drawable/baseline_search_24"
+            android:text="@string/nav_search" />
+        <TextView
+            android:id="@+id/nav_schedule"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="4dp"
+            android:drawableTop="@drawable/baseline_date_range_24"
+            android:text="@string/nav_schedule" />
+        <TextView
+            android:id="@+id/nav_list"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="4dp"
+            android:drawableTop="@drawable/baseline_favorite_24"
+            android:text="@string/nav_list" />
+        <TextView
+            android:id="@+id/nav_genres"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="4dp"
+            android:drawableTop="@drawable/ic_apps"
+            android:text="@string/nav_genres" />
+        <TextView
+            android:id="@+id/nav_settings"
+            style="@style/Widget.App.NavItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="4dp"
+            android:drawableTop="@android:drawable/ic_menu_preferences"
+            android:text="@string/nav_settings" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/main_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:clipChildren="false"
+        android:clipToPadding="false" />
+</LinearLayout>

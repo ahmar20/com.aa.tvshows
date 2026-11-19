@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- layout rhythm -->
+  <dimen name="screen_margin">16dp</dimen>
+  <dimen name="card_gap">8dp</dimen>
+  <dimen name="row_gap">20dp</dimen>
+  <!-- room for the focus scale-up so it is not clipped (TV only) -->
+  <dimen name="card_focus_pad">0dp</dimen>
+  <dimen name="card_corner">6dp</dimen>
+
+  <!-- cards -->
+  <dimen name="card_poster_width">108dp</dimen>
+  <dimen name="card_poster_height">162dp</dimen>
+  <dimen name="card_wide_width">204dp</dimen>
+  <dimen name="card_wide_height">115dp</dimen>
+  <integer name="grid_target_dp">112</integer>
+
+  <!-- hero + detail -->
+  <dimen name="hero_height">470dp</dimen>
+  <dimen name="detail_backdrop_height">230dp</dimen>
+  <dimen name="ep_thumb_width">132dp</dimen>
+  <dimen name="ep_thumb_height">74dp</dimen>
+  <dimen name="nav_width">80dp</dimen>
+
+  <!-- type scale -->
+  <dimen name="text_display">30sp</dimen>
+  <dimen name="text_title">20sp</dimen>
+  <dimen name="text_row_title">18sp</dimen>
+  <dimen name="text_body">14sp</dimen>
+  <dimen name="text_caption">12sp</dimen>
+  <dimen name="text_nav">11sp</dimen>
+
+  <dimen name="thumb_poster_width">64dp</dimen>
+  <dimen name="thumb_poster_height">96dp</dimen>
+</resources>

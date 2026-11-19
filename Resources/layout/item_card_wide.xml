@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 16:9 backdrop tile with the title on a scrim (e.g. "New Episodes Today") -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_root"
+    android:layout_width="@dimen/card_wide_width"
+    android:layout_height="@dimen/card_wide_height"
+    android:layout_marginEnd="@dimen/card_gap"
+    android:background="@drawable/bg_card"
+    android:foreground="@drawable/fg_card_focus"
+    android:clipToOutline="true"
+    android:outlineProvider="background"
+    android:focusable="true"
+    android:clickable="true"
+    android:longClickable="true">
+
+    <ImageView
+        android:id="@+id/card_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/scrim_card" />
+
+    <TextView
+        android:id="@+id/card_title"
+        style="@style/Text.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="8dp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/card_badge"
+        style="@style/Text.Badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="6dp"
+        android:visibility="gone" />
+</FrameLayout>

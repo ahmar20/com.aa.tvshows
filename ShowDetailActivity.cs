@@ -1,283 +1,227 @@
-﻿using Android.App;
+using Android.App;
 using Android.OS;
 using Android.Views;
-using Android.Views.Animations;
+using Android.Widget;
 using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.Widget;
-using AndroidX.ViewPager.Widget;
-using AndroidX.ViewPager2.Widget;
-using com.aa.tvshows.Fragments;
+using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
-using Google.Android.Material.AppBar;
-using Google.Android.Material.Tabs;
-using Square.Picasso;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace com.aa.tvshows
 {
+    /// <summary>
+    /// A show's page: backdrop, synopsis, My List, and one season of episodes at a time
+    /// (each season is fetched the first time it is opened).
+    /// </summary>
     [Activity(Label = "TV Show Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class ShowDetailActivity : AppCompatActivity
     {
-        AppBarLayout appBarLayout;
-        Toolbar detailToolbar;
-        CollapsingToolbarLayout collapseToolbar;
-        ViewPager2 seasonEpisodesPager;
-        TabLayout seasonsHeader;
+        ImageView backdrop;
+        TextView titleText, metaText, overviewText, listButton, seasonButton;
+        RecyclerView episodesView;
+        ProgressBar progress;
+        EpisodeRowsAdapter episodeAdapter;
 
-		ContentLoadingProgressBar loadingView;
-		AppCompatImageView detailImage;
-		AppCompatTextView titleText;
-		AppCompatTextView descriptionText;
-		AppCompatTextView releaseText;
-		AppCompatTextView genreText;
-		Android.Widget.LinearLayout titleContainer;
+        SeriesDetails show;
+        bool inList;
+        bool overviewExpanded;
+        SeasonData currentSeason;
+        int loadVersion;
+        readonly Dictionary<int, List<ShowEpisodeDetails>> seasonCache = new Dictionary<int, List<ShowEpisodeDetails>>();
 
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
 
-		SeriesDetails ShowData;
-		bool IsTitleContainerVisible = true;
-		bool IsTitleVisible = false;
-		bool isFavorite = false;
-		readonly int AlphaAnimationDuration = 200;
-		readonly double PercentageToShowTitle = 0.600;
-		readonly double PercentageToHideTitle = 0.599;
-		readonly string ShowDetailSaveInstanceName = "showDetail";
+            WindowInsetsHelper.EnableEdgeToEdge(this);
+            SetContentView(Resource.Layout.activity_show_detail);
 
-		protected override void OnCreate(Bundle savedInstanceState)
-		{
-			base.OnCreate(savedInstanceState);
+            backdrop = FindViewById<ImageView>(Resource.Id.detail_backdrop);
+            titleText = FindViewById<TextView>(Resource.Id.detail_title);
+            metaText = FindViewById<TextView>(Resource.Id.detail_meta);
+            overviewText = FindViewById<TextView>(Resource.Id.detail_overview);
+            listButton = FindViewById<TextView>(Resource.Id.detail_btn_list);
+            seasonButton = FindViewById<TextView>(Resource.Id.detail_btn_season);
+            episodesView = FindViewById<RecyclerView>(Resource.Id.detail_episodes);
+            progress = FindViewById<ProgressBar>(Resource.Id.detail_progress);
 
-			// Create your application here
-			SetContentView(Resource.Layout.tv_show_detail);
+            // phone only: round back button floating over the artwork, below the status bar
+            var back = FindViewById<View>(Resource.Id.detail_back);
+            if (back != null)
+            {
+                var lp = (ViewGroup.MarginLayoutParams)back.LayoutParameters;
+                lp.TopMargin += WindowInsetsHelper.StatusBarHeight(this);
+                back.LayoutParameters = lp;
+                back.Click += (s, e) => Finish();
+            }
+            WindowInsetsHelper.Apply(episodesView, bottom: true);
 
-			appBarLayout = FindViewById<AppBarLayout>(Resource.Id.image_toolbar_appbar_layout);
-			collapseToolbar = FindViewById<CollapsingToolbarLayout>(Resource.Id.image_toolbar_collapsing_layout);
-			collapseToolbar.TitleEnabled = true;
-			detailToolbar = FindViewById<Toolbar>(Resource.Id.image_toolbar_main_toolbar);
+            episodesView.SetLayoutManager(new LinearLayoutManager(this));
+            episodeAdapter = new EpisodeRowsAdapter();
+            episodeAdapter.ItemClick += episode => AppView.HandleItemShowEpisodeClick(episode, this);
+            episodesView.SetAdapter(episodeAdapter);
 
-            seasonsHeader = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            seasonEpisodesPager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
-            seasonsHeader.Visibility = ViewStates.Gone;
-            seasonEpisodesPager.Visibility = ViewStates.Gone;
+            listButton.Click += async (s, e) => await ToggleListAsync();
+            seasonButton.Click += (s, e) => ShowSeasonMenu();
+            overviewText.Click += (s, e) =>
+            {
+                // phone: tap the synopsis to read all of it
+                overviewExpanded = !overviewExpanded;
+                overviewText.SetMaxLines(overviewExpanded ? int.MaxValue : 4);
+            };
 
-			detailImage = FindViewById<AppCompatImageView>(Resource.Id.image_toolbar_main_image);
-			titleText = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_title);
-			descriptionText = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_description);
-			releaseText = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_release);
-			genreText = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_genre);
+            _ = LoadAsync(Intent.GetStringExtra("itemLink"));
+        }
 
-			titleContainer = FindViewById<Android.Widget.LinearLayout>(Resource.Id.image_toolbar_collapsing_root);
-			loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.image_toolbar_loading);
+        async Task LoadAsync(string link)
+        {
+            progress.Visibility = ViewStates.Visible;
+            SeriesDetails loaded = null;
+            try
+            {
+                loaded = await TMDbClient.GetDetailsForTVShowSeries(link, includeEpisodes: false);
+            }
+            catch (Exception)
+            {
+            }
+            if (IsDestroyed) return;
+            progress.Visibility = ViewStates.Gone;
 
-			AppView.SetActionBarForActivity(detailToolbar, this);
-			appBarLayout.OffsetChanged += AppLayout_OffsetChanged;
+            if (loaded == null)
+            {
+                Error.Instance.ShowErrorTip("This show could not be loaded.", this);
+                titleText.Text = GetString(Resource.String.home_load_error);
+                return;
+            }
 
-			// load data from link
-			if (savedInstanceState is null)
-			{
-				var link = Intent.Extras.GetString("itemLink");
-				LoadData(link);
-			}
-			else
-			{
-				// get saved show data
-				var show = Newtonsoft.Json.JsonConvert.DeserializeObject<SeriesDetails>(savedInstanceState.GetString(ShowDetailSaveInstanceName));
-				LoadData(null, show);
-			}
-		}
+            show = loaded;
+            Bind();
+            inList = await StorageData.IsMarkedFavorite(show);
+            ShowListState();
 
-		protected override void OnSaveInstanceState(Bundle outState)
-		{
-			base.OnSaveInstanceState(outState);
-			outState.PutString(ShowDetailSaveInstanceName, Newtonsoft.Json.JsonConvert.SerializeObject(ShowData));
-		}
-
-		private async void LoadData(string link, SeriesDetails _showData = default)
-		{
-			loadingView.Visibility = ViewStates.Visible;
-			ShowData = _showData is null ? await TMDbClient.GetDetailsForTVShowSeries(link) : _showData;
-			loadingView.Visibility = ViewStates.Gone;
-			if (ShowData != null)
-			{
-				if (await StorageData.IsMarkedFavorite(ShowData))
-				{
-					isFavorite = true;
-				}
-				InvalidateOptionsMenu();
-				collapseToolbar.TitleEnabled = false;
-				SupportActionBar.SetDisplayShowTitleEnabled(false);
-				Picasso.Get().Load(ShowData.ImageLink).Into(detailImage);
-				collapseToolbar.Title = titleText.Text = ShowData.Title;
-				descriptionText.Text = "Description: " + ShowData.Description;
-				releaseText.Text = "Released: " + ShowData.ReleaseDate;
-				genreText.Text = ShowData.Genres;
-
-                seasonsHeader.Visibility = ViewStates.Visible;
-                seasonEpisodesPager.Visibility = ViewStates.Visible;
-                if (ShowData.Seasons != null && ShowData.Seasons.Count > 0)
-                {
-                    var adapter = new PageTabsAdapter(this);
-                    foreach (var season in ShowData.Seasons)
-                    {
-                        adapter.AddTab(new TitleFragment() { Fragmnet = new MainTabs(DataEnum.DataType.SeasonsEpisodes, season.Episodes.Cast<object>()), Title = season.SeasonName });
-                    }
-                    seasonsHeader.TabMode = ShowData.Seasons.Count < 5 ? TabLayout.ModeFixed : TabLayout.ModeScrollable;
-                    //seasonsHeader.SetupWithViewPager(seasonEpisodesPager);
-                    seasonEpisodesPager.OffscreenPageLimit = ShowData.Seasons.Count;
-                    seasonEpisodesPager.Adapter = adapter;
-
-                    TabMediatorStrategy tabStrategy = new TabMediatorStrategy(adapter.Fragments);
-                    TabLayoutMediator tabMediator = new TabLayoutMediator(seasonsHeader, seasonEpisodesPager, tabStrategy);
-                    tabMediator.Attach();
-                }
-                else
-                {
-                    seasonEpisodesPager.Visibility = ViewStates.Gone;
-                    seasonsHeader.Visibility = ViewStates.Gone;
-                    Error.Instance.ShowErrorSnack($"No episodes were found for {ShowData.Title}.", titleContainer);
-                }
+            if (show.Seasons != null && show.Seasons.Count > 0)
+            {
+                await ShowSeasonAsync(DefaultSeason());
             }
             else
             {
-                Error.Instance.ShowErrorSnack($"TV Show '{ShowData.Title}' could not be loaded.", titleContainer);
+                Error.Instance.ShowErrorTip(GetString(Resource.String.detail_no_episodes), this);
             }
+            listButton.RequestFocus();
         }
 
-		private void AppLayout_OffsetChanged(object sender, AppBarLayout.OffsetChangedEventArgs e)
-		{
-			int maxScroll = e.AppBarLayout.TotalScrollRange;
-			double percentage = (double)Math.Abs(e.VerticalOffset) / (double)maxScroll;
-			HandleAlphaOnTitle(percentage);
-			HandleToolbarTitleVisibility(percentage);
-		}
+        void Bind()
+        {
+            AppView.LoadPicture(backdrop, !string.IsNullOrEmpty(show.BackdropLink) ? show.BackdropLink : show.ImageLink);
+            titleText.Text = show.Title;
 
-		public override bool OnCreateOptionsMenu(IMenu menu)
-		{
-			if (ShowData != null)
-			{
-				if (isFavorite)
-				{
-					menu.Add(AppView.mainItemsGroupId, AppView.RemoveFavoritesId, 1, "Remove Favorite")
-						.SetIcon(Resource.Drawable.baseline_favorite_24)
-						.SetShowAsAction(ShowAsAction.Always);
-				}
-				else
-				{
-					menu.Add(AppView.mainItemsGroupId, AppView.AddFavoritesId, 1, "Mark Favorite")
-						.SetIcon(Resource.Drawable.baseline_favorite_border_24)
-						.SetShowAsAction(ShowAsAction.Always);
-				}
-			}
-			menu.Add(AppView.mainItemsGroupId, AppView.ReloadId, 2, "Reload")
-				.SetIcon(Resource.Drawable.baseline_refresh_24)
-				.SetShowAsAction(ShowAsAction.IfRoom);
-			return AppView.ShowOptionsMenu(menu, this);
-		}
+            var meta = new List<string>();
+            if (!string.IsNullOrEmpty(show.Rating)) meta.Add("★ " + show.Rating);
+            if (!string.IsNullOrEmpty(show.ReleaseDate) && show.ReleaseDate.Length >= 4) meta.Add(show.ReleaseDate.Substring(0, 4));
+            if (!string.IsNullOrEmpty(show.Status)) meta.Add(show.Status);
+            if (!string.IsNullOrEmpty(show.Genres)) meta.Add(show.Genres);
+            metaText.Text = string.Join("  •  ", meta);
 
-		public override bool OnOptionsItemSelected(IMenuItem item)
-		{
-			Action favAction = null;
-			if (item.ItemId == AppView.AddFavoritesId)
-			{
-				favAction = new Action(async () =>
-				{
-					if (await StorageData.SaveSeriesToFavoritesFile(ShowData))
-					{
-						isFavorite = true;
-						InvalidateOptionsMenu();
-					}
-					else
-					{
-						Error.Instance.ShowErrorSnack(ShowData.Title + " could not be added to favorites.", this.titleContainer);
-					}
-				});
-			}
-			else if (item.ItemId == AppView.RemoveFavoritesId)
-			{
-				favAction = new Action(async () =>
-				{
-					if (await StorageData.RemoveSeriesFromFavoritesFile(ShowData))
-					{
-						isFavorite = false;
-						InvalidateOptionsMenu();
-					}
-					else
-					{
-						Error.Instance.ShowErrorSnack(ShowData.Title + " could not be removed from favorites.", this.titleContainer);
-					}
-				});
-			}
-			else if (item.ItemId == AppView.ReloadId)
-			{
-				favAction = new Action(() =>
-				{
-					if (loadingView.Visibility != ViewStates.Visible)
-						LoadData(Intent.Extras.GetString("itemLink"));
-					else
-						Error.Instance.ShowErrorTip("Data is loading... Please wait!", this);
-				});
-			}
+            overviewText.Text = string.IsNullOrWhiteSpace(show.Description) ? GetString(Resource.String.detail_overview_missing) : show.Description;
+        }
 
-			return AppView.OnOptionsItemSelected(item, this, favAction);
-		}
+        /// <summary>Honors the "latest first" setting: open on the newest season, otherwise on the first.</summary>
+        SeasonData DefaultSeason()
+        {
+            var numbered = show.Seasons.Where(s => s.SeasonNumber > 0).ToList();
+            if (numbered.Count == 0) return show.Seasons[0];
+            return StorageData.GetShowLatestEpisodesFirstSetting()
+                ? numbered.OrderByDescending(s => s.SeasonNumber).First()
+                : numbered.OrderBy(s => s.SeasonNumber).First();
+        }
 
-		public override bool OnSupportNavigateUp()
-		{
-			OnBackPressed();
-			return base.OnSupportNavigateUp();
-		}
+        void ShowSeasonMenu()
+        {
+            if (show?.Seasons == null) return;
 
-		private void HandleToolbarTitleVisibility(double percentage)
-		{
-			if (percentage >= PercentageToShowTitle)
-			{
-				if (!IsTitleVisible)
-				{
-					collapseToolbar.TitleEnabled = true;
-					//StartAlphaAnimation(toolbarText, AlphaAnimationDuration, ViewStates.Visible);
-					IsTitleVisible = true;
-				}
-			}
-			else
-			{
-				if (IsTitleVisible)
-				{
-					collapseToolbar.TitleEnabled = false;
-					//StartAlphaAnimation(toolbarText, AlphaAnimationDuration, ViewStates.Invisible);
-					IsTitleVisible = false;
-				}
-			}
-		}
+            var menu = new AndroidX.AppCompat.Widget.PopupMenu(this, seasonButton);
+            for (var i = 0; i < show.Seasons.Count; i++)
+            {
+                menu.Menu.Add(0, i, i, show.Seasons[i].SeasonName);
+            }
+            menu.MenuItemClick += async (s, e) => await ShowSeasonAsync(show.Seasons[e.Item.ItemId]);
+            menu.Show();
+        }
 
-		private void HandleAlphaOnTitle(double percentage)
-		{
-			if (percentage >= PercentageToHideTitle)
-			{
-				if (IsTitleContainerVisible)
-				{
-					StartAlphaAnimation(titleContainer, AlphaAnimationDuration, ViewStates.Invisible);
-					IsTitleContainerVisible = false;
-				}
-			}
-			else
-			{
-				if (!IsTitleContainerVisible)
-				{
-					StartAlphaAnimation(titleContainer, AlphaAnimationDuration, ViewStates.Visible);
-					IsTitleContainerVisible = true;
-				}
-			}
-		}
+        async Task ShowSeasonAsync(SeasonData season)
+        {
+            if (season == null) return;
 
-		public static void StartAlphaAnimation(View v, long duration, ViewStates visibility)
-		{
-			AlphaAnimation alphaAnimation = visibility == ViewStates.Visible ? new AlphaAnimation(0f, 1f) : new AlphaAnimation(1f, 0f);
+            currentSeason = season;
+            seasonButton.Text = season.SeasonName;
+            seasonButton.Visibility = show.Seasons.Count > 1 ? ViewStates.Visible : ViewStates.Gone;
 
-			alphaAnimation.Duration = duration;
-			alphaAnimation.FillAfter = true;
-			v.StartAnimation(alphaAnimation);
-		}
-	}
+            var current = ++loadVersion;
+            if (!seasonCache.TryGetValue(season.SeasonNumber, out var episodes))
+            {
+                episodeAdapter.SetItems(null);
+                progress.Visibility = ViewStates.Visible;
+                try
+                {
+                    episodes = await TMDbClient.GetSeasonEpisodes(show.SeriesLink == null ? 0 : ShowId(), season.SeasonNumber, show.Title);
+                }
+                catch (Exception)
+                {
+                    episodes = null;
+                }
+                if (current != loadVersion || IsDestroyed) return;
+                progress.Visibility = ViewStates.Gone;
+
+                if (episodes == null)
+                {
+                    Error.Instance.ShowErrorTip("Episodes could not be loaded.", this);
+                    return;
+                }
+                seasonCache[season.SeasonNumber] = episodes;
+            }
+
+            var ordered = StorageData.GetShowLatestEpisodesFirstSetting()
+                ? episodes.OrderByDescending(e => e.EpisodeIndex)
+                : episodes.OrderBy(e => e.EpisodeIndex);
+            episodeAdapter.SetItems(ordered);
+            episodesView.ScrollToPosition(0);
+        }
+
+        int ShowId() => TMDbClient.TryParseShowLink(show.SeriesLink, out int id) ? id : 0;
+
+        void ShowListState()
+        {
+            listButton.Text = GetString(inList ? Resource.String.action_in_list : Resource.String.action_add_list);
+            listButton.SetCompoundDrawablesRelativeWithIntrinsicBounds(inList ? Resource.Drawable.ic_check : Resource.Drawable.ic_add, 0, 0, 0);
+        }
+
+        async Task ToggleListAsync()
+        {
+            if (show == null) return;
+
+            listButton.Enabled = false;
+            try
+            {
+                var ok = inList
+                    ? await StorageData.RemoveSeriesFromFavoritesFile(show)
+                    : await StorageData.SaveSeriesToFavoritesFile(show);
+                if (ok)
+                {
+                    inList = !inList;
+                    ShowListState();
+                }
+                else
+                {
+                    Error.Instance.ShowErrorTip("My List could not be changed.", this);
+                }
+            }
+            finally
+            {
+                listButton.Enabled = true;
+            }
+        }
+    }
 }

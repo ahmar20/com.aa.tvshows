@@ -1,13 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <!-- Customize your theme here. -->
+    <!-- Dark Material theme; artwork carries the colour, brand red is reserved for actions/selection -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:windowBackground">@color/colorWindow</item>
-        <item name="android:colorBackground">@color/colorWindow</item>  
-  </style>
+        <item name="android:colorBackground">@color/colorWindow</item>
+        <item name="android:textColorPrimary">@color/colorOnSurface</item>
+        <item name="android:textColorSecondary">@color/colorOnSurfaceMuted</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/colorNav</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!-- ===== Text ===== -->
+    <style name="Text">
+        <item name="android:textColor">@color/colorOnSurface</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Text.Display">
+        <item name="android:textSize">@dimen/text_display</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineSpacingMultiplier">0.95</item>
+    </style>
+
+    <style name="Text.Title">
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.RowTitle">
+        <item name="android:textSize">@dimen/text_row_title</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Text.Body">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:lineSpacingMultiplier">1.1</item>
+    </style>
+
+    <style name="Text.Muted">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/colorOnSurfaceMuted</item>
+    </style>
+
+    <style name="Text.Caption">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:textColor">@color/colorOnSurfaceMuted</item>
+    </style>
+
+    <style name="Text.Badge">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:background">@drawable/bg_badge</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">6dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+    </style>
+
+    <style name="Text.Wordmark">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
+    <!-- ===== Buttons (TextViews on purpose: the Material inflater would otherwise swap <Button> for MaterialButton) ===== -->
+    <style name="Widget.App.Button" parent="Text">
+        <item name="android:minHeight">44dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">22dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/btn_primary_content</item>
+        <item name="android:drawableTint">@color/btn_primary_content</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:background">@drawable/bg_btn_primary</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="Widget.App.Button.Secondary">
+        <item name="android:textColor">@color/btn_secondary_content</item>
+        <item name="android:drawableTint">@color/btn_secondary_content</item>
+        <item name="android:background">@drawable/bg_btn_secondary</item>
+    </style>
+
+    <!-- ===== Bottom bar / side rail items ===== -->
+    <style name="Widget.App.NavItem" parent="Text">
+        <item name="android:textSize">@dimen/text_nav</item>
+        <item name="android:textColor">@color/nav_item_content</item>
+        <item name="android:drawableTint">@color/nav_item_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_nav_item</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="Widget.App.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/colorWindow</item>
+        <item name="titleTextColor">@color/colorOnSurface</item>
+        <item name="subtitleTextColor">@color/colorOnSurfaceMuted</item>
+        <item name="android:elevation">0dp</item>
+    </style>
 
 </resources>

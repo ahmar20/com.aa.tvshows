@@ -25,4 +25,37 @@
   <dimen name="margin_8dp">8dp</dimen>
   <dimen name="margin_10dp">10dp</dimen>
   <dimen name="loading_view_padding">20dp</dimen>
+
+  <!-- navigation -->
+  <string name="nav_home">Home</string>
+  <string name="nav_search">Search</string>
+  <string name="nav_schedule">Schedule</string>
+  <string name="nav_list">My List</string>
+  <string name="nav_genres">Genres</string>
+  <string name="nav_settings">Settings</string>
+
+  <!-- actions -->
+  <string name="action_details">Details</string>
+  <string name="action_add_list">My List</string>
+  <string name="action_in_list">In My List</string>
+  <string name="action_saving">Saving…</string>
+  <string name="action_back">Back</string>
+  <string name="action_go_to_show">Go to show</string>
+  <string name="action_clear">Clear</string>
+
+  <!-- screens -->
+  <string name="search_hint">Search TV shows</string>
+  <string name="search_prompt">Find a show by name</string>
+  <string name="search_no_results">No shows found for \"%1$s\"</string>
+  <string name="schedule_title">Schedule</string>
+  <string name="schedule_subtitle">What airs next, day by day</string>
+  <string name="mylist_title">My List</string>
+  <string name="mylist_subtitle">Press and hold a show for options</string>
+  <string name="genres_title">Genres</string>
+  <string name="detail_overview_missing">No description available.</string>
+  <string name="detail_no_episodes">No episodes listed for this season yet.</string>
+  <string name="detail_seasons">Seasons</string>
+  <string name="episode_no_sources">No playable source is set up for this episode. Details come from TMDB, which does not provide streams.</string>
+  <string name="episode_sources_title">Watch</string>
+  <string name="home_load_error">Could not load shows</string>
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV: darkens the left side where the title and description sit -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="0" android:startColor="#f2141414" android:centerColor="#a6141414" android:endColor="#00141414" />
+</shape>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 2:3 poster tile: home rows, grids (search, genres, My List) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_root"
+    android:layout_width="@dimen/card_poster_width"
+    android:layout_height="@dimen/card_poster_height"
+    android:layout_marginEnd="@dimen/card_gap"
+    android:background="@drawable/bg_card"
+    android:foreground="@drawable/fg_card_focus"
+    android:clipToOutline="true"
+    android:outlineProvider="background"
+    android:focusable="true"
+    android:clickable="true"
+    android:longClickable="true">
+
+    <ImageView
+        android:id="@+id/card_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no" />
+
+    <!-- only visible when a show has no artwork -->
+    <TextView
+        android:id="@+id/card_title"
+        style="@style/Text.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:padding="8dp"
+        android:maxLines="5"
+        android:ellipsize="end"
+        android:textColor="@color/colorOnSurface"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/card_badge"
+        style="@style/Text.Badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="6dp"
+        android:visibility="gone" />
+</FrameLayout>

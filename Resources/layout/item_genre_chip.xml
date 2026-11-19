@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- phone: horizontal chip -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/genre_name"
+    style="@style/Text.Body"
+    android:layout_width="wrap_content"
+    android:layout_height="36dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:minWidth="56dp"
+    android:gravity="center"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:maxLines="1"
+    android:textColor="@color/chip_text"
+    android:background="@drawable/bg_pill"
+    android:focusable="true"
+    android:clickable="true" />

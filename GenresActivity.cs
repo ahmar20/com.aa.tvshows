@@ -1,103 +1,156 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Android.App;
-using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
+using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using AndroidX.ViewPager.Widget;
-using AndroidX.ViewPager2.Widget;
-using com.aa.tvshows.Fragments;
+using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
-using Google.Android.Material.Tabs;
+using com.aa.tvshows.Models;
 
 namespace com.aa.tvshows
 {
-    [Activity(Label = "TV Genres", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
+    /// <summary>Pick a genre (chips on a phone, a list on the left on TV) and browse its shows as a poster grid.</summary>
+    [Activity(Label = "Genres", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class GenresActivity : AppCompatActivity
     {
-        ViewPager2 pager;
-        TabLayout tabLayout;
+        RecyclerView genresList;
+        RecyclerView gridView;
+        ProgressBar progress;
+        TextView emptyText;
+        PosterGrid grid;
+        EndlessScroll endless;
+        GenreAdapter genreAdapter;
 
-        protected override async void OnCreate(Bundle savedInstanceState)
+        List<TmdbGenre> genres = new List<TmdbGenre>();
+        int genreId;
+        int nextPage = 2;
+        bool hasMore;
+        bool loadingMore;
+        int version;
+
+        protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            // Create your application here
-            SetContentView(Resource.Layout.genres_base);
+            WindowInsetsHelper.EnableEdgeToEdge(this);
+            SetContentView(Resource.Layout.activity_genres);
+            WindowInsetsHelper.Apply(FindViewById<View>(Resource.Id.screen_root), top: true, bottom: true, sides: true);
+            AppView.SetActionBarForActivity(FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.main_toolbar), this);
 
-            AppView.SetActionBarForActivity(FindViewById<Toolbar>(Resource.Id.main_toolbar), this);
+            genresList = FindViewById<RecyclerView>(Resource.Id.genres_list);
+            gridView = FindViewById<RecyclerView>(Resource.Id.genres_grid);
+            progress = FindViewById<ProgressBar>(Resource.Id.genres_progress);
+            emptyText = FindViewById<TextView>(Resource.Id.genres_empty);
 
-            // generate tabs for genres
-            SetupTabsForGenres();
-        }
+            var isTv = UiMode.IsTv(this);
+            genresList.SetLayoutManager(new LinearLayoutManager(this, isTv ? LinearLayoutManager.Vertical : LinearLayoutManager.Horizontal, false));
 
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            return AppView.ShowOptionsMenu(menu, this);
-        }
+            grid = new PosterGrid(gridView, this);
+            grid.Adapter.ItemClick += card => AppView.HandleItemShowEpisodeClick(card, this);
+            endless = new EndlessScroll(grid.Layout);
+            endless.LoadMoreTask += (s, e) => _ = LoadMoreAsync();
+            gridView.AddOnScrollListener(endless);
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            return AppView.OnOptionsItemSelected(item, this);
+            _ = LoadGenresAsync();
         }
 
         public override bool OnSupportNavigateUp()
         {
-            OnBackPressed();
+            OnBackPressedDispatcher.OnBackPressed();
             return true;
         }
 
-        // Same D-pad paging fallback as MainActivity -- see the comment there.
-        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+        async Task LoadGenresAsync()
         {
-            if (pager != null)
+            progress.Visibility = ViewStates.Visible;
+            emptyText.Visibility = ViewStates.Gone;
+            try
             {
-                var itemCount = pager.Adapter?.ItemCount ?? 0;
-                if (keyCode == Keycode.DpadLeft && pager.CurrentItem > 0)
-                {
-                    pager.CurrentItem -= 1;
-                    return true;
-                }
-                if (keyCode == Keycode.DpadRight && pager.CurrentItem < itemCount - 1)
-                {
-                    pager.CurrentItem += 1;
-                    return true;
-                }
+                genres = await TMDbClient.GetGenres() ?? new List<TmdbGenre>();
             }
-            return base.OnKeyUp(keyCode, e);
+            catch (Exception)
+            {
+                genres = new List<TmdbGenre>();
+            }
+            if (IsDestroyed) return;
+
+            if (genres.Count == 0)
+            {
+                progress.Visibility = ViewStates.Gone;
+                emptyText.Text = GetString(Resource.String.home_load_error);
+                emptyText.Visibility = ViewStates.Visible;
+                return;
+            }
+
+            genreAdapter = new GenreAdapter(genres);
+            genreAdapter.ItemClick += position => _ = SelectGenreAsync(position);
+            genresList.SetAdapter(genreAdapter);
+            await SelectGenreAsync(0);
         }
 
-        private async void SetupTabsForGenres()
+        async Task SelectGenreAsync(int position)
         {
-            pager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
-            pager.OffscreenPageLimit = 3;
-            tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            //tabLayout.SetupWithViewPager(pager);
-            tabLayout.TabMode = TabLayout.ModeScrollable;
+            if (position < 0 || position >= genres.Count) return;
 
-            var adapter = new PageTabsAdapter(this);
-            pager.Adapter = adapter;
-            TabMediatorStrategy tabStrategy = new TabMediatorStrategy(adapter.Fragments);
-            TabLayoutMediator tabMediator = new TabLayoutMediator(tabLayout, pager, tabStrategy);
-            tabMediator.Attach();
+            genreId = genres[position].Id;
+            genreAdapter.SetSelected(position);
+            var current = ++version;
+            grid.Adapter.Clear();
+            endless.ResetState();
+            hasMore = false;
+            nextPage = 2;
+            emptyText.Visibility = ViewStates.Gone;
+            progress.Visibility = ViewStates.Visible;
 
-            // genre list now comes straight from TMDB instead of a hardcoded, site-specific list
-            if (await TMDbClient.GetGenreNames() is List<string> genres && genres.Count > 0)
+            CardPage page = null;
+            try
             {
-                foreach (var item in genres)
+                page = await TMDbClient.DiscoverByGenre(genreId, 1);
+            }
+            catch (Exception)
+            {
+            }
+            if (current != version || IsDestroyed) return;
+
+            progress.Visibility = ViewStates.Gone;
+            if (page == null || page.Items.Count == 0)
+            {
+                emptyText.Text = GetString(Resource.String.home_load_error);
+                emptyText.Visibility = ViewStates.Visible;
+                return;
+            }
+            grid.Adapter.Replace(page.Items);
+            hasMore = page.HasMore;
+            gridView.ScrollToPosition(0);
+        }
+
+        async Task LoadMoreAsync()
+        {
+            if (!hasMore || loadingMore) return;
+
+            loadingMore = true;
+            var current = version;
+            try
+            {
+                var page = await TMDbClient.DiscoverByGenre(genreId, nextPage);
+                if (current != version || IsDestroyed) return;
+                if (page != null)
                 {
-                    adapter.AddTab(new TitleFragment() { Title = item, Fragmnet = new MainTabs(DataEnum.DataType.Genres, DataEnum.GenreDataType.Shows, item, 0) });
+                    grid.Adapter.Add(page.Items);
+                    hasMore = page.HasMore;
+                    nextPage++;
                 }
             }
-            else
+            catch (Exception)
             {
-                Error.Instance.ShowErrorTip("Could not load genres from TMDB.", this);
+            }
+            finally
+            {
+                loadingMore = false;
             }
         }
     }

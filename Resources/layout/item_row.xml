@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <TextView
+        android:id="@+id/row_title"
+        style="@style/Text.RowTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_margin"
+        android:layout_marginEnd="@dimen/screen_margin"
+        android:layout_marginTop="@dimen/row_gap"
+        android:layout_marginBottom="8dp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <!-- padding top/bottom + clipChildren=false leave room for the TV focus scale-up -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/row_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingTop="@dimen/card_focus_pad"
+        android:paddingBottom="@dimen/card_focus_pad" />
+</LinearLayout>

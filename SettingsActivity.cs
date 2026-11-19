@@ -24,6 +24,7 @@ namespace com.aa.tvshows
 
 			// Create your application here
 			SetContentView(Resource.Layout.settings_view);
+			WindowInsetsHelper.Apply(FindViewById<View>(Resource.Id.screen_root), top: true, bottom: true, sides: true);
 			AppView.SetActionBarForActivity(FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.main_toolbar), this);
 			SupportFragmentManager.BeginTransaction().Replace(Resource.Id.settingsRoot, new SettingsViewFragment()).Commit();
 		}
@@ -77,6 +78,12 @@ namespace com.aa.tvshows
 				SummaryOn = "Use external player to play video",
 				SummaryOff = "Use internal player to play video"
 			});
+
+			var aboutCategory = new PreferenceCategory(Activity) { Title = "App" };
+			PreferenceScreen.AddPreference(aboutCategory);
+			var about = new Preference(Activity) { Key = "about_app", Title = "About", Summary = "Version, developer and open source libraries" };
+			about.PreferenceClick += (s, e) => StartActivity(new Intent(Activity, typeof(AboutActivity)));
+			aboutCategory.AddPreference(about);
 		}
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Android.Content;
 using com.aa.tvshows.Models;
@@ -17,7 +18,6 @@ namespace com.aa.tvshows.Helper
         private const string KeyLastFetched = "last_fetched_utc_ticks";
         private const long RefreshIntervalTicks = TimeSpan.TicksPerHour * 24;
 
-        private const string ApiKey = "YOUR_API_KEY"; // move to a secrets/config source
         private const string BaseUrl = "https://api.themoviedb.org/3";
 
         private static ISharedPreferences GetPrefs(Context ctx) =>
@@ -95,11 +95,11 @@ namespace com.aa.tvshows.Helper
             try
             {
                 using var client = new HttpClient();
+                // same v4 read-access token (Bearer header) that TMDbClient uses
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.TMDB_Api_Key);
 
-                var genresTask = client.GetStringAsync(
-                    $"{BaseUrl}/genre/tv/list?api_key={ApiKey}&language=en-US");
-                var configTask = client.GetStringAsync(
-                    $"{BaseUrl}/configuration?api_key={ApiKey}");
+                var genresTask = client.GetStringAsync($"{BaseUrl}/genre/tv/list?language=en-US");
+                var configTask = client.GetStringAsync($"{BaseUrl}/configuration");
 
                 await Task.WhenAll(genresTask, configTask);
 

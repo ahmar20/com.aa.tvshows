@@ -133,6 +133,11 @@ namespace com.aa.tvshows.Helper
 
         }
 
+        public EndlessScroll(GridLayoutManager layoutManager) : base(layoutManager)
+        {
+
+        }
+
         public override void OnLoadMore(int page, int totalItemsCount, RecyclerView view)
         {
             LoadMoreTask?.Invoke(this, null); 

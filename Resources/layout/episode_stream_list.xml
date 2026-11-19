@@ -11,6 +11,7 @@
     android:layout_height="wrap_content"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="@dimen/list_card_corner_radius"
+    app:cardBackgroundColor="@color/colorSurface"
     app:cardElevation="@dimen/episodes_list_card_elevation"
     app:cardUseCompatPadding="true"
     app:contentPadding="@dimen/margin_8dp">
@@ -29,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/stream_host_titletext"
-            style="@style/TextAppearance.AppCompat.Medium"
+            style="@style/Text.Body"
             android:layout_toEndOf="@id/stream_host_imageview"
             android:layout_centerVertical="true"
             />

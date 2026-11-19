@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <!-- brand (unchanged from the original app) -->
   <color name="colorPrimary">#ff5252</color>
   <color name="colorPrimaryDark">#c50e29</color>
   <color name="colorAccent">#ff867f</color>
-  <color name="colorWindow">#202020</color>
+
+  <!-- dark, near-neutral surfaces so artwork carries the colour -->
+  <color name="colorWindow">#141414</color>
+  <color name="colorNav">#0f0f0f</color>
+  <color name="colorSurface">#1f1f1f</color>
+  <color name="colorSurfaceHigh">#2b2b2b</color>
+  <color name="colorOutline">#3a3a3a</color>
+  <color name="colorOnSurface">#f5f5f5</color>
+  <color name="colorOnSurfaceMuted">#a8a8a8</color>
+  <color name="colorStar">#ffc857</color>
+  <color name="colorFocus">#ffffff</color>
+  <color name="colorScrim">#99000000</color>
   <color name="colorTransparent">#00000000</color>
 </resources>

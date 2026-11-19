@@ -1,239 +1,131 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
-using Android.Views.Animations;
-using Android.Webkit;
+using Android.Widget;
 using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Helper;
-using Google.Android.Material.AppBar;
-using Java.Interop;
-using Newtonsoft.Json;
-using Square.Picasso;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace com.aa.tvshows
 {
+    /// <summary>
+    /// An episode's page: still, synopsis and (when a source is configured) the list of stream hosts.
+    /// TMDB has no streams, so by default this page shows the details and says so.
+    /// </summary>
     [Activity(Label = "TV Episode Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class EpisodeDetailActivity : AppCompatActivity
     {
-        AppBarLayout appBarLayout;
-        Toolbar toolbar;
-        CollapsingToolbarLayout collapseToolbar;
-        RecyclerView dataRV;
-        ContentLoadingProgressBar loadingView;
+        ImageView image;
+        TextView showTitle, title, meta, overview, showButton, sourcesTitle, message;
+        RecyclerView links;
+        ProgressBar progress;
 
-        Android.Widget.LinearLayout titleContainer;
-
-        ShowEpisodeDetails epData;
-        bool IsTitleContainerVisible = true;
-        bool IsTitleVisible = false;
-        bool canGoBackToSeriesHome = false;
-        readonly int AlphaAnimationDuration = 200;
-        readonly double PercentageToShowTitle = 0.600;
-        readonly double PercentageToHideTitle = 0.599;
+        ShowEpisodeDetails episode;
+        bool canGoBackToSeriesHome;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            // Create your application here
-            SetContentView(Resource.Layout.tv_episode_detail);
+            WindowInsetsHelper.EnableEdgeToEdge(this);
+            SetContentView(Resource.Layout.activity_episode_detail);
 
-            toolbar = FindViewById<Toolbar>(Resource.Id.image_toolbar_main_toolbar);
-            appBarLayout = FindViewById<AppBarLayout>(Resource.Id.image_toolbar_appbar_layout);
-            collapseToolbar = FindViewById<CollapsingToolbarLayout>(Resource.Id.image_toolbar_collapsing_layout);
-            collapseToolbar.TitleEnabled = true;
-            titleContainer = FindViewById<Android.Widget.LinearLayout>(Resource.Id.image_toolbar_collapsing_root);
-            
-            dataRV = FindViewById<RecyclerView>(Resource.Id.tv_episode_detail_rv);
-            dataRV.SetLayoutManager(new CachingLayoutManager(this));
-            loadingView = FindViewById<ContentLoadingProgressBar>(Resource.Id.image_toolbar_loading);
+            image = FindViewById<ImageView>(Resource.Id.ep_image);
+            showTitle = FindViewById<TextView>(Resource.Id.ep_show_title);
+            title = FindViewById<TextView>(Resource.Id.ep_title);
+            meta = FindViewById<TextView>(Resource.Id.ep_meta);
+            overview = FindViewById<TextView>(Resource.Id.ep_overview);
+            showButton = FindViewById<TextView>(Resource.Id.ep_btn_show);
+            sourcesTitle = FindViewById<TextView>(Resource.Id.ep_sources_title);
+            message = FindViewById<TextView>(Resource.Id.ep_message);
+            links = FindViewById<RecyclerView>(Resource.Id.ep_links);
+            progress = FindViewById<ProgressBar>(Resource.Id.ep_progress);
 
-            AppView.SetActionBarForActivity(toolbar, this);
-            appBarLayout.OffsetChanged += AppLayout_OffsetChanged;
+            var back = FindViewById<View>(Resource.Id.ep_back);
+            if (back != null)
+            {
+                var lp = (ViewGroup.MarginLayoutParams)back.LayoutParameters;
+                lp.TopMargin += WindowInsetsHelper.StatusBarHeight(this);
+                back.LayoutParameters = lp;
+                back.Click += (s, e) => Finish();
+            }
+
+            links.SetLayoutManager(new LinearLayoutManager(this));
+            showButton.Click += (s, e) =>
+            {
+                if (episode?.EpisodeShowLink == null) return;
+                var intent = new Intent(this, typeof(ShowDetailActivity));
+                intent.PutExtra("itemLink", episode.EpisodeShowLink);
+                StartActivity(intent);
+            };
 
             canGoBackToSeriesHome = Intent.GetBooleanExtra("canGoBackToSeriesHome", false);
-            var link = Intent.GetStringExtra("itemLink");
-            LoadEpisodeData(link);
+            _ = LoadAsync(Intent.GetStringExtra("itemLink"));
         }
 
-        private async void LoadEpisodeData(string link)
+        async Task LoadAsync(string link)
         {
-            loadingView.Visibility = Android.Views.ViewStates.Visible;
-            epData = await TMDbClient.GetDetailsForTVShowEpisode(link);
-            loadingView.Visibility = Android.Views.ViewStates.Gone;
-            if (epData != null)
+            progress.Visibility = ViewStates.Visible;
+            try
             {
-                InvalidateOptionsMenu();
-                collapseToolbar.TitleEnabled = false;
-                SupportActionBar.SetDisplayShowTitleEnabled(false);
+                episode = await TMDbClient.GetDetailsForTVShowEpisode(link);
+            }
+            catch (Exception)
+            {
+                episode = null;
+            }
+            if (IsDestroyed) return;
+            progress.Visibility = ViewStates.Gone;
 
-                var titleView = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_title);
-                var descriptionView = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_description);
-                var releaseView = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_release);
-                var genreView = FindViewById<AppCompatTextView>(Resource.Id.image_toolbar_main_genre);
-                var imageView = FindViewById<AppCompatImageView>(Resource.Id.image_toolbar_main_image);
-                SupportActionBar.Title = titleView.Text = epData.EpisodeShowTitle;
-                descriptionView.Text = epData.EpisodeSummary;
-                releaseView.Text = epData.EpisodeAirDate;
-                genreView.Text = epData.EpisodeFullNameNumber;
-                SupportActionBar.Subtitle = epData.EpisodeNumber;
-                Picasso.Get().Load(epData.EpisodeImage).Into(imageView);
-                
-                if (epData.IsEpisodeWatchable)
+            if (episode == null)
+            {
+                title.Text = GetString(Resource.String.home_load_error);
+                Error.Instance.ShowErrorTip("Episode data could not be loaded.", this);
+                return;
+            }
+
+            AppView.LoadPicture(image, !string.IsNullOrEmpty(episode.EpisodeImageLarge) ? episode.EpisodeImageLarge : episode.EpisodeImage);
+            showTitle.Text = episode.EpisodeShowTitle;
+            title.Text = episode.EpisodeFullNameNumber;
+
+            var parts = new List<string>();
+            if (!string.IsNullOrEmpty(episode.EpisodeNumber)) parts.Add(episode.EpisodeNumber);
+            if (!string.IsNullOrEmpty(episode.EpisodeAirDate) && episode.EpisodeAirDate != "Unknown") parts.Add(DateText.Short(episode.EpisodeAirDate));
+            if (!string.IsNullOrEmpty(episode.EpisodeRuntime)) parts.Add(episode.EpisodeRuntime);
+            meta.Text = string.Join("  •  ", parts);
+
+            overview.Text = string.IsNullOrWhiteSpace(episode.EpisodeSummary) ? GetString(Resource.String.detail_overview_missing) : episode.EpisodeSummary;
+            // came here from the show's own page? then "Go to show" would just stack the same page again
+            showButton.Visibility = canGoBackToSeriesHome || string.IsNullOrEmpty(episode.EpisodeShowLink) ? ViewStates.Gone : ViewStates.Visible;
+
+            if (episode.IsEpisodeWatchable && episode.EpisodeStreamLinks != null && episode.EpisodeStreamLinks.Count > 0)
+            {
+                var streamLinks = episode.EpisodeStreamLinks;
+                if (int.TryParse(StorageData.GetNumberOfVideoLinksSetting(), out int numberOfLinks) && numberOfLinks > 0)
                 {
-                    EpisodesAdapter<EpisodeStreamLink> adapter = null;
-                    if (int.TryParse(StorageData.GetNumberOfVideoLinksSetting(), out int numberOfLinks) && numberOfLinks > 0)
-                    {
-                        var links = epData.EpisodeStreamLinks.Take(numberOfLinks).ToList();
-                        adapter = new EpisodesAdapter<EpisodeStreamLink>(links);
-                    }
-                    else
-                    {
-                        adapter = new EpisodesAdapter<EpisodeStreamLink>(epData.EpisodeStreamLinks);
-                    }
-                        
-                    dataRV.SetAdapter(adapter);
-                    adapter.ItemClick += (s, e) =>
-                    {
-                        // handle watch episode here
-                        // first get the decoded link from WebView and JavaValueCallback
-                        //LoadEncodedLinkFromWebViewInBackground(adapter.GetItem(e));
-                        LoadEncodedLinkFromWebView(adapter.GetItem(e));
-                    };
+                    streamLinks = streamLinks.Take(numberOfLinks).ToList();
                 }
-                else
+                var adapter = new EpisodesAdapter<EpisodeStreamLink>(streamLinks);
+                adapter.ItemClick += (s, position) =>
                 {
-                    Helper.Error.Instance.ShowErrorSnack("No links found. Episode cannot be streamed.", dataRV);
-                }
+                    var host = adapter.GetItem(position);
+                    LoadingViewDialogForWebView.Instance.ShowDialog(this);
+                    LoadingViewDialogForWebView.Instance.LoadUrl(host.HostUrl, host.HostName);
+                };
+                links.SetAdapter(adapter);
+                sourcesTitle.Visibility = ViewStates.Visible;
             }
             else
             {
-                Helper.Error.Instance.ShowErrorSnack("Episode data could not be loaded.", dataRV);
+                message.Text = GetString(Resource.String.episode_no_sources);
+                message.Visibility = ViewStates.Visible;
             }
-        }
-
-        private void AppLayout_OffsetChanged(object sender, AppBarLayout.OffsetChangedEventArgs e)
-        {
-            int maxScroll = e.AppBarLayout.TotalScrollRange;
-            double percentage = (double)System.Math.Abs(e.VerticalOffset) / (double)maxScroll;
-            HandleAlphaOnTitle(percentage);
-            HandleToolbarTitleVisibility(percentage);
-        }
-
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            if (!canGoBackToSeriesHome && epData != null)
-            {
-                menu.Add(AppView.mainItemsGroupId, AppView.GoToSeriesHomeId, 1, "Series Home")
-                    .SetIcon(Resource.Drawable.baseline_store_24)
-                    .SetShowAsAction(ShowAsAction.Always);
-            }   
-            menu.Add(AppView.mainItemsGroupId, AppView.ReloadId, 2, "Reload")
-                    .SetIcon(Resource.Drawable.baseline_refresh_24)
-                    .SetShowAsAction(ShowAsAction.IfRoom);
-
-            return AppView.ShowOptionsMenu(menu, this);
-        }
-
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            Action seriesHome = null;
-            if (item.ItemId == AppView.GoToSeriesHomeId)
-            {
-                seriesHome = new Action(() => 
-                {
-                    var intent = new Intent(this, typeof(ShowDetailActivity));
-                    intent.PutExtra("itemLink", epData.EpisodeShowLink);
-                    StartActivity(intent);
-                });
-            }
-            else if (item.ItemId == AppView.ReloadId)
-            {
-                seriesHome = new Action(() =>
-                {
-                    if (loadingView.Visibility != ViewStates.Visible)
-                        LoadEpisodeData(Intent.GetStringExtra("itemLink"));
-                    else
-                        Error.Instance.ShowErrorTip("Data is loading... Please wait!", this);
-                });
-            }
-            return AppView.OnOptionsItemSelected(item, this, seriesHome);
-        }
-
-        public override bool OnSupportNavigateUp()
-        {
-            OnBackPressed();
-            return base.OnSupportNavigateUp();
-        }
-
-        private void HandleToolbarTitleVisibility(double percentage)
-        {
-            if (percentage >= PercentageToShowTitle)
-            {
-                if (!IsTitleVisible)
-                {
-                    //collapseToolbar.TitleEnabled = true;
-                    SupportActionBar.SetDisplayShowTitleEnabled(true);
-                    //StartAlphaAnimation(toolbarText, AlphaAnimationDuration, ViewStates.Visible);
-                    IsTitleVisible = true;
-                }
-            }
-            else
-            {
-                if (IsTitleVisible)
-                {
-                    //collapseToolbar.TitleEnabled = false;
-                    SupportActionBar.SetDisplayShowTitleEnabled(false);
-                    //StartAlphaAnimation(toolbarText, AlphaAnimationDuration, ViewStates.Invisible);
-                    IsTitleVisible = false;
-                }
-            }
-        }
-
-        private void HandleAlphaOnTitle(double percentage)
-        {
-            if (percentage >= PercentageToHideTitle)
-            {
-                if (IsTitleContainerVisible)
-                {
-                    StartAlphaAnimation(titleContainer, AlphaAnimationDuration, ViewStates.Invisible);
-                    IsTitleContainerVisible = false;
-                }
-            }
-            else
-            {
-                if (!IsTitleContainerVisible)
-                {
-                    StartAlphaAnimation(titleContainer, AlphaAnimationDuration, ViewStates.Visible);
-                    IsTitleContainerVisible = true;
-                }
-            }
-        }
-
-        public static void StartAlphaAnimation(View v, long duration, ViewStates visibility)
-        {
-            AlphaAnimation alphaAnimation = visibility == ViewStates.Visible ? new AlphaAnimation(0f, 1f) : new AlphaAnimation(1f, 0f);
-
-            alphaAnimation.Duration = duration;
-            alphaAnimation.FillAfter = true;
-            v.StartAnimation(alphaAnimation);
-        }
-
-        private void LoadEncodedLinkFromWebView(EpisodeStreamLink encodedLink)
-        {
-            LoadingViewDialogForWebView.Instance.ShowDialog(this);
-            LoadingViewDialogForWebView.Instance.LoadUrl(encodedLink.HostUrl, encodedLink.HostName);
+            (showButton.Visibility == ViewStates.Visible ? showButton : (View)title).RequestFocus();
         }
     }
 }

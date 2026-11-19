@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- rounded placeholder behind artwork; also the outline the image is clipped to -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/colorSurface" />
+    <corners android:radius="@dimen/card_corner" />
+</shape>

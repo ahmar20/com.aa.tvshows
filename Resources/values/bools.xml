@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- flipped by values-television; the one switch the code reads to pick TV behaviour -->
+  <bool name="is_tv">false</bool>
+</resources>

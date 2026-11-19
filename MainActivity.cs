@@ -1,19 +1,17 @@
-﻿using Android.App;
+using Android.App;
+using Android.Content;
 using Android.OS;
-using AndroidX.AppCompat.App;
-using Android.Runtime;
-using AndroidX.ViewPager.Widget;
-using Google.Android.Material.Tabs;
-using com.aa.tvshows.Helper;
-using AndroidX.AppCompat.Widget;
 using Android.Views;
-using System;
-using AndroidX.CursorAdapter.Widget;
-using Android.Database;
-using AndroidX.ViewPager2.Widget;
+using Android.Widget;
+using AndroidX.AppCompat.App;
+using AndroidX.Activity;
+using AndroidX.Fragment.App;
+using com.aa.tvshows.Fragments;
+using com.aa.tvshows.Helper;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using System;
 using System.Collections.Generic;
 
 namespace com.aa.tvshows
@@ -23,13 +21,13 @@ namespace com.aa.tvshows
     [IntentFilter(new[] { Android.Content.Intent.ActionMain }, Categories = new[] { "android.intent.category.LEANBACK_LAUNCHER" })]
     public class MainActivity : AppCompatActivity
     {
-        ViewPager2 viewPager;
-        TabLayout tabLayout;
-        /*
-        const string PopularShowsFragmentKey = "popularShows";
-        const string NewEpisodesFragmentKey = "newEpisodes";
-        const string FavoritesFragmentKey = "favorites";
-        */
+        // The four top-level destinations. Phone: bottom bar. TV: left rail (which also has Genres and Settings).
+        static readonly string[] TabTags = { "home", "search", "schedule", "list" };
+        const string SelectedTabKey = "selectedTab";
+
+        TextView[] navItems;
+        int selectedTab = -1;
+        ActionBackCallback backCallback;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -39,111 +37,108 @@ namespace com.aa.tvshows
             MetadataScheduler.ScheduleDailyRefresh(ApplicationContext);
             _ = MetadataCache.RefreshIfStaleAsync(ApplicationContext);
 
-            //Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-            // Set our view from the "main" layout resource
+            WindowInsetsHelper.EnableEdgeToEdge(this);
             SetContentView(Resource.Layout.activity_main);
 
-            var toolbar = FindViewById<Toolbar>(Resource.Id.main_toolbar);
-            AppView.SetActionBarForActivity(toolbar, this);
+            var nav = FindViewById<View>(Resource.Id.main_nav);
+            // the bar sits on the screen edge: keep its icons clear of the gesture / button area
+            WindowInsetsHelper.Apply(nav, bottom: !UiMode.IsTv(this), sides: true);
 
-            viewPager = FindViewById<ViewPager2>(Resource.Id.main_tabs_viewpager);
-            viewPager.OffscreenPageLimit = 3;
-            tabLayout = FindViewById<TabLayout>(Resource.Id.main_tabs_header);
-            SetupTabs();
-            //SetupSearchView();
+            navItems = new[]
+            {
+                FindViewById<TextView>(Resource.Id.nav_home),
+                FindViewById<TextView>(Resource.Id.nav_search),
+                FindViewById<TextView>(Resource.Id.nav_schedule),
+                FindViewById<TextView>(Resource.Id.nav_list)
+            };
+            for (var i = 0; i < navItems.Length; i++)
+            {
+                var index = i;
+                navItems[i].Click += (s, e) => SelectTab(index);
+            }
+
+            // TV only: the rail also reaches the screens that live outside the four tabs
+            var genres = FindViewById<TextView>(Resource.Id.nav_genres);
+            if (genres != null) genres.Click += (s, e) => StartActivity(new Intent(this, typeof(GenresActivity)));
+            var settings = FindViewById<TextView>(Resource.Id.nav_settings);
+            if (settings != null) settings.Click += (s, e) => StartActivity(new Intent(this, typeof(SettingsActivity)));
+
+            // back from any tab returns to Home first; from Home the system takes over (predictive back friendly)
+            backCallback = new ActionBackCallback(() => SelectTab(0));
+            OnBackPressedDispatcher.AddCallback(this, backCallback);
+
+            SelectTab(savedInstanceState?.GetInt(SelectedTabKey, 0) ?? 0);
+
             AppCenter.Start("94d2c36e-82e2-4561-91d6-85544e9cbdb8", typeof(Analytics), typeof(Crashes));
         }
 
-        /*protected override void OnSaveInstanceState(Bundle outState)
+        protected override void OnSaveInstanceState(Bundle outState)
         {
             base.OnSaveInstanceState(outState);
-            SupportFragmentManager.PutFragment(outState, PopularShowsFragmentKey, tabsAdapter.GetTab(0).Fragmnet);
-            SupportFragmentManager.PutFragment(outState, NewEpisodesFragmentKey, tabsAdapter.GetTab(1).Fragmnet);
-            SupportFragmentManager.PutFragment(outState, FavoritesFragmentKey, tabsAdapter.GetTab(2).Fragmnet);
+            outState.PutInt(SelectedTabKey, Math.Max(selectedTab, 0));
         }
 
-        protected override void OnRestoreInstanceState(Bundle savedInstanceState)
+        void SelectTab(int index)
         {
-            var fragments = new List<TitleFragment>()
+            if (index < 0 || index >= TabTags.Length) return;
+            if (index == selectedTab && SupportFragmentManager.FindFragmentByTag(TabTags[index]) != null) return;
+
+            var manager = SupportFragmentManager;
+            var transaction = manager.BeginTransaction();
+            transaction.SetReorderingAllowed(true);
+
+            // show the chosen tab, hide the rest; tabs are created the first time they are opened
+            for (var i = 0; i < TabTags.Length; i++)
             {
-                new TitleFragment() { Title = "Popular Shows", Fragmnet = SupportFragmentManager.GetFragment(savedInstanceState, PopularShowsFragmentKey) },
-                new TitleFragment() { Title = "New Episodes", Fragmnet = SupportFragmentManager.GetFragment(savedInstanceState, NewEpisodesFragmentKey) },
-                new TitleFragment() { Title = "Your Favorites", Fragmnet = SupportFragmentManager.GetFragment(savedInstanceState, FavoritesFragmentKey) }
-            };
-            base.OnRestoreInstanceState(savedInstanceState);
-        }*/
-
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
-        {
-            //Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            return AppView.ShowOptionsMenu(menu, this);
-        }
-
-        // ViewPager2's tab paging is a touch-swipe gesture with no D-pad equivalent. This only
-        // fires when nothing in the currently focused view already consumed the key (e.g. a
-        // vertical RecyclerView row ignores left/right), so it's safe alongside normal content.
-        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
-        {
-            if (viewPager != null)
-            {
-                var itemCount = viewPager.Adapter?.ItemCount ?? 0;
-                if (keyCode == Keycode.DpadLeft && viewPager.CurrentItem > 0)
+                var fragment = manager.FindFragmentByTag(TabTags[i]);
+                if (i == index)
                 {
-                    viewPager.CurrentItem -= 1;
-                    return true;
+                    if (fragment == null)
+                    {
+                        transaction.Add(Resource.Id.main_container, CreateTab(i), TabTags[i]);
+                    }
+                    else
+                    {
+                        transaction.Show(fragment);
+                    }
                 }
-                if (keyCode == Keycode.DpadRight && viewPager.CurrentItem < itemCount - 1)
+                else if (fragment != null)
                 {
-                    viewPager.CurrentItem += 1;
-                    return true;
+                    transaction.Hide(fragment);
                 }
             }
-            return base.OnKeyUp(keyCode, e);
+            transaction.Commit();
+
+            selectedTab = index;
+            for (var i = 0; i < navItems.Length; i++)
+            {
+                navItems[i].Selected = i == index;
+            }
+            if (backCallback != null) backCallback.Enabled = index != 0;
         }
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
+        static AndroidX.Fragment.App.Fragment CreateTab(int index)
         {
-            return AppView.OnOptionsItemSelected(item, this);
+            switch (index)
+            {
+                case 1: return new SearchFragment();
+                case 2: return new ScheduleFragment();
+                case 3: return new MyListFragment();
+                default: return new HomeFragment();
+            }
+        }
+    }
+
+    /// <summary>OnBackPressedCallback that runs a delegate (top-level so the Android wrapper is generated normally).</summary>
+    public class ActionBackCallback : OnBackPressedCallback
+    {
+        readonly Action action;
+
+        public ActionBackCallback(Action action) : base(false)
+        {
+            this.action = action;
         }
 
-        public void SetupTabs(List<TitleFragment> savedFragments = default)
-        {
-            PageTabsAdapter tabsAdapter = new PageTabsAdapter(this);
-            /*
-            // not really needed because there is not much difference between
-            // popular episodes and new episodes and also new episodes are more
-            // than popular ones
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.MainTabsType.PopularEpisodes),
-                Title = "Popular Episodes"
-            });
-            */
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.PopularShows),
-                Title = "Popular Shows"
-            });
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.NewEpisodes),
-                Title = "New Episodes"
-            });
-            tabsAdapter.AddTab(new TitleFragment()
-            {
-                Fragmnet = new Fragments.MainTabs(DataEnum.DataType.UserFavorites),
-                Title = "Your Favorites"
-            });
-            viewPager.Adapter = tabsAdapter;
-            TabMediatorStrategy tabStrategy = new TabMediatorStrategy(tabsAdapter.Fragments);
-            TabLayoutMediator tabMediator = new TabLayoutMediator(tabLayout, viewPager, tabStrategy);
-            tabMediator.Attach();
-        }
+        public override void HandleOnBackPressed() => action?.Invoke();
     }
 }
