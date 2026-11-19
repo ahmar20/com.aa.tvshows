@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- back navigation: the previous screen fades back to full strength -->
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <alpha android:fromAlpha="0.85" android:toAlpha="1" android:duration="200" />
+</set>

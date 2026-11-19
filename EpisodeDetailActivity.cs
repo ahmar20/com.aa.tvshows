@@ -20,6 +20,12 @@ namespace com.aa.tvshows
     [Activity(Label = "TV Episode Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class EpisodeDetailActivity : AppCompatActivity
     {
+        public override void Finish()
+        {
+            base.Finish();
+            OverridePendingTransition(Resource.Animation.anim_pop_enter, Resource.Animation.anim_pop_exit);
+        }
+
         ImageView image;
         TextView showTitle, title, meta, overview, showButton, sourcesTitle, message;
         RecyclerView links;
@@ -52,8 +58,14 @@ namespace com.aa.tvshows
                 var lp = (ViewGroup.MarginLayoutParams)back.LayoutParameters;
                 lp.TopMargin += WindowInsetsHelper.StatusBarHeight(this);
                 back.LayoutParameters = lp;
-                back.Click += (s, e) => Finish();
+                back.Click += (s, e) => AppView.FinishWithTransition(this);
             }
+
+            // nothing shows until the data it would display has actually arrived
+            showTitle.Visibility = ViewStates.Invisible;
+            title.Visibility = ViewStates.Invisible;
+            meta.Visibility = ViewStates.Invisible;
+            overview.Visibility = ViewStates.Invisible;
 
             links.SetLayoutManager(new LinearLayoutManager(this));
             showButton.Click += (s, e) =>
@@ -61,7 +73,7 @@ namespace com.aa.tvshows
                 if (episode?.EpisodeShowLink == null) return;
                 var intent = new Intent(this, typeof(ShowDetailActivity));
                 intent.PutExtra("itemLink", episode.EpisodeShowLink);
-                StartActivity(intent);
+                AppView.StartActivityWithTransition(this, intent);
             };
 
             canGoBackToSeriesHome = Intent.GetBooleanExtra("canGoBackToSeriesHome", false);
@@ -85,6 +97,7 @@ namespace com.aa.tvshows
             if (episode == null)
             {
                 title.Text = GetString(Resource.String.home_load_error);
+                title.Visibility = ViewStates.Visible;
                 Error.Instance.ShowErrorTip("Episode data could not be loaded.", this);
                 return;
             }
@@ -92,6 +105,10 @@ namespace com.aa.tvshows
             AppView.LoadPicture(image, !string.IsNullOrEmpty(episode.EpisodeImageLarge) ? episode.EpisodeImageLarge : episode.EpisodeImage);
             showTitle.Text = episode.EpisodeShowTitle;
             title.Text = episode.EpisodeFullNameNumber;
+            showTitle.Visibility = ViewStates.Visible;
+            title.Visibility = ViewStates.Visible;
+            meta.Visibility = ViewStates.Visible;
+            overview.Visibility = ViewStates.Visible;
 
             var parts = new List<string>();
             if (!string.IsNullOrEmpty(episode.EpisodeNumber)) parts.Add(episode.EpisodeNumber);

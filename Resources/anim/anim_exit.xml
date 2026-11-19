@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the screen being left behind: holds in place and dims slightly so the new screen reads as "on top" -->
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <alpha android:fromAlpha="1" android:toAlpha="0.85" android:duration="220" />
+</set>

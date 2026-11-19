@@ -51,14 +51,28 @@
                 android:maxLines="2"
                 android:ellipsize="end" />
 
-            <TextView
-                android:id="@+id/hero_meta"
-                style="@style/Text.Muted"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:gravity="center_vertical">
+                <TextView
+                    android:id="@+id/hero_rating"
+                    style="@style/Text.Muted"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_star"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="@color/colorStar"
+                    android:visibility="gone" />
+                <TextView
+                    android:id="@+id/hero_meta"
+                    style="@style/Text.Muted"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/hero_overview"

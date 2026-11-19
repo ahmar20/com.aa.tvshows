@@ -17,6 +17,12 @@ namespace com.aa.tvshows
     [Activity(Label = "Genres", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class GenresActivity : AppCompatActivity
     {
+        public override void Finish()
+        {
+            base.Finish();
+            OverridePendingTransition(Resource.Animation.anim_pop_enter, Resource.Animation.anim_pop_exit);
+        }
+
         RecyclerView genresList;
         RecyclerView gridView;
         ProgressBar progress;
@@ -48,6 +54,10 @@ namespace com.aa.tvshows
 
             var isTv = UiMode.IsTv(this);
             genresList.SetLayoutManager(new LinearLayoutManager(this, isTv ? LinearLayoutManager.Vertical : LinearLayoutManager.Horizontal, false));
+
+            // nothing shows until the genre list (and then the first grid page) has actually arrived
+            genresList.Visibility = ViewStates.Invisible;
+            gridView.Visibility = ViewStates.Invisible;
 
             grid = new PosterGrid(gridView, this);
             grid.Adapter.ItemClick += card => AppView.HandleItemShowEpisodeClick(card, this);
@@ -89,6 +99,7 @@ namespace com.aa.tvshows
             genreAdapter = new GenreAdapter(genres);
             genreAdapter.ItemClick += position => _ = SelectGenreAsync(position);
             genresList.SetAdapter(genreAdapter);
+            genresList.Visibility = ViewStates.Visible;
             await SelectGenreAsync(0);
         }
 
@@ -119,6 +130,7 @@ namespace com.aa.tvshows
             progress.Visibility = ViewStates.Gone;
             if (page == null || page.Items.Count == 0)
             {
+                gridView.Visibility = ViewStates.Invisible;
                 emptyText.Text = GetString(Resource.String.home_load_error);
                 emptyText.Visibility = ViewStates.Visible;
                 return;
@@ -126,6 +138,7 @@ namespace com.aa.tvshows
             grid.Adapter.Replace(page.Items);
             hasMore = page.HasMore;
             gridView.ScrollToPosition(0);
+            gridView.Visibility = ViewStates.Visible;
         }
 
         async Task LoadMoreAsync()

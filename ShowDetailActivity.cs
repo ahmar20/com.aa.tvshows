@@ -19,8 +19,14 @@ namespace com.aa.tvshows
     [Activity(Label = "TV Show Detail", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
     public class ShowDetailActivity : AppCompatActivity
     {
+        public override void Finish()
+        {
+            base.Finish();
+            OverridePendingTransition(Resource.Animation.anim_pop_enter, Resource.Animation.anim_pop_exit);
+        }
+
         ImageView backdrop;
-        TextView titleText, metaText, overviewText, listButton, seasonButton;
+        TextView titleText, ratingText, metaText, overviewText, listButton, seasonButton;
         RecyclerView episodesView;
         ProgressBar progress;
         EpisodeRowsAdapter episodeAdapter;
@@ -41,6 +47,7 @@ namespace com.aa.tvshows
 
             backdrop = FindViewById<ImageView>(Resource.Id.detail_backdrop);
             titleText = FindViewById<TextView>(Resource.Id.detail_title);
+            ratingText = FindViewById<TextView>(Resource.Id.detail_rating);
             metaText = FindViewById<TextView>(Resource.Id.detail_meta);
             overviewText = FindViewById<TextView>(Resource.Id.detail_overview);
             listButton = FindViewById<TextView>(Resource.Id.detail_btn_list);
@@ -55,7 +62,7 @@ namespace com.aa.tvshows
                 var lp = (ViewGroup.MarginLayoutParams)back.LayoutParameters;
                 lp.TopMargin += WindowInsetsHelper.StatusBarHeight(this);
                 back.LayoutParameters = lp;
-                back.Click += (s, e) => Finish();
+                back.Click += (s, e) => AppView.FinishWithTransition(this);
             }
             WindowInsetsHelper.Apply(episodesView, bottom: true);
 
@@ -63,6 +70,14 @@ namespace com.aa.tvshows
             episodeAdapter = new EpisodeRowsAdapter();
             episodeAdapter.ItemClick += episode => AppView.HandleItemShowEpisodeClick(episode, this);
             episodesView.SetAdapter(episodeAdapter);
+
+            // nothing shows until the data it would display has actually arrived
+            titleText.Visibility = ViewStates.Invisible;
+            ratingText.Visibility = ViewStates.Invisible;
+            metaText.Visibility = ViewStates.Invisible;
+            overviewText.Visibility = ViewStates.Invisible;
+            listButton.Visibility = ViewStates.Invisible;
+            episodesView.Visibility = ViewStates.Invisible;
 
             listButton.Click += async (s, e) => await ToggleListAsync();
             seasonButton.Click += (s, e) => ShowSeasonMenu();
@@ -94,6 +109,7 @@ namespace com.aa.tvshows
             {
                 Error.Instance.ShowErrorTip("This show could not be loaded.", this);
                 titleText.Text = GetString(Resource.String.home_load_error);
+                titleText.Visibility = ViewStates.Visible;
                 return;
             }
 
@@ -118,14 +134,28 @@ namespace com.aa.tvshows
             AppView.LoadPicture(backdrop, !string.IsNullOrEmpty(show.BackdropLink) ? show.BackdropLink : show.ImageLink);
             titleText.Text = show.Title;
 
+            if (string.IsNullOrEmpty(show.Rating))
+            {
+                ratingText.Visibility = ViewStates.Gone;
+            }
+            else
+            {
+                ratingText.Text = show.Rating;
+                ratingText.Visibility = ViewStates.Visible;
+            }
+
             var meta = new List<string>();
-            if (!string.IsNullOrEmpty(show.Rating)) meta.Add("★ " + show.Rating);
             if (!string.IsNullOrEmpty(show.ReleaseDate) && show.ReleaseDate.Length >= 4) meta.Add(show.ReleaseDate.Substring(0, 4));
             if (!string.IsNullOrEmpty(show.Status)) meta.Add(show.Status);
             if (!string.IsNullOrEmpty(show.Genres)) meta.Add(show.Genres);
             metaText.Text = string.Join("  •  ", meta);
 
             overviewText.Text = string.IsNullOrWhiteSpace(show.Description) ? GetString(Resource.String.detail_overview_missing) : show.Description;
+
+            titleText.Visibility = ViewStates.Visible;
+            metaText.Visibility = ViewStates.Visible;
+            overviewText.Visibility = ViewStates.Visible;
+            listButton.Visibility = ViewStates.Visible;
         }
 
         /// <summary>Honors the "latest first" setting: open on the newest season, otherwise on the first.</summary>
@@ -188,6 +218,7 @@ namespace com.aa.tvshows
                 : episodes.OrderBy(e => e.EpisodeIndex);
             episodeAdapter.SetItems(ordered);
             episodesView.ScrollToPosition(0);
+            episodesView.Visibility = ViewStates.Visible;
         }
 
         int ShowId() => TMDbClient.TryParseShowLink(show.SeriesLink, out int id) ? id : 0;

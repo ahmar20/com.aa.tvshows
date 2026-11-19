@@ -1,3 +1,4 @@
+using Android.App;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -79,15 +80,29 @@ namespace com.aa.tvshows.Helper
                 var intent = new Intent(context, typeof(EpisodeDetailActivity));
                 intent.PutExtra("itemLink", pageLink);
                 intent.PutExtra("canGoBackToSeriesHome", canGoBackToSeriesHome);
-                context.StartActivity(intent);
+                StartActivityWithTransition(context, intent);
             }
             else
             {
                 // tv show detail
                 var intent = new Intent(context, typeof(ShowDetailActivity));
                 intent.PutExtra("itemLink", pageLink);
-                context.StartActivity(intent);
+                StartActivityWithTransition(context, intent);
             }
+        }
+
+        /// <summary>Opens a new screen with a slide/fade instead of the default hard cut.</summary>
+        public static void StartActivityWithTransition(Context context, Intent intent)
+        {
+            context.StartActivity(intent);
+            (context as Activity)?.OverridePendingTransition(Resource.Animation.anim_enter, Resource.Animation.anim_exit);
+        }
+
+        /// <summary>Call instead of Finish() on a pushed screen so the back transition matches the forward one.</summary>
+        public static void FinishWithTransition(Activity activity)
+        {
+            activity.Finish();
+            activity.OverridePendingTransition(Resource.Animation.anim_pop_enter, Resource.Animation.anim_pop_exit);
         }
 
         /// <summary>
@@ -106,6 +121,9 @@ namespace com.aa.tvshows.Helper
             }
             var context = view.Context;
             var parent = LayoutInflater.From(view.Context).Inflate(Resource.Layout.empty_view, null, false);
+            // inflating with a null root loses the proper LayoutParams subtype for this parent, which
+            // otherwise left the icon+text shrink-wrapped into a narrow column instead of spanning the screen
+            parent.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
             var emptyHeader = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_header);
             var emptyContent = parent.FindViewById<AppCompatTextView>(Resource.Id.empty_view_content);
             var emptyImage = parent.FindViewById<AppCompatImageView>(Resource.Id.empty_view_tagline_image);

@@ -36,6 +36,7 @@
 
   <!-- actions -->
   <string name="action_details">Details</string>
+  <string name="action_view_all">View All</string>
   <string name="action_add_list">My List</string>
   <string name="action_in_list">In My List</string>
   <string name="action_saving">Saving…</string>

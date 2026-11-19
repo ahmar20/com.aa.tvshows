@@ -42,18 +42,6 @@ namespace com.aa.tvshows.Models
         public string Backdrop(string size = "w780") =>
             !string.IsNullOrEmpty(BackdropUrlOverride) ? BackdropUrlOverride : TMDbClient.ImageUrl(BackdropPath, size);
 
-        /// <summary>"★ 8.4  •  2024  •  Drama, Sci-Fi" with whichever parts are known.</summary>
-        public string MetaLine
-        {
-            get
-            {
-                var parts = new List<string>();
-                if (!string.IsNullOrEmpty(Rating)) parts.Add("★ " + Rating);
-                if (!string.IsNullOrEmpty(Year)) parts.Add(Year);
-                if (!string.IsNullOrEmpty(Genres)) parts.Add(Genres);
-                return string.Join("  •  ", parts);
-            }
-        }
     }
 
     /// <summary>One horizontal row on the home screen.</summary>
@@ -62,6 +50,10 @@ namespace com.aa.tvshows.Models
         public string Title { get; set; }
         public CardStyle Style { get; set; }
         public List<MediaCard> Items { get; set; } = new List<MediaCard>();
+
+        /// <summary>The TMDB path and query this row was built from, so "View All" can page through the same listing.</summary>
+        public string Endpoint { get; set; }
+        public Dictionary<string, string> Query { get; set; }
     }
 
     /// <summary>One page of tiles from a paged TMDB endpoint.</summary>

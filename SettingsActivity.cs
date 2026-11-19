@@ -18,6 +18,12 @@ namespace com.aa.tvshows
 	[Activity(Label = "Settings", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
 	public class SettingsActivity : AppCompatActivity
 	{
+		public override void Finish()
+		{
+			base.Finish();
+			OverridePendingTransition(Resource.Animation.anim_pop_enter, Resource.Animation.anim_pop_exit);
+		}
+
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
@@ -82,7 +88,7 @@ namespace com.aa.tvshows
 			var aboutCategory = new PreferenceCategory(Activity) { Title = "App" };
 			PreferenceScreen.AddPreference(aboutCategory);
 			var about = new Preference(Activity) { Key = "about_app", Title = "About", Summary = "Version, developer and open source libraries" };
-			about.PreferenceClick += (s, e) => StartActivity(new Intent(Activity, typeof(AboutActivity)));
+			about.PreferenceClick += (s, e) => AppView.StartActivityWithTransition(Activity, new Intent(Activity, typeof(AboutActivity)));
 			aboutCategory.AddPreference(about);
 		}
 	}

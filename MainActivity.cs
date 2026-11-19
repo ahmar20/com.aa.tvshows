@@ -59,9 +59,9 @@ namespace com.aa.tvshows
 
             // TV only: the rail also reaches the screens that live outside the four tabs
             var genres = FindViewById<TextView>(Resource.Id.nav_genres);
-            if (genres != null) genres.Click += (s, e) => StartActivity(new Intent(this, typeof(GenresActivity)));
+            if (genres != null) genres.Click += (s, e) => AppView.StartActivityWithTransition(this, new Intent(this, typeof(GenresActivity)));
             var settings = FindViewById<TextView>(Resource.Id.nav_settings);
-            if (settings != null) settings.Click += (s, e) => StartActivity(new Intent(this, typeof(SettingsActivity)));
+            if (settings != null) settings.Click += (s, e) => AppView.StartActivityWithTransition(this, new Intent(this, typeof(SettingsActivity)));
 
             // back from any tab returns to Home first; from Home the system takes over (predictive back friendly)
             backCallback = new ActionBackCallback(() => SelectTab(0));

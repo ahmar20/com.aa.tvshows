@@ -19,6 +19,12 @@ namespace com.aa.tvshows
     [Activity(Label = "About")]
     public class AboutActivity : AppCompatActivity
     {
+        public override void Finish()
+        {
+            base.Finish();
+            OverridePendingTransition(Resource.Animation.anim_pop_enter, Resource.Animation.anim_pop_exit);
+        }
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);

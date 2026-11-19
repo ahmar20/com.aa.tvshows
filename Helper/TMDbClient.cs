@@ -420,16 +420,22 @@ namespace com.aa.tvshows.Helper
 
         // ---------------- schedule ----------------
 
-        /// <summary>Approximates the old site-scraped TV schedule using TMDB's "on the air" list,
-        /// grouped by each show's next episode air date (soonest day first). The per-show lookups run in
-        /// parallel (a handful at a time) so the screen no longer waits for ~40 sequential requests.</summary>
-        public static async Task<Dictionary<string, List<CalenderScheduleList>>> GetTVSchedule(int pagesToScan = 3)
+        /// <summary>Approximates the old site-scraped TV schedule using TMDB's "on the air" list, grouped by
+        /// air date (soonest day first), within [today - <paramref name="daysBack"/>, today + <paramref name="daysForward"/>].
+        /// Both a show's last aired episode and its next one are considered, so days in the past can show
+        /// something too. The per-show lookups run in parallel (a handful at a time) so the screen doesn't
+        /// wait for dozens of sequential requests.</summary>
+        public static async Task<Dictionary<string, List<CalenderScheduleList>>> GetTVSchedule(int daysBack = 1, int daysForward = 7, int pagesToScan = 5)
         {
             var pageJson = await Task.WhenAll(Enumerable.Range(1, pagesToScan).Select(page =>
                 GetJsonAsync("/tv/on_the_air", new Dictionary<string, string> { ["page"] = page.ToString() })));
 
             var shows = pageJson.Where(p => p?["results"] != null).SelectMany(p => p["results"]).ToList();
             if (shows.Count == 0) return null;
+
+            var today = DateTime.Today;
+            var windowStart = today.AddDays(-daysBack);
+            var windowEnd = today.AddDays(daysForward);
 
             using var gate = new SemaphoreSlim(8);
             var lookups = await Task.WhenAll(shows.Select(async show =>
@@ -447,43 +453,53 @@ namespace com.aa.tvshows.Helper
             }));
 
             var byDate = new SortedDictionary<DateTime, List<CalenderScheduleList>>();
-            foreach (var (show, details) in lookups)
+            void AddIfInWindow(JToken show, JToken episode)
             {
-                var next = details?["next_episode_to_air"];
-                if (next == null || next.Type == JTokenType.Null) continue;
-
-                var airDate = next.Value<string>("air_date");
-                if (!DateTime.TryParse(airDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate)) continue;
+                if (episode == null || episode.Type == JTokenType.Null) return;
+                var airDate = episode.Value<string>("air_date");
+                if (!DateTime.TryParse(airDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate)) return;
+                if (parsedDate.Date < windowStart || parsedDate.Date > windowEnd) return;
 
                 var id = show.Value<int>("id");
-                var season = next.Value<int>("season_number");
-                var episode = next.Value<int>("episode_number");
+                var season = episode.Value<int>("season_number");
+                var episodeNumber = episode.Value<int>("episode_number");
 
                 if (!byDate.TryGetValue(parsedDate.Date, out var list))
                 {
                     list = new List<CalenderScheduleList>();
                     byDate[parsedDate.Date] = list;
                 }
+                // a show can contribute both its last and next episode if both fall in the window;
+                // skip an exact duplicate (same show, same date) rather than list it twice
+                var title = show.Value<string>("name");
+                if (list.Any(a => a.Title == title)) return;
 
                 list.Add(new CalenderScheduleList
                 {
                     ItemType = DataEnum.DataType.TVSchedule,
-                    Title = show.Value<string>("name"),
+                    Title = title,
                     ImageLink = Image(show.Value<string>("poster_path"), PosterSize),
-                    PageLink = EpisodeLink(id, season, episode),
-                    EpisodeNo = $"S{season:00}E{episode:00}",
-                    EpisodeName = next.Value<string>("name")
+                    PageLink = EpisodeLink(id, season, episodeNumber),
+                    EpisodeNo = $"S{season:00}E{episodeNumber:00}",
+                    EpisodeName = episode.Value<string>("name")
                 });
+            }
+
+            foreach (var (show, details) in lookups)
+            {
+                if (details == null) continue;
+                AddIfInWindow(show, details["last_episode_to_air"]);
+                AddIfInWindow(show, details["next_episode_to_air"]);
             }
 
             if (byDate.Count == 0) return null;
 
-            var today = DateTime.Today;
             var dates = new Dictionary<string, List<CalenderScheduleList>>();
             foreach (var kv in byDate)
             {
                 var label = kv.Key == today ? "Today"
                           : kv.Key == today.AddDays(1) ? "Tomorrow"
+                          : kv.Key == today.AddDays(-1) ? "Yesterday"
                           : kv.Key.ToString("dddd, MMM d", CultureInfo.InvariantCulture);
                 dates[label] = kv.Value.OrderBy(a => a.Title, StringComparer.OrdinalIgnoreCase).ToList();
             }
@@ -543,21 +559,22 @@ namespace com.aa.tvshows.Helper
         }
 
         /// <summary>The home screen's rows. Every request is started immediately (they run in parallel);
-        /// await the tasks in order to show the rows top to bottom as they arrive.</summary>
+        /// await the tasks in order to show the rows top to bottom as they arrive. Each request also
+        /// carries the endpoint/query/badge it was built from, so "View All" can replay it, paginated.</summary>
         public static List<HomeRowRequest> StartHomeRowRequests()
         {
             var rows = new List<HomeRowRequest>
             {
-                new HomeRowRequest("Trending This Week", CardStyle.Poster, GetCardPageAsync("/trending/tv/week")),
-                new HomeRowRequest("Popular", CardStyle.Poster, GetCardPageAsync("/tv/popular")),
-                new HomeRowRequest("New Episodes Today", CardStyle.Wide, GetCardPageAsync("/tv/airing_today", badge: "NEW EPISODE")),
-                new HomeRowRequest("Currently Airing", CardStyle.Poster, GetCardPageAsync("/tv/on_the_air")),
-                new HomeRowRequest("Top Rated", CardStyle.Poster, GetCardPageAsync("/tv/top_rated"))
+                new HomeRowRequest("Trending This Week", CardStyle.Poster, "/trending/tv/week", null, null),
+                new HomeRowRequest("Popular", CardStyle.Poster, "/tv/popular", null, null),
+                new HomeRowRequest("New Episodes Today", CardStyle.Wide, "/tv/airing_today", null, "NEW EPISODE"),
+                new HomeRowRequest("Currently Airing", CardStyle.Poster, "/tv/on_the_air", null, null),
+                new HomeRowRequest("Top Rated", CardStyle.Poster, "/tv/top_rated", null, null)
             };
             foreach (var genre in HomeGenres)
             {
-                rows.Add(new HomeRowRequest(genre.Name, CardStyle.Poster, GetCardPageAsync("/discover/tv", 1,
-                    new Dictionary<string, string> { ["with_genres"] = genre.Id.ToString(), ["sort_by"] = "popularity.desc" })));
+                rows.Add(new HomeRowRequest(genre.Name, CardStyle.Poster, "/discover/tv",
+                    new Dictionary<string, string> { ["with_genres"] = genre.Id.ToString(), ["sort_by"] = "popularity.desc" }, null));
             }
             return rows;
         }
@@ -578,19 +595,29 @@ namespace com.aa.tvshows.Helper
 
         public static Task<CardPage> SearchShows(string query, int page = 1) =>
             GetCardPageAsync("/search/tv", page, new Dictionary<string, string> { ["query"] = query });
+
+        /// <summary>Generic paged listing, for the "View All" screen replaying a home row's own endpoint/query.</summary>
+        public static Task<CardPage> GetCardPage(string endpoint, int page, Dictionary<string, string> query, string badge = null) =>
+            GetCardPageAsync(endpoint, page, query, badge);
     }
 
     public class HomeRowRequest
     {
         public string Title { get; }
         public CardStyle Style { get; }
+        public string Endpoint { get; }
+        public Dictionary<string, string> Query { get; }
+        public string Badge { get; }
         public Task<CardPage> Data { get; }
 
-        public HomeRowRequest(string title, CardStyle style, Task<CardPage> data)
+        public HomeRowRequest(string title, CardStyle style, string endpoint, Dictionary<string, string> query, string badge)
         {
             Title = title;
             Style = style;
-            Data = data;
+            Endpoint = endpoint;
+            Query = query;
+            Badge = badge;
+            Data = TMDbClient.GetCardPage(endpoint, 1, query, badge);
         }
     }
 }

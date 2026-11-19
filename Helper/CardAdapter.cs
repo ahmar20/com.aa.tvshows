@@ -126,6 +126,24 @@ namespace com.aa.tvshows.Helper
                     if (position >= 0) focused(position);
                 }
             };
+            if (!isTv)
+            {
+                // a quick tactile press-in on touch, not just a flat ripple
+                itemView.Touch += (s, e) =>
+                {
+                    switch (e.Event.Action)
+                    {
+                        case MotionEventActions.Down:
+                            itemView.Animate().ScaleX(0.96f).ScaleY(0.96f).SetDuration(100).Start();
+                            break;
+                        case MotionEventActions.Up:
+                        case MotionEventActions.Cancel:
+                            itemView.Animate().ScaleX(1f).ScaleY(1f).SetDuration(120).Start();
+                            break;
+                    }
+                    e.Handled = false;
+                };
+            }
         }
 
         public void Bind(MediaCard card, CardLayout layout, int gridCellWidth)

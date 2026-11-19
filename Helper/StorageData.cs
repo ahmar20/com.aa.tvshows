@@ -29,6 +29,8 @@ namespace com.aa.tvshows.Helper
         public const string ShowNumberOfLinksPref = "show_all_links_setting";
         public const string ShowLatestEpisodesOrderPref = "seasons_episodes_order_setting";
         public const string UseExternalMediaPlayerPref = "use_external_player_setting";
+        public const string ScheduleDaysBackPref = "schedule_days_back_setting";
+        public const string ScheduleDaysForwardPref = "schedule_days_forward_setting";
 
         public static async Task<bool> IsMarkedFavorite(SeriesDetails series)
         {
@@ -217,6 +219,14 @@ namespace com.aa.tvshows.Helper
         {
             return localPrefs.GetBoolean(UseExternalMediaPlayerPref, false);
         }
+
+        public static int GetScheduleDaysBack() => localPrefs.GetInt(ScheduleDaysBackPref, 1);
+
+        public static void SetScheduleDaysBack(int days) => localPrefs.Edit().PutInt(ScheduleDaysBackPref, days).Commit();
+
+        public static int GetScheduleDaysForward() => localPrefs.GetInt(ScheduleDaysForwardPref, 7);
+
+        public static void SetScheduleDaysForward(int days) => localPrefs.Edit().PutInt(ScheduleDaysForwardPref, days).Commit();
 
     }
 }
