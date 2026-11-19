@@ -34,6 +34,11 @@ namespace com.aa.tvshows
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
+            TMDbClient.ApiKey = Secrets.TMDB_Api_Key;
+            MetadataScheduler.ScheduleDailyRefresh(ApplicationContext);
+            _ = MetadataCache.RefreshIfStaleAsync(ApplicationContext);
+
             //Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
@@ -47,8 +52,6 @@ namespace com.aa.tvshows
             SetupTabs();
             //SetupSearchView();
             AppCenter.Start("94d2c36e-82e2-4561-91d6-85544e9cbdb8", typeof(Analytics), typeof(Crashes));
-        
-            TMDbClient.ApiKey = Secrets.TMDB_Api_Key;
         }
 
         /*protected override void OnSaveInstanceState(Bundle outState)
