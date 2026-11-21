@@ -81,7 +81,7 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:drawablePadding="4dp"
-            android:drawableTop="@android:drawable/ic_menu_preferences"
+            android:drawableTop="@drawable/ic_gear"
             android:text="@string/nav_settings" />
     </LinearLayout>
 

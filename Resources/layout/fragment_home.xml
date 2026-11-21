@@ -59,7 +59,7 @@
             android:layout_height="44dp"
             android:layout_marginStart="4dp"
             android:padding="10dp"
-            android:src="@android:drawable/ic_menu_preferences"
+            android:src="@drawable/ic_gear"
             android:tint="@color/colorOnSurface"
             android:background="@drawable/bg_nav_item"
             android:contentDescription="@string/nav_settings"
