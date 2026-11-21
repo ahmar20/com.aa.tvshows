@@ -133,7 +133,7 @@ namespace com.aa.tvshows
 
             if (show.Seasons != null && show.Seasons.Count > 0)
             {
-                await ShowSeasonAsync(DefaultSeason());
+                await ShowSeasonAsync(DefaultSeason(), isAutoSelect: true);
             }
             else
             {
@@ -172,11 +172,31 @@ namespace com.aa.tvshows
             listButton.Visibility = ViewStates.Visible;
         }
 
-        /// <summary>Honors the "latest first" setting: open on the newest season, otherwise on the first.</summary>
+        /// <summary>Honors the "latest first" setting: open on the newest season that actually has
+        /// episodes listed, otherwise the first such season. TMDB sometimes lists a season (e.g. an
+        /// upcoming/announced one) with zero episodes, so jumping straight to it would open on an
+        /// empty list; seasons with no episodes are skipped when picking the default. Falls back to
+        /// any numbered season if none of them report episodes yet.</summary>
         SeasonData DefaultSeason()
         {
             var numbered = show.Seasons.Where(s => s.SeasonNumber > 0).ToList();
             if (numbered.Count == 0) return show.Seasons[0];
+
+            var withEpisodes = numbered.Where(s => s.EpisodeCount > 0).ToList();
+            var candidates = withEpisodes.Count > 0 ? withEpisodes : numbered;
+
+            return StorageData.GetShowLatestEpisodesFirstSetting()
+                ? candidates.OrderByDescending(s => s.SeasonNumber).First()
+                : candidates.OrderBy(s => s.SeasonNumber).First();
+        }
+
+        /// <summary>The next season to try, in the configured direction, excluding ones already tried.
+        /// Used when a season's EpisodeCount said it had episodes but TMDB's own episode list for it
+        /// still came back empty (metadata and listing can disagree while a season is mid-rollout).</summary>
+        SeasonData NextFallbackSeason(HashSet<int> tried)
+        {
+            var numbered = show.Seasons.Where(s => s.SeasonNumber > 0 && !tried.Contains(s.SeasonNumber)).ToList();
+            if (numbered.Count == 0) return null;
             return StorageData.GetShowLatestEpisodesFirstSetting()
                 ? numbered.OrderByDescending(s => s.SeasonNumber).First()
                 : numbered.OrderBy(s => s.SeasonNumber).First();
@@ -195,7 +215,7 @@ namespace com.aa.tvshows
             menu.Show();
         }
 
-        async Task ShowSeasonAsync(SeasonData season)
+        async Task ShowSeasonAsync(SeasonData season, bool isAutoSelect = false, HashSet<int> triedSeasons = null)
         {
             if (season == null) return;
 
@@ -225,6 +245,22 @@ namespace com.aa.tvshows
                     return;
                 }
                 seasonCache[season.SeasonNumber] = episodes;
+            }
+
+            // Only auto-selected opens fall back -- a season the person picked from the menu on
+            // purpose still shows empty if that's genuinely what it is. TMDB's own episode_count can
+            // say a season has episodes while the episode list itself comes back empty (a season
+            // mid-rollout), so this is a second check beyond DefaultSeason()'s EpisodeCount filter.
+            if (episodes.Count == 0 && isAutoSelect)
+            {
+                triedSeasons ??= new HashSet<int>();
+                triedSeasons.Add(season.SeasonNumber);
+                var fallback = NextFallbackSeason(triedSeasons);
+                if (fallback != null)
+                {
+                    await ShowSeasonAsync(fallback, isAutoSelect: true, triedSeasons);
+                    return;
+                }
             }
 
             var ordered = StorageData.GetShowLatestEpisodesFirstSetting()
