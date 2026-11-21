@@ -38,4 +38,13 @@ namespace com.aa.tvshows.Models
         [JsonProperty("genres")]
         public List<TmdbGenre> Genres { get; set; }
     }
+
+    public class TmdbCountry
+    {
+        [JsonProperty("iso_3166_1")]
+        public string Code { get; set; }
+
+        [JsonProperty("english_name")]
+        public string Name { get; set; }
+    }
 }

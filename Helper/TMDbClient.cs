@@ -63,7 +63,7 @@ namespace com.aa.tvshows.Helper
             }
             try
             {
-                var qs = "language=en-US";
+                var qs = $"language=en-US&region={StorageData.GetRegion()}";
                 if (query != null)
                 {
                     foreach (var kv in query)

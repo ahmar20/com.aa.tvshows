@@ -85,7 +85,35 @@ namespace com.aa.tvshows
 				SummaryOff = "Use internal player to play video"
 			});
 
-			var aboutCategory = new PreferenceCategory(Activity) { Title = "App" };
+            var regionCategory = new PreferenceCategory(Activity) { Title = "Region" };
+            PreferenceScreen.AddPreference(regionCategory);
+            var countries = MetadataCache.GetCachedCountries(Activity)
+							.Where(c => !string.IsNullOrEmpty(c.Code) && !string.IsNullOrEmpty(c.Name))
+							.OrderBy(c => c.Name)
+							.ToList();
+
+            var regionPref = new ListPreference(Activity)
+            {
+                Key = StorageData.RegionPref,
+                Title = "Country / Region",
+                Value = StorageData.GetRegion(),
+                SummaryProvider = ListPreference.SimpleSummaryProvider.Instance
+            };
+            if (countries.Count > 0)
+            {
+                regionPref.SetEntries(countries.Select(c => c.Name).ToArray());
+                regionPref.SetEntryValues(countries.Select(c => c.Code).ToArray());
+            }
+            else
+            {
+                // Cache hasn't been populated yet (e.g. first run with no network) — a small fallback
+                // so the picker isn't empty; it'll be replaced with the full TMDB list once MetadataCache syncs.
+                regionPref.SetEntries(new[] { "United States", "United Kingdom", "Pakistan" });
+                regionPref.SetEntryValues(new[] { "US", "GB", "PK" });
+            }
+            regionCategory.AddPreference(regionPref);
+
+            var aboutCategory = new PreferenceCategory(Activity) { Title = "App" };
 			PreferenceScreen.AddPreference(aboutCategory);
 			var about = new Preference(Activity) { Key = "about_app", Title = "About", Summary = "Version, developer and open source libraries" };
 			about.PreferenceClick += (s, e) => AppView.StartActivityWithTransition(Activity, new Intent(Activity, typeof(AboutActivity)));

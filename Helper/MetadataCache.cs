@@ -16,6 +16,7 @@ namespace com.aa.tvshows.Helper
         private const string KeyGenres = "genres_json";
         private const string KeyConfig = "config_json";
         private const string KeyLastFetched = "last_fetched_utc_ticks";
+        private const string KeyCountries = "countries_json";
         private const long RefreshIntervalTicks = TimeSpan.TicksPerHour * 24;
 
         private const string BaseUrl = "https://api.themoviedb.org/3";
@@ -38,6 +39,13 @@ namespace com.aa.tvshows.Helper
             var json = GetPrefs(ctx).GetString(KeyGenres, null);
             if (string.IsNullOrEmpty(json)) return new List<TmdbGenre>();
             return JsonConvert.DeserializeObject<List<TmdbGenre>>(json);
+        }
+
+        public static List<TmdbCountry> GetCachedCountries(Context ctx)
+        {
+            var json = GetPrefs(ctx).GetString(KeyCountries, null);
+            if (string.IsNullOrEmpty(json)) return new List<TmdbCountry>();
+            return JsonConvert.DeserializeObject<List<TmdbCountry>>(json);
         }
 
         public static TmdbConfiguration GetCachedConfiguration(Context ctx)
@@ -100,16 +108,19 @@ namespace com.aa.tvshows.Helper
 
                 var genresTask = client.GetStringAsync($"{BaseUrl}/genre/tv/list?language=en-US");
                 var configTask = client.GetStringAsync($"{BaseUrl}/configuration");
+                var countriesTask = client.GetStringAsync($"{BaseUrl}/configuration/countries?language=en-US");
 
-                await Task.WhenAll(genresTask, configTask);
+                await Task.WhenAll(genresTask, configTask, countriesTask);
 
                 var genreResponse = JsonConvert.DeserializeObject<TmdbGenreListResponse>(genresTask.Result);
                 var config = JsonConvert.DeserializeObject<TmdbConfiguration>(configTask.Result);
+                var countries = JsonConvert.DeserializeObject<List<TmdbCountry>>(countriesTask.Result);
 
                 var prefs = GetPrefs(ctx);
                 using var editor = prefs.Edit();
                 editor.PutString(KeyGenres, JsonConvert.SerializeObject(genreResponse.Genres));
                 editor.PutString(KeyConfig, JsonConvert.SerializeObject(config));
+                editor.PutString(KeyCountries, JsonConvert.SerializeObject(countries));
                 editor.PutLong(KeyLastFetched, DateTime.UtcNow.Ticks);
                 editor.Apply();
 

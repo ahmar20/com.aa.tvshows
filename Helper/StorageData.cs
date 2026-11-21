@@ -31,6 +31,8 @@ namespace com.aa.tvshows.Helper
         public const string UseExternalMediaPlayerPref = "use_external_player_setting";
         public const string ScheduleDaysBackPref = "schedule_days_back_setting";
         public const string ScheduleDaysForwardPref = "schedule_days_forward_setting";
+        public const string RegionPref = "pref_region";
+
 
         public static async Task<bool> IsMarkedFavorite(SeriesDetails series)
         {
@@ -227,6 +229,23 @@ namespace com.aa.tvshows.Helper
         public static int GetScheduleDaysForward() => localPrefs.GetInt(ScheduleDaysForwardPref, 7);
 
         public static void SetScheduleDaysForward(int days) => localPrefs.Edit().PutInt(ScheduleDaysForwardPref, days).Commit();
+
+        public static string GetRegion()
+        {
+            var stored = localPrefs.GetString(RegionPref, null);
+            if (!string.IsNullOrEmpty(stored)) return stored;
+
+            try
+            {
+                var deviceCountry = Java.Util.Locale.Default.Country;
+                if (!string.IsNullOrEmpty(deviceCountry)) return deviceCountry.ToUpperInvariant();
+            }
+            catch (Exception) { }
+
+            return "US";
+        }
+
+        public static void SetRegion(string region) => localPrefs.Edit().PutString(RegionPref, region).Commit();
 
     }
 }
