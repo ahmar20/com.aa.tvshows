@@ -1,0 +1,3 @@
+[submodule "Helper/Secrets"]
+	path = Helper/Secrets
+	url = https://github.com/ahmar20/com.aa.tvshows-secrets.git
