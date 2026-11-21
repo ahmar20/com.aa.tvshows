@@ -224,7 +224,8 @@ namespace com.aa.tvshows.Fragments
                 var metaParts = new System.Collections.Generic.List<string>();
                 if (!string.IsNullOrEmpty(card.Year)) metaParts.Add(card.Year);
                 if (!string.IsNullOrEmpty(card.Genres)) metaParts.Add(card.Genres);
-                heroMeta.Text = string.Join("  •  ", metaParts);
+                var metaPrefix = tvHeroRating.Visibility == ViewStates.Visible ? "•  " : string.Empty;
+                heroMeta.Text = metaPrefix + string.Join("  •  ", metaParts);
                 heroMeta.Visibility = metaParts.Count == 0 ? ViewStates.Gone : ViewStates.Visible;
                 heroOverview.Text = card.Overview;
                 heroOverview.Visibility = string.IsNullOrWhiteSpace(card.Overview) ? ViewStates.Gone : ViewStates.Visible;

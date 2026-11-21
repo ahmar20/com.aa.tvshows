@@ -157,7 +157,8 @@ namespace com.aa.tvshows.Helper
             var metaParts = new List<string>();
             if (!string.IsNullOrEmpty(card.Year)) metaParts.Add(card.Year);
             if (!string.IsNullOrEmpty(card.Genres)) metaParts.Add(card.Genres);
-            meta.Text = string.Join("  •  ", metaParts);
+            var metaPrefix = rating.Visibility == ViewStates.Visible ? "•  " : string.Empty;
+            meta.Text = metaPrefix + string.Join("  •  ", metaParts);
             meta.Visibility = metaParts.Count == 0 ? ViewStates.Gone : ViewStates.Visible;
 
             overview.Text = card.Overview;

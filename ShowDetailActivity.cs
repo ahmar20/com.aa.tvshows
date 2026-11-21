@@ -148,7 +148,8 @@ namespace com.aa.tvshows
             if (!string.IsNullOrEmpty(show.ReleaseDate) && show.ReleaseDate.Length >= 4) meta.Add(show.ReleaseDate.Substring(0, 4));
             if (!string.IsNullOrEmpty(show.Status)) meta.Add(show.Status);
             if (!string.IsNullOrEmpty(show.Genres)) meta.Add(show.Genres);
-            metaText.Text = string.Join("  •  ", meta);
+            var metaPrefix = ratingText.Visibility == ViewStates.Visible ? "•  " : string.Empty;
+            metaText.Text = metaPrefix + string.Join("  •  ", meta);
 
             overviewText.Text = string.IsNullOrWhiteSpace(show.Description) ? GetString(Resource.String.detail_overview_missing) : show.Description;
 
