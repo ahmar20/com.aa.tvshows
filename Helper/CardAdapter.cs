@@ -21,7 +21,7 @@ namespace com.aa.tvshows.Helper
     public class CardAdapter : RecyclerView.Adapter
     {
         readonly List<MediaCard> items;
-        readonly CardLayout layout;
+        CardLayout layout;
         readonly bool isTv;
 
         public event Action<MediaCard> ItemClick;
@@ -59,6 +59,14 @@ namespace com.aa.tvshows.Helper
             NotifyDataSetChanged();
         }
 
+        public void SetItems(IEnumerable<MediaCard> source, CardLayout newLayout)
+        {
+            layout = newLayout;
+            items.Clear();
+            if (source != null) items.AddRange(source);
+            NotifyDataSetChanged();
+        }
+
         public void Clear() => Replace(null);
 
         public void Remove(MediaCard card)
@@ -73,17 +81,17 @@ namespace com.aa.tvshows.Helper
         {
             var res = viewType == (int)CardLayout.Wide ? Resource.Layout.item_card_wide : Resource.Layout.item_card_poster;
             var view = LayoutInflater.From(parent.Context).Inflate(res, parent, false);
-            return new CardHolder(view, isTv,
-                position => ItemClick?.Invoke(GetItem(position)),
-                (position, anchor) => ItemLongClick?.Invoke(GetItem(position), anchor),
-                position => ItemFocused?.Invoke(GetItem(position)));
+            return new CardHolder(view, isTv);
         }
 
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
             if (holder is CardHolder card)
             {
-                card.Bind(items[position], layout, GridCellWidth);
+                card.Bind(items[position], layout, GridCellWidth,
+                    p => ItemClick?.Invoke(GetItem(p)),
+                    (p, anchor) => ItemLongClick?.Invoke(GetItem(p), anchor),
+                    p => ItemFocused?.Invoke(GetItem(p)));
             }
         }
     }
@@ -93,9 +101,15 @@ namespace com.aa.tvshows.Helper
         readonly ImageView image;
         readonly TextView title;
         readonly TextView badge;
+        readonly bool isTv;
 
-        public CardHolder(View itemView, bool isTv, Action<int> click, Action<int, View> longClick, Action<int> focused) : base(itemView)
+        Action<int> onClick;
+        Action<int, View> onLongClick;
+        Action<int> onFocused;
+
+        public CardHolder(View itemView, bool isTv) : base(itemView)
         {
+            this.isTv = isTv;
             image = itemView.FindViewById<ImageView>(Resource.Id.card_image);
             title = itemView.FindViewById<TextView>(Resource.Id.card_title);
             badge = itemView.FindViewById<TextView>(Resource.Id.card_badge);
@@ -103,12 +117,12 @@ namespace com.aa.tvshows.Helper
             itemView.Click += (s, e) =>
             {
                 var position = AdapterPosition;
-                if (position >= 0) click(position);
+                if (position >= 0) onClick?.Invoke(position);
             };
             itemView.LongClick += (s, e) =>
             {
                 var position = AdapterPosition;
-                if (position >= 0) longClick(position, itemView);
+                if (position >= 0) onLongClick?.Invoke(position, itemView);
                 e.Handled = true;
             };
             itemView.FocusChange += (s, e) =>
@@ -123,7 +137,7 @@ namespace com.aa.tvshows.Helper
                 if (e.HasFocus)
                 {
                     var position = AdapterPosition;
-                    if (position >= 0) focused(position);
+                    if (position >= 0) onFocused?.Invoke(position);
                 }
             };
             if (!isTv)
@@ -146,8 +160,13 @@ namespace com.aa.tvshows.Helper
             }
         }
 
-        public void Bind(MediaCard card, CardLayout layout, int gridCellWidth)
+        public void Bind(MediaCard card, CardLayout layout, int gridCellWidth,
+            Action<int> onClick, Action<int, View> onLongClick, Action<int> onFocused)
         {
+            this.onClick = onClick;
+            this.onLongClick = onLongClick;
+            this.onFocused = onFocused;
+
             if (gridCellWidth > 0)
             {
                 var lp = ItemView.LayoutParameters as ViewGroup.MarginLayoutParams;

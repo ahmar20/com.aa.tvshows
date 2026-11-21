@@ -59,7 +59,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:gravity="center_vertical">
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
                     <TextView
                         android:id="@+id/detail_rating"
                         style="@style/Text.Muted"
@@ -72,9 +73,10 @@
                     <TextView
                         android:id="@+id/detail_meta"
                         style="@style/Text.Muted"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_marginTop="2dp"
+                        android:gravity="center_horizontal"
                         android:maxLines="2"
                         android:ellipsize="end" />
                 </LinearLayout>

@@ -1,11 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using com.aa.tvshows.Models;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace com.aa.tvshows.Helper
 {
@@ -85,8 +86,10 @@ namespace com.aa.tvshows.Helper
                     () => HeroListClick?.Invoke());
             }
             var rowView = inflater.Inflate(Resource.Layout.item_row, parent, false);
-            return new RowHolder(rowView, pool,
-                row => ViewAllClick?.Invoke(row));
+            return new RowHolder(rowView, pool, isTv,
+                row => ViewAllClick?.Invoke(row),
+                card => CardClick?.Invoke(card),
+                (card, rowHolder) => CardFocused?.Invoke(card, rowHolder.AdapterPosition));
         }
 
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -101,11 +104,7 @@ namespace com.aa.tvshows.Helper
             var row = rows[HasHeader ? position - 1 : position];
             rowHolder.Title.Text = row.Title;
             rowHolder.Row = row;
-
-            var adapter = new CardAdapter(row.Items, row.Style == CardStyle.Wide ? CardLayout.Wide : CardLayout.Poster, isTv);
-            adapter.ItemClick += card => CardClick?.Invoke(card);
-            adapter.ItemFocused += card => CardFocused?.Invoke(card, rowHolder.AdapterPosition);
-            rowHolder.List.SetAdapter(adapter);
+            rowHolder.Adapter.SetItems(row.Items, row.Style == CardStyle.Wide ? CardLayout.Wide : CardLayout.Poster);
         }
     }
 
@@ -137,12 +136,16 @@ namespace com.aa.tvshows.Helper
                 rating.Visibility = ViewStates.Gone;
                 meta.Text = string.Empty;
                 overview.Text = string.Empty;
+                detailsBtn.Visibility = ViewStates.Invisible;
+                listBtn.Visibility = ViewStates.Invisible;
                 return;
             }
 
             var url = card.Backdrop("w1280");
             AppView.LoadPicture(image, string.IsNullOrEmpty(url) ? card.Poster("w780") : url);
             title.Text = card.Title;
+            detailsBtn.Visibility = ViewStates.Visible;
+            listBtn.Visibility = ViewStates.Visible;
 
             if (string.IsNullOrEmpty(card.Rating))
             {
@@ -157,7 +160,7 @@ namespace com.aa.tvshows.Helper
             var metaParts = new List<string>();
             if (!string.IsNullOrEmpty(card.Year)) metaParts.Add(card.Year);
             if (!string.IsNullOrEmpty(card.Genres)) metaParts.Add(card.Genres);
-            var metaPrefix = rating.Visibility == ViewStates.Visible ? "•  " : string.Empty;
+            var metaPrefix = rating.Visibility == ViewStates.Visible ? "  •  " : string.Empty;
             meta.Text = metaPrefix + string.Join("  •  ", metaParts);
             meta.Visibility = metaParts.Count == 0 ? ViewStates.Gone : ViewStates.Visible;
 
@@ -173,9 +176,11 @@ namespace com.aa.tvshows.Helper
     {
         public TextView Title { get; }
         public RecyclerView List { get; }
+        public CardAdapter Adapter { get; }
         public HomeRow Row { get; set; }
 
-        public RowHolder(View itemView, RecyclerView.RecycledViewPool pool, Action<HomeRow> viewAllClick) : base(itemView)
+        public RowHolder(View itemView, RecyclerView.RecycledViewPool pool, bool isTv,
+            Action<HomeRow> viewAllClick, Action<MediaCard> onCardClick, Action<MediaCard, RowHolder> onCardFocused) : base(itemView)
         {
             Title = itemView.FindViewById<TextView>(Resource.Id.row_title);
             List = itemView.FindViewById<RecyclerView>(Resource.Id.row_list);
@@ -184,6 +189,11 @@ namespace com.aa.tvshows.Helper
             List.SetLayoutManager(layoutManager);
             // every row shares one pool of tiles, so scrolling vertically re-uses views instead of inflating
             List.SetRecycledViewPool(pool);
+
+            Adapter = new CardAdapter(new List<MediaCard>(), CardLayout.Poster, isTv);
+            Adapter.ItemClick += card => onCardClick(card);
+            Adapter.ItemFocused += card => onCardFocused(card, this);
+            List.SetAdapter(Adapter);
 
             var viewAll = itemView.FindViewById<View>(Resource.Id.row_view_all);
             if (viewAll != null)
