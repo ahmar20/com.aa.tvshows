@@ -9,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Graphics.Drawables;
+using AndroidX.Core.Content;
+using Google.Android.Material.AppBar;
 
 namespace com.aa.tvshows
 {
@@ -30,6 +33,9 @@ namespace com.aa.tvshows
         RecyclerView episodesView;
         ProgressBar progress;
         EpisodeRowsAdapter episodeAdapter;
+        View topBar;
+        ColorDrawable topBarBackground;
+        TextView topBarTitle;
 
         SeriesDetails show;
         bool inList;
@@ -55,14 +61,21 @@ namespace com.aa.tvshows
             episodesView = FindViewById<RecyclerView>(Resource.Id.detail_episodes);
             progress = FindViewById<ProgressBar>(Resource.Id.detail_progress);
 
-            // phone only: round back button floating over the artwork, below the status bar
+            topBar = FindViewById<View>(Resource.Id.detail_top_bar);
             var back = FindViewById<View>(Resource.Id.detail_back);
-            if (back != null)
+            var appBar = FindViewById<AppBarLayout>(Resource.Id.detail_appbar);
+            if (topBar != null && back != null && appBar != null)
             {
-                var lp = (ViewGroup.MarginLayoutParams)back.LayoutParameters;
-                lp.TopMargin += WindowInsetsHelper.StatusBarHeight(this);
-                back.LayoutParameters = lp;
+                topBarTitle = FindViewById<TextView>(Resource.Id.detail_top_bar_title);
+                topBarBackground = new ColorDrawable(new Android.Graphics.Color(ContextCompat.GetColor(this, Resource.Color.colorNav)))
+                {
+                    Alpha = 0
+                };
+                topBar.Background = topBarBackground;
+                WindowInsetsHelper.Apply(topBar, top: true);
+
                 back.Click += (s, e) => AppView.FinishWithTransition(this);
+                appBar.AddOnOffsetChangedListener(new TopBarFadeListener(this));
             }
             WindowInsetsHelper.Apply(episodesView, bottom: true);
 
@@ -133,6 +146,7 @@ namespace com.aa.tvshows
         {
             AppView.LoadPicture(backdrop, !string.IsNullOrEmpty(show.BackdropLink) ? show.BackdropLink : show.ImageLink);
             titleText.Text = show.Title;
+            if (topBarTitle != null) topBarTitle.Text = show.Title;
 
             if (string.IsNullOrEmpty(show.Rating))
             {
@@ -253,6 +267,27 @@ namespace com.aa.tvshows
             finally
             {
                 listButton.Enabled = true;
+            }
+        }
+
+        class TopBarFadeListener : Java.Lang.Object, AppBarLayout.IOnOffsetChangedListener
+        {
+            readonly ShowDetailActivity owner;
+
+            public TopBarFadeListener(ShowDetailActivity owner)
+            {
+                this.owner = owner;
+            }
+
+            public void OnOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
+            {
+                int range = appBarLayout.TotalScrollRange;
+                if (range <= 0 || owner.topBarBackground == null) return;
+
+                var fadeDistance = Math.Max(1, range - (int)(120 * owner.Resources.DisplayMetrics.Density));
+                var ratio = Math.Min(1f, (float)Math.Abs(verticalOffset) / fadeDistance);
+                owner.topBarBackground.Alpha = (int)(ratio * 255);
+                if (owner.topBarTitle != null) owner.topBarTitle.Alpha = ratio;
             }
         }
     }
