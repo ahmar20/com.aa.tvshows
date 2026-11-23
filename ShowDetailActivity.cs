@@ -32,6 +32,7 @@ namespace com.aa.tvshows
         TextView titleText, ratingText, metaText, overviewText, listButton, seasonButton;
         RecyclerView episodesView;
         ProgressBar progress;
+        TextView noEpisodesText;
         EpisodeRowsAdapter episodeAdapter;
         View topBar;
         ColorDrawable topBarBackground;
@@ -60,6 +61,7 @@ namespace com.aa.tvshows
             seasonButton = FindViewById<TextView>(Resource.Id.detail_btn_season);
             episodesView = FindViewById<RecyclerView>(Resource.Id.detail_episodes);
             progress = FindViewById<ProgressBar>(Resource.Id.detail_progress);
+            noEpisodesText = FindViewById<TextView>(Resource.Id.detail_no_episodes);
 
             topBar = FindViewById<View>(Resource.Id.detail_top_bar);
             var back = FindViewById<View>(Resource.Id.detail_back);
@@ -263,6 +265,15 @@ namespace com.aa.tvshows
                 }
             }
 
+            if (episodes.Count == 0)
+            {
+                episodeAdapter.SetItems(null);
+                episodesView.Visibility = ViewStates.Gone;
+                if (noEpisodesText != null) noEpisodesText.Visibility = ViewStates.Visible;
+                return;
+            }
+            if (noEpisodesText != null) noEpisodesText.Visibility = ViewStates.Gone;
+
             var ordered = StorageData.GetShowLatestEpisodesFirstSetting()
                 ? episodes.OrderByDescending(e => e.EpisodeIndex)
                 : episodes.OrderBy(e => e.EpisodeIndex);
@@ -319,7 +330,7 @@ namespace com.aa.tvshows
                 int range = appBarLayout.TotalScrollRange;
                 if (range <= 0 || owner.topBarBackground == null) return;
 
-                var fadeDistance = Math.Max(1, range - (int)(120 * owner.Resources.DisplayMetrics.Density));
+                var fadeDistance = Math.Max(1, range - (int)(240 * owner.Resources.DisplayMetrics.Density));
                 var ratio = Math.Min(1f, (float)Math.Abs(verticalOffset) / fadeDistance);
                 owner.topBarBackground.Alpha = (int)(ratio * 255);
                 if (owner.topBarTitle != null) owner.topBarTitle.Alpha = ratio;
