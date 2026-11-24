@@ -336,7 +336,9 @@ namespace com.aa.tvshows.Helper
         public static async Task<SeriesDetails> GetDetailsForTVShowSeries(string link, bool includeEpisodes = true)
         {
             if (!TryParseShowLink(link, out int id)) return null;
-            var json = await GetJsonAsync($"/tv/{id}");
+            // append_to_response folds TMDB's /tv/{id}/external_ids (imdb_id, tvdb_id, etc.) into
+            // this same response instead of needing a second round-trip.
+            var json = await GetJsonAsync($"/tv/{id}", new Dictionary<string, string> { ["append_to_response"] = "external_ids" });
             if (json == null) return null;
 
             var genreNames = json["genres"]?.Select(g => g.Value<string>("name"));
@@ -352,6 +354,7 @@ namespace com.aa.tvshows.Helper
                 Genres = genreNames != null ? string.Join(", ", genreNames) : string.Empty,
                 Rating = rating > 0 ? rating.ToString("0.0", CultureInfo.InvariantCulture) : string.Empty,
                 Status = json.Value<string>("status"),
+                ImdbId = json["external_ids"]?.Value<string>("imdb_id"),
                 LastEpisode = MapEpisodeStub(json["last_episode_to_air"], id),
                 NextEpisode = MapEpisodeStub(json["next_episode_to_air"], id),
                 Seasons = new List<SeasonData>()
