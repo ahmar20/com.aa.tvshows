@@ -170,7 +170,7 @@ namespace com.aa.tvshows.Helper
             var analyticsTag = DateTime.UtcNow.ToString("yyyy-MM-dd");
             var queryParams = new Dictionary<string, string?>
             {
-                ["q"] = tmdbId,
+                ["q"] = imdbId,
                 //["query_by"] = "post_title,category,stars,director,imdb_id",
                 //["query_by_weights"] = "4,2,2,2,4",
                 ["query_by"] = "imdb_id",
