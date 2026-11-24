@@ -50,11 +50,14 @@ namespace com.aa.tvshows.Helper
                                 {
                                     await CreateNotificationChannel();
 
-                                    var activityIntent = new Intent(this.ApplicationContext, typeof(EpisodeDetailActivity));
-                                    activityIntent.PutExtra("itemLink", updatedSeries.NextEpisode.EpisodeLink);
+                                    // Episode pages were folded into the show's own page, so tapping
+                                    // the notification opens the show (its season list) rather than
+                                    // a standalone episode screen.
+                                    var activityIntent = new Intent(this.ApplicationContext, typeof(ShowDetailActivity));
+                                    activityIntent.PutExtra("itemLink", updatedSeries.SeriesLink);
 
                                     var stackBuilder = TaskStackBuilder.Create(this.ApplicationContext);
-                                    stackBuilder.AddParentStack(Java.Lang.Class.FromType(typeof(EpisodeDetailActivity)));
+                                    stackBuilder.AddParentStack(Java.Lang.Class.FromType(typeof(ShowDetailActivity)));
                                     stackBuilder.AddNextIntent(activityIntent);
 
                                     var resultPendingIntent = stackBuilder.GetPendingIntent(0, (int)Android.App.PendingIntentFlags.UpdateCurrent);

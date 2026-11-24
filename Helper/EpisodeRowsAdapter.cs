@@ -7,12 +7,16 @@ using AndroidX.RecyclerView.Widget;
 
 namespace com.aa.tvshows.Helper
 {
-    /// <summary>The episodes of the selected season on the show page.</summary>
+    /// <summary>The episodes of the selected season on the show page. Tapping a row expands it in
+    /// place to show the full overview and a Play button, rather than pushing a separate episode
+    /// detail screen -- TMDB has no streams, so that screen never had anything to offer beyond the
+    /// same overview/air-date text already shown here.</summary>
     public class EpisodeRowsAdapter : RecyclerView.Adapter
     {
         List<ShowEpisodeDetails> items = new List<ShowEpisodeDetails>();
-
-        public event Action<ShowEpisodeDetails> ItemClick;
+        // Keyed by EpisodeLink (stable identity) rather than position, since position changes
+        // when the "latest first" setting flips the sort order.
+        readonly HashSet<string> expanded = new HashSet<string>();
 
         public override int ItemCount => items.Count;
 
@@ -27,7 +31,10 @@ namespace com.aa.tvshows.Helper
             var view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.item_episode, parent, false);
             return new EpisodeRowHolder(view, position =>
             {
-                if (position < items.Count) ItemClick?.Invoke(items[position]);
+                if (position < 0 || position >= items.Count) return;
+                var key = items[position].EpisodeLink;
+                if (!expanded.Remove(key)) expanded.Add(key);
+                NotifyItemChanged(position);
             });
         }
 
@@ -51,6 +58,12 @@ namespace com.aa.tvshows.Helper
             row.Overview.Text = episode.EpisodeSummary;
             row.Overview.Visibility = string.IsNullOrWhiteSpace(episode.EpisodeSummary) ? ViewStates.Gone : ViewStates.Visible;
 
+            // Expanded: full overview (no 3-line clip) plus the Play placeholder. Play has no real
+            // stream source wired up yet -- it's shown disabled until one exists.
+            var isExpanded = expanded.Contains(episode.EpisodeLink);
+            row.Overview.SetMaxLines(isExpanded ? int.MaxValue : 3);
+            row.PlayButton.Visibility = isExpanded ? ViewStates.Visible : ViewStates.Gone;
+
             AppView.LoadPicture(row.Thumb, episode.EpisodeImage);
             // no still yet (unaired): show the episode number in its place
             row.Number.Text = number;
@@ -65,6 +78,7 @@ namespace com.aa.tvshows.Helper
         public TextView Title { get; }
         public TextView Meta { get; }
         public TextView Overview { get; }
+        public Button PlayButton { get; }
 
         public EpisodeRowHolder(View itemView, Action<int> click) : base(itemView)
         {
@@ -73,6 +87,7 @@ namespace com.aa.tvshows.Helper
             Title = itemView.FindViewById<TextView>(Resource.Id.ep_title);
             Meta = itemView.FindViewById<TextView>(Resource.Id.ep_meta);
             Overview = itemView.FindViewById<TextView>(Resource.Id.ep_overview);
+            PlayButton = itemView.FindViewById<Button>(Resource.Id.ep_play_btn);
             itemView.Click += (s, e) =>
             {
                 var position = AdapterPosition;

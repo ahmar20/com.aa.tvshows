@@ -65,5 +65,14 @@
             android:layout_marginTop="4dp"
             android:maxLines="3"
             android:ellipsize="end" />
+        <Button
+            android:id="@+id/ep_play_btn"
+            style="@style/Widget.App.Button.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/action_play"
+            android:enabled="false"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

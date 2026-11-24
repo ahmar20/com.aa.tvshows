@@ -39,6 +39,7 @@
   <string name="action_view_all">View All</string>
   <string name="action_add_list">My List</string>
   <string name="action_in_list">In My List</string>
+  <string name="action_play">Play</string>
   <string name="action_saving">Saving…</string>
   <string name="action_back">Back</string>
   <string name="action_go_to_show">Go to show</string>

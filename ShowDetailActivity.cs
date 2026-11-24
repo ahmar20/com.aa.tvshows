@@ -83,7 +83,6 @@ namespace com.aa.tvshows
 
             episodesView.SetLayoutManager(new LinearLayoutManager(this));
             episodeAdapter = new EpisodeRowsAdapter();
-            episodeAdapter.ItemClick += episode => AppView.HandleItemShowEpisodeClick(episode, this);
             episodesView.SetAdapter(episodeAdapter);
 
             // nothing shows until the data it would display has actually arrived
