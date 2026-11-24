@@ -296,34 +296,36 @@ namespace com.aa.tvshows.Helper
             var airDate = ep.Value<string>("air_date");
             return new ShowEpisodeDetails
             {
+                ShowTmdbId = showId.ToString(),
+                SeasonNumber = season,
                 EpisodeFullNameNumber = $"S{season:00}E{episode:00} - {ep.Value<string>("name")}",
                 EpisodeLink = EpisodeLink(showId, season, episode),
                 EpisodeAirDate = string.IsNullOrEmpty(airDate) ? "Unknown" : airDate
             };
         }
 
-        private static ShowEpisodeDetails MapEpisode(JToken ep, int showId, int season, string showTitle)
+        private static ShowEpisodeDetails MapEpisode(JToken ep, SeasonData season)
         {
+            var showId = int.Parse(season.ShowTmdbId);
             var episode = ep.Value<int>("episode_number");
             var airDate = ep.Value<string>("air_date");
             var runtime = ep.Value<int?>("runtime") ?? 0;
             var stillPath = ep.Value<string>("still_path");
             return new ShowEpisodeDetails
             {
-                EpisodeShowTitle = showTitle,
+                ShowTmdbId = season.ShowTmdbId,
+                SeasonNumber = season.SeasonNumber,
+                EpisodeShowTitle = season.ShowTitle,
                 EpisodeShowLink = ShowLink(showId),
-                EpisodeLink = EpisodeLink(showId, season, episode),
+                EpisodeLink = EpisodeLink(showId, season.SeasonNumber, episode),
                 EpisodeFullNameNumber = ep.Value<string>("name"),
-                EpisodeNumber = $"S{season:00} - E{episode:00}",
+                EpisodeNumber = $"S{season.SeasonNumber:00} - E{episode:00}",
                 EpisodeIndex = episode,
                 EpisodeAirDate = string.IsNullOrEmpty(airDate) ? "Unknown" : airDate,
                 EpisodeSummary = ep.Value<string>("overview") ?? string.Empty,
                 EpisodeRuntime = runtime > 0 ? $"{runtime}m" : string.Empty,
                 EpisodeImage = Image(stillPath, StillSize),
-                EpisodeImageLarge = Image(stillPath, StillLargeSize),
-                // TMDB is a metadata source only -- it has no streaming links to offer here.
-                IsEpisodeWatchable = false,
-                EpisodeStreamLinks = null
+                EpisodeImageLarge = Image(stillPath, StillLargeSize)
             };
         }
 
@@ -345,6 +347,7 @@ namespace com.aa.tvshows.Helper
             var rating = json.Value<double?>("vote_average") ?? 0;
             var details = new SeriesDetails
             {
+                TmdbId = id.ToString(),
                 Title = json.Value<string>("name"),
                 ImageLink = Image(json.Value<string>("poster_path"), PosterSize),
                 BackdropLink = Image(json.Value<string>("backdrop_path"), BackdropLargeSize),
@@ -369,6 +372,8 @@ namespace com.aa.tvshows.Helper
                     var seasonNumber = season.Value<int>("season_number");
                     details.Seasons.Add(new SeasonData
                     {
+                        ShowTmdbId = details.TmdbId,
+                        ShowTitle = details.Title,
                         SeasonNumber = seasonNumber,
                         SeasonName = season.Value<string>("name") ?? $"Season {seasonNumber}",
                         EpisodeCount = season.Value<int?>("episode_count") ?? 0,
@@ -381,7 +386,7 @@ namespace com.aa.tvshows.Helper
                     // all seasons in parallel instead of one request after the other
                     await Task.WhenAll(details.Seasons.Select(async s =>
                     {
-                        s.Episodes = await GetSeasonEpisodes(id, s.SeasonNumber, details.Title).ConfigureAwait(false)
+                        s.Episodes = await GetSeasonEpisodes(s).ConfigureAwait(false)
                                      ?? new List<ShowEpisodeDetails>();
                     })).ConfigureAwait(false);
                 }
@@ -390,12 +395,21 @@ namespace com.aa.tvshows.Helper
             return details;
         }
 
-        /// <summary>The episodes of one season, or null if the request failed.</summary>
-        public static async Task<List<ShowEpisodeDetails>> GetSeasonEpisodes(int showId, int seasonNumber, string showTitle)
+        public static async Task<string> GetImdbId(string tmdbId)
         {
-            var seasonJson = await GetJsonAsync($"/tv/{showId}/season/{seasonNumber}").ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(tmdbId)) return null;
+            var json = await GetJsonAsync($"/tv/{tmdbId}", new Dictionary<string, string> { ["append_to_response"] = "external_ids" });
+            if (json == null) return null;
+
+            return json["external_ids"]?.Value<string>("imdb_id");
+        }
+
+        /// <summary>The episodes of one season, or null if the request failed.</summary>
+        public static async Task<List<ShowEpisodeDetails>> GetSeasonEpisodes(SeasonData season)
+        {
+            var seasonJson = await GetJsonAsync($"/tv/{season.ShowTmdbId}/season/{season.SeasonNumber}").ConfigureAwait(false);
             if (seasonJson?["episodes"] == null) return null;
-            return seasonJson["episodes"].Select(e => MapEpisode(e, showId, seasonNumber, showTitle)).ToList();
+            return seasonJson["episodes"].Select(e => MapEpisode(e, season)).ToList();
         }
 
         public static async Task<ShowEpisodeDetails> GetDetailsForTVShowEpisode(string link)
@@ -409,7 +423,13 @@ namespace com.aa.tvshows.Helper
             var episodeJson = episodeTask.Result;
             if (showJson == null || episodeJson == null) return null;
 
-            var mapped = MapEpisode(episodeJson, id, season, showJson.Value<string>("name"));
+            var seasonForMap = new SeasonData
+            {
+                ShowTmdbId = id.ToString(),
+                ShowTitle = showJson.Value<string>("name"),
+                SeasonNumber = season
+            };
+            var mapped = MapEpisode(episodeJson, seasonForMap);
             mapped.EpisodeFullNameNumber = episodeJson.Value<string>("name");
             if (string.IsNullOrEmpty(mapped.EpisodeImage))
             {

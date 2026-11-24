@@ -1,27 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using AndroidX.Fragment.App;
 
 namespace com.aa.tvshows.Helper
 {
-    public class TemplateData
-    {
-
-    }
-
-    public class TitleFragment
-    {
-        public string Title { get; set; }
-        public Fragment Fragmnet { get; set; }
-    }
-
     /// <summary>
     /// Base class for TV Series
     /// </summary>
@@ -92,6 +73,7 @@ namespace com.aa.tvshows.Helper
     /// </summary>
     public class SeriesDetails
     {
+        public string TmdbId { get; set; }
         public string Title { get; set; }
         public string ImageLink { get; set; }
         public string BackdropLink { get; set; }
@@ -101,16 +83,23 @@ namespace com.aa.tvshows.Helper
         public string Status { get; set; }
         public string ReleaseDate { get; set; }
         public string Genres { get; set; }
+        public string ImdbId { get; set; }
         public ShowEpisodeDetails LastEpisode { get; set; }
         public ShowEpisodeDetails NextEpisode { get; set; }
         public List<SeasonData> Seasons { get; set; }
     }
 
     /// <summary>
-    /// Includes data for TV Series Season and Episodes in that season
+    /// Includes data for TV Series Season and Episodes in that season.
+    /// Holds a plain reference back to its parent show (ShowTmdbId/ShowTitle) instead of
+    /// inheriting SeriesDetails -- a season "has a" show, it isn't one, and inheritance was
+    /// pulling every SeriesDetails field (including ImdbId) onto seasons and episodes whether
+    /// they needed it or not.
     /// </summary>
     public class SeasonData
     {
+        public string ShowTmdbId { get; set; }
+        public string ShowTitle { get; set; }
         public int SeasonNumber { get; set; }
         public int EpisodeCount { get; set; }
         public string SeasonName { get; set; }
@@ -118,10 +107,14 @@ namespace com.aa.tvshows.Helper
     }
 
     /// <summary>
-    /// Includes info for TV Series Episode
+    /// Includes info for TV Series Episode. Carries its own ShowTmdbId/SeasonNumber (set once,
+    /// by TMDbClient's mapping code) instead of every caller re-parsing them out of EpisodeLink.
+    /// Deliberately does not carry ImdbId -- that lives on SeriesDetails only.
     /// </summary>
     public class ShowEpisodeDetails
     {
+        public string ShowTmdbId { get; set; }
+        public int SeasonNumber { get; set; }
         public string EpisodeShowTitle { get; set; }
         public string EpisodeSummary { get; set; }
         public string EpisodeImage { get; set; }

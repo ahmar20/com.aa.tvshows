@@ -92,6 +92,11 @@ namespace com.aa.tvshows.Helper
             List<StreamingUri> streams;
             try
             {
+                // TEMP CHeck
+                if (TMDbClient.TryParseEpisodeLink(episode.EpisodeLink, out int showId, out int season, out int episodeNumber))
+                {
+                    await WebData.SearchByImdbIdAsync(tmdbId: episode.ShowTmdbId);
+                }
                 streams = await EpisodeSourceProvider.GetStreamsAsync(episode);
             }
             finally
