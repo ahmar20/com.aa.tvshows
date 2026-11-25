@@ -39,6 +39,8 @@
   <string name="action_view_all">View All</string>
   <string name="action_add_list">My List</string>
   <string name="action_in_list">In My List</string>
+  <string name="action_play">Play</string>
+  <string name="action_loading">Loading…</string>
   <string name="action_saving">Saving…</string>
   <string name="action_back">Back</string>
   <string name="action_go_to_show">Go to show</string>
@@ -56,7 +58,6 @@
   <string name="detail_overview_missing">No description available.</string>
   <string name="detail_no_episodes">No episodes listed for this season yet.</string>
   <string name="detail_seasons">Seasons</string>
-  <string name="episode_no_sources">No playable source is set up for this episode. Details come from TMDB, which does not provide streams.</string>
   <string name="episode_sources_title">Watch</string>
   <string name="home_load_error">Could not load shows</string>
 </resources>

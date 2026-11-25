@@ -33,7 +33,7 @@ namespace com.aa.tvshows.Helper
         {
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri hostLink))
             {
-                if (hostLink.Host != host && hostLink.Host != "streamp1ay.cc" && !hostLink.OriginalString.Contains(WebData.BaseUrl))
+                if (hostLink.Host != host && hostLink.Host != "streamp1ay.cc" && !hostLink.OriginalString.Contains(""/*WebData.BaseUrl*/))
                 {
                     view.StopLoading();
                     return;
@@ -46,7 +46,7 @@ namespace com.aa.tvshows.Helper
         public override void OnPageFinished(WebView view, string url)
         {
             base.OnPageFinished(view, url);
-            if (url.Contains(WebData.BaseUrl))
+            if (url.Contains(""/*WebData.BaseUrl*/))
             {
                 view.EvaluateJavascript(WebData.GetBaseLinkScript(host), javaCallback);
             }

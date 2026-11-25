@@ -83,7 +83,6 @@ namespace com.aa.tvshows
 
             episodesView.SetLayoutManager(new LinearLayoutManager(this));
             episodeAdapter = new EpisodeRowsAdapter();
-            episodeAdapter.ItemClick += episode => AppView.HandleItemShowEpisodeClick(episode, this);
             episodesView.SetAdapter(episodeAdapter);
 
             // nothing shows until the data it would display has actually arrived
@@ -232,7 +231,7 @@ namespace com.aa.tvshows
                 progress.Visibility = ViewStates.Visible;
                 try
                 {
-                    episodes = await TMDbClient.GetSeasonEpisodes(show.SeriesLink == null ? 0 : ShowId(), season.SeasonNumber, show.Title);
+                    episodes = await TMDbClient.GetSeasonEpisodes(season);
                 }
                 catch (Exception)
                 {
@@ -281,8 +280,6 @@ namespace com.aa.tvshows
             episodesView.ScrollToPosition(0);
             episodesView.Visibility = ViewStates.Visible;
         }
-
-        int ShowId() => TMDbClient.TryParseShowLink(show.SeriesLink, out int id) ? id : 0;
 
         void ShowListState()
         {

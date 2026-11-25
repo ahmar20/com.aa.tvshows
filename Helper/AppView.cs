@@ -30,7 +30,6 @@ namespace com.aa.tvshows.Helper
         public static void HandleItemShowEpisodeClick(object item, Context context)
         {
             var pageLink = string.Empty;
-            var canGoBackToSeriesHome = false;
             if (item is MediaCard card)
             {
                 pageLink = card.PageLink;
@@ -62,7 +61,6 @@ namespace com.aa.tvshows.Helper
             else if (item is ShowEpisodeDetails episodeDetailLink)
             {
                 pageLink = episodeDetailLink.EpisodeLink;
-                canGoBackToSeriesHome = true;
             }
             else if (item is SeriesDetails seriesDetailLink)
             {
@@ -74,21 +72,18 @@ namespace com.aa.tvshows.Helper
                 Error.Instance.ShowErrorTip("Link is empty.", context);
                 return;
             }
-            if (TMDbClient.IsEpisodeLink(pageLink))
+
+            // Episode pages were folded into the show's own page -- season rows expand inline
+            // instead of pushing a separate screen (TMDB has no streams, so that screen never had
+            // anything else to offer). An episode link now just opens its show.
+            if (TMDbClient.IsEpisodeLink(pageLink) && TMDbClient.TryParseEpisodeLink(pageLink, out int showId, out _, out _))
             {
-                // tv episode detail
-                var intent = new Intent(context, typeof(EpisodeDetailActivity));
-                intent.PutExtra("itemLink", pageLink);
-                intent.PutExtra("canGoBackToSeriesHome", canGoBackToSeriesHome);
-                StartActivityWithTransition(context, intent);
+                pageLink = TMDbClient.LinkScheme + showId;
             }
-            else
-            {
-                // tv show detail
-                var intent = new Intent(context, typeof(ShowDetailActivity));
-                intent.PutExtra("itemLink", pageLink);
-                StartActivityWithTransition(context, intent);
-            }
+
+            var intent = new Intent(context, typeof(ShowDetailActivity));
+            intent.PutExtra("itemLink", pageLink);
+            StartActivityWithTransition(context, intent);
         }
 
         /// <summary>Opens a new screen with a slide/fade instead of the default hard cut.</summary>
