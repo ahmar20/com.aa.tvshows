@@ -48,9 +48,8 @@
             Link="%(RecursiveDir)%(Filename)%(Extension)" />
 
     <!-- .xml files are not compiled -->
-    <None Include="..\Me*-*es\R*s\l*t\*.xml"
-          Link="Resources\layout\%(RecursiveDir)%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
+    <AndroidResource Include="..\Me*-*es\R*s\l*t\*.xml"
+          Link="Resources\layout\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
