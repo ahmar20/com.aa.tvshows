@@ -41,9 +41,6 @@
     <!-- exclude the project's own file that's being patched -->
     <Compile Remove="Helper\EpisodeRowsAdapter.cs" />
 
-    <!-- include the patched replacement in its place -->
-    <Compile Include="obj\patched\PatchedFile.cs" Link="Helper\EpisodeRowsAdapter.cs" />
-    
     <Compile Include="..\Me*-*es\H*\*.cs"
             Link="Helper\%(RecursiveDir)%(Filename)%(Extension)" />
 
@@ -55,11 +52,6 @@
           Link="Resources\layout\%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
-  <Target Name="ApplyPatch" BeforeTargets="CoreCompile">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;..\Me*-*es\apply-patches.ps1&quot;"
-          WorkingDirectory="$(MSBuildProjectDirectory)" />
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
