@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="com.aa.tvshows.csproj">
+    <Deploy />
+  </Project>
+</Solution>
