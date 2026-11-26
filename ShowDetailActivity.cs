@@ -51,7 +51,9 @@ namespace com.aa.tvshows
 
             WindowInsetsHelper.EnableEdgeToEdge(this);
             SetContentView(Resource.Layout.activity_show_detail);
-
+#if DEBUG
+            Window?.AddFlags(WindowManagerFlags.KeepScreenOn);
+#endif
             backdrop = FindViewById<ImageView>(Resource.Id.detail_backdrop);
             titleText = FindViewById<TextView>(Resource.Id.detail_title);
             ratingText = FindViewById<TextView>(Resource.Id.detail_rating);
